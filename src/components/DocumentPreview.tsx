@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useTransition, memo } from 'react';
+import React, { lazy, memo, Suspense, useState, useTransition } from 'react';
 import { History, BookmarkPlus, Check, RotateCcw, FileEdit, Layers, Download } from 'lucide-react';
 import { ESDraft, DraftSnapshot } from '../types';
-import { ExportModal } from './ExportModal';
+
+const LazyExportModal = lazy(() =>
+  import('./export/ExportModal').then((module) => ({ default: module.ExportModal })),
+);
 
 interface DocumentPreviewProps {
   draft: ESDraft;
@@ -234,7 +237,23 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
         {checklistSlot && <div className="lg:col-span-12">{checklistSlot}</div>}
 
         {/* Export Modal (browser-side minitype PDF / Markdown) */}
-        <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} draft={draft} />
+        {isExportOpen && (
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="rounded-lg bg-white p-4 text-xs">
+                  エクスポート設定を読み込み中...
+                </div>
+              </div>
+            }
+          >
+            <LazyExportModal
+              isOpen={isExportOpen}
+              onClose={() => setIsExportOpen(false)}
+              draft={draft}
+            />
+          </Suspense>
+        )}
       </div>
     );
   },

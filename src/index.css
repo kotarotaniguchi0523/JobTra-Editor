@@ -1,1 +1,5 @@
 @import 'tailwindcss';
+
+.export-dialog::backdrop {
+  background: rgb(23 23 23 / 50%);
+}

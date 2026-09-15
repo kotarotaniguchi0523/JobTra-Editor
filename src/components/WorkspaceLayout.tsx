@@ -19,7 +19,7 @@ const LazyHandbookModal = lazy(() =>
 );
 
 const LazyExportModal = lazy(() =>
-  import('./ExportModal').then((m) => ({ default: m.ExportModal })),
+  import('./export/ExportModal').then((m) => ({ default: m.ExportModal })),
 );
 
 interface WorkspaceLayoutProps {

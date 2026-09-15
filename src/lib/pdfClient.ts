@@ -3,6 +3,7 @@
 import type { ESDraft } from '../types';
 import { CATEGORY_LABELS } from '../types';
 import { downloadFile } from './exportMarkdown';
+import { getExportFilename } from './exportFilename';
 import { generateEsPdf } from './exportPdf';
 
 export interface PdfExportOptions {
@@ -21,11 +22,7 @@ export async function downloadEsPdf(
   const categoryLabel = CATEGORY_LABELS[draft.category] || draft.category;
 
   const company = draft.companyName || '';
-  const sanitizedCompany = company.replace(/[\s/\\:*?"<>|]+/g, '_');
-  const sanitizedTitle = draft.title?.replace(/[\s/\\:*?"<>|]+/g, '_') || 'ES';
-  const filename = sanitizedCompany
-    ? `ES_${sanitizedCompany}_${sanitizedTitle}.pdf`
-    : `ES_${sanitizedTitle}.pdf`;
+  const filename = getExportFilename(draft, 'pdf');
 
   const currentCharCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
 
