@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useTransition, useMemo, useCallback, Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -11,11 +11,11 @@ import { cleanForSubmission, auditText, calculateMetrics } from '../services/ana
 
 // 開いていない重いUIコンポーネントは React.lazy で遅延読み込み
 const LazyReviewPanel = lazy(() =>
-  import('./ReviewPanel').then((m) => ({ default: m.ReviewPanel }))
+  import('./ReviewPanel').then((m) => ({ default: m.ReviewPanel })),
 );
 
 const LazyHandbookModal = lazy(() =>
-  import('./HandbookModal').then((m) => ({ default: m.HandbookModal }))
+  import('./HandbookModal').then((m) => ({ default: m.HandbookModal })),
 );
 
 interface WorkspaceLayoutProps {
@@ -66,7 +66,7 @@ export function WorkspaceLayout({
   const activeContent = activeDraft?.content || '';
   const auditResult = useMemo(
     () => auditText(activeContent, activeDraft?.targetCount || 400),
-    [activeContent, activeDraft?.targetCount]
+    [activeContent, activeDraft?.targetCount],
   );
   const metricsResult = useMemo(() => calculateMetrics(activeContent), [activeContent]);
 
@@ -87,13 +87,16 @@ export function WorkspaceLayout({
   }, [activeDraft]);
 
   // 下書き更新ハンドラ
-  const handleUpdateDraft = useCallback((partial: Partial<ESDraft>, immediate: boolean = false) => {
-    if (!activeDraft) return;
-    updateDraft({ ...activeDraft, ...partial, updatedAt: Date.now() }, immediate);
-  }, [activeDraft, updateDraft]);
+  const handleUpdateDraft = useCallback(
+    (partial: Partial<ESDraft>, immediate: boolean = false) => {
+      if (!activeDraft) return;
+      updateDraft({ ...activeDraft, ...partial, updatedAt: Date.now() }, immediate);
+    },
+    [activeDraft, updateDraft],
+  );
 
   return (
-    <div className="flex h-dvh overflow-hidden bg-neutral-100 text-neutral-900 font-sans">
+    <div className="flex h-dvh overflow-hidden bg-neutral-100 font-sans text-neutral-900">
       {/* 1. 共通サイドバー */}
       <Sidebar
         drafts={drafts}
@@ -113,7 +116,7 @@ export function WorkspaceLayout({
       />
 
       {/* 2. メイン領域 */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <WorkspaceHeader
           brandSlot={brandSlot}
           linksSlot={linksSlot}
@@ -137,17 +140,19 @@ export function WorkspaceLayout({
         )}
 
         {/* 3. 各ページのワークスペース本体 */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex flex-1 overflow-hidden">
           <main className="flex-1 overflow-y-auto p-4 sm:p-5">
             {isLoading ? (
-              <div className="flex items-center justify-center h-64 text-neutral-400">
-                <Loader2 className="w-6 h-6 animate-spin mr-2" />
+              <div className="flex h-64 items-center justify-center text-neutral-400">
+                <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                 <span>下書きを読み込んでいます...</span>
               </div>
             ) : !activeDraft ? (
               emptyDraftGuideSlot || (
-                <div className="text-center py-16 text-neutral-400">
-                  <p className="text-sm">下書きがありません。「新規作成」をクリックしてください。</p>
+                <div className="py-16 text-center text-neutral-400">
+                  <p className="text-sm">
+                    下書きがありません。「新規作成」をクリックしてください。
+                  </p>
                 </div>
               )
             ) : (
@@ -157,11 +162,11 @@ export function WorkspaceLayout({
 
           {/* 4. リアルタイム監査パネル（開いた時のみ React.lazy で遅延ロード） */}
           {isAuditOpen && activeDraft && (
-            <aside className="w-80 lg:w-96 border-l border-neutral-200 bg-white overflow-y-auto shrink-0 shadow-lg lg:shadow-none animate-fadeIn">
+            <aside className="animate-fadeIn w-80 shrink-0 overflow-y-auto border-l border-neutral-200 bg-white shadow-lg lg:w-96 lg:shadow-none">
               <Suspense
                 fallback={
-                  <div className="p-4 flex items-center justify-center text-neutral-400 text-xs">
-                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  <div className="flex items-center justify-center p-4 text-xs text-neutral-400">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     監査モジュールを読み込み中...
                   </div>
                 }
@@ -187,17 +192,14 @@ export function WorkspaceLayout({
         <Suspense
           fallback={
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white p-4 rounded-lg text-xs flex items-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
+                <Loader2 className="h-4 w-4 animate-spin" />
                 推敲ガイドを読み込み中...
               </div>
             </div>
           }
         >
-          <LazyHandbookModal
-            isOpen={isHandbookOpen}
-            onClose={() => setIsHandbookOpen(false)}
-          >
+          <LazyHandbookModal isOpen={isHandbookOpen} onClose={() => setIsHandbookOpen(false)}>
             {handbookSlot}
           </LazyHandbookModal>
         </Suspense>

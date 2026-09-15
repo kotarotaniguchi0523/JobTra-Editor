@@ -9,7 +9,7 @@ import { DraftProvider } from '../context/DraftContext';
 export default function RootLayout() {
   return (
     <DraftProvider>
-      <div className="min-h-full flex flex-col bg-neutral-50 text-neutral-900 font-sans antialiased">
+      <div className="flex min-h-full flex-col bg-neutral-50 font-sans text-neutral-900 antialiased">
         <Outlet />
       </div>
     </DraftProvider>

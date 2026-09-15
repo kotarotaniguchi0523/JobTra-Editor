@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# 最小権限の原則（Least Privilege）: リポジトリの読み取りのみ許可
+permissions:
+  contents: read
+
+jobs:
+  # 1. 依存関係のインストール（単一キャッシュ & 単一ジョブでセットアップ）
+  setup:
+    name: Setup & Cache Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+  # 2. 並列チェックジョブ群（インストールされたキャッシュを活用して並列実行）
+  format-check:
+    name: Oxfmt Format Check
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies (from cache)
+        run: npm ci --prefer-offline
+
+      - name: Run Oxfmt Check
+        run: npm run format:check
+
+  test:
+    name: Unit Tests (Vitest)
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies (from cache)
+        run: npm ci --prefer-offline
+
+      - name: Run Tests
+        run: npm test

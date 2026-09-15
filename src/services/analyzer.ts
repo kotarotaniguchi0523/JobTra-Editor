@@ -8,8 +8,8 @@ export function calculateMetrics(text: string): JapaneseMetrics {
   // Split into sentences using Japanese punctuation (。！？!?)
   const sentences = text
     .split(/[。！？\n]/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 
   const sentenceCount = sentences.length || (charsNoWhitespace > 0 ? 1 : 0);
   const avgSentenceLength = sentenceCount > 0 ? Math.round(charsNoWhitespace / sentenceCount) : 0;
@@ -135,10 +135,10 @@ export function auditText(text: string, targetCount: number): AuditCheck[] {
   // 4. 一文の長さチェック (1文60字以内が最も読みやすい)
   const sentences = text
     .split(/[。！？\n]/)
-    .map(s => s.trim())
-    .filter(s => s.length > 0);
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
 
-  const longSentences = sentences.filter(s => s.length >= 65);
+  const longSentences = sentences.filter((s) => s.length >= 65);
   if (longSentences.length > 0) {
     checks.push({
       id: 'long-sentence',
@@ -189,7 +189,9 @@ export function auditText(text: string, targetCount: number): AuditCheck[] {
   }
 
   // 6. 定量的数字の含有チェック
-  const numberMatches = text.match(/[0-9０-９]+(?:\.[0-9]+)?(?:%|％|人|倍|割|位|件|円|万|カ月|ヶ月|年|回|日)/g);
+  const numberMatches = text.match(
+    /[0-9０-９]+(?:\.[0-9]+)?(?:%|％|人|倍|割|位|件|円|万|カ月|ヶ月|年|回|日)/g,
+  );
   if (numberMatches && numberMatches.length > 0) {
     checks.push({
       id: 'numeric-evidence',
@@ -202,7 +204,8 @@ export function auditText(text: string, targetCount: number): AuditCheck[] {
       id: 'numeric-missing',
       title: '数値や客観データの追加を検討',
       status: 'info',
-      message: '「前年比○%増」「チーム○名」「週○回」など、数字を1つ入れると事実としての重みが増します。',
+      message:
+        '「前年比○%増」「チーム○名」「週○回」など、数字を1つ入れると事実としての重みが増します。',
     });
   }
 
@@ -214,14 +217,16 @@ export function auditText(text: string, targetCount: number): AuditCheck[] {
         id: 'kanji-dense',
         title: `漢字が多め（漢字率 ${metrics.kanjiRatio}%）`,
         status: 'warning',
-        message: '漢字が40%を超えると黒々として圧迫感があります。「〜の事」→「〜のこと」など適度にひらがなに開きましょう。',
+        message:
+          '漢字が40%を超えると黒々として圧迫感があります。「〜の事」→「〜のこと」など適度にひらがなに開きましょう。',
       });
     } else if (metrics.kanjiRatio < 20) {
       checks.push({
         id: 'kanji-sparse',
         title: `ひらがなが多め（漢字率 ${metrics.kanjiRatio}%）`,
         status: 'info',
-        message: '漢字率が20%未満だと幼い印象を与えることがあります。適切な名詞や動詞を漢字に変換しましょう。',
+        message:
+          '漢字率が20%未満だと幼い印象を与えることがあります。適切な名詞や動詞を漢字に変換しましょう。',
       });
     } else {
       checks.push({
@@ -249,12 +254,14 @@ export function assembleStarBlocks(blocks: StarBlocks): string {
 
 // Format clean text for direct pasting into company web entry forms
 export function cleanForSubmission(text: string): string {
-  return text
-    // Replace multiple consecutive blank lines with single newline
-    .replace(/\n{3,}/g, '\n\n')
-    // Trim trailing whitespace per line
-    .split('\n')
-    .map(line => line.trimEnd())
-    .join('\n')
-    .trim();
+  return (
+    text
+      // Replace multiple consecutive blank lines with single newline
+      .replace(/\n{3,}/g, '\n\n')
+      // Trim trailing whitespace per line
+      .split('\n')
+      .map((line) => line.trimEnd())
+      .join('\n')
+      .trim()
+  );
 }

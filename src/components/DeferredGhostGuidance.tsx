@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { memo } from 'react';
 import { GhostGuidanceBar } from './GhostGuidanceBar';
@@ -16,21 +16,16 @@ interface DeferredGhostGuidanceProps {
  * useDeferredValue による低優先度更新を受け取るため、
  * 入力中のメインスレッドをブロックしません。
  */
-export const DeferredGhostGuidance: React.FC<DeferredGhostGuidanceProps> = memo(({
-  content,
-  cursorPos,
-  onInsertSuggestion,
-}) => {
-  const ghostGuidance = analyzeGhostContext(content, cursorPos);
+export const DeferredGhostGuidance: React.FC<DeferredGhostGuidanceProps> = memo(
+  ({ content, cursorPos, onInsertSuggestion }) => {
+    const ghostGuidance = analyzeGhostContext(content, cursorPos);
 
-  return (
-    <div className="p-2.5 bg-neutral-900 border-t border-neutral-800">
-      <GhostGuidanceBar
-        guidance={ghostGuidance}
-        onInsertSuggestion={onInsertSuggestion}
-      />
-    </div>
-  );
-});
+    return (
+      <div className="border-t border-neutral-800 bg-neutral-900 p-2.5">
+        <GhostGuidanceBar guidance={ghostGuidance} onInsertSuggestion={onInsertSuggestion} />
+      </div>
+    );
+  },
+);
 
 DeferredGhostGuidance.displayName = 'DeferredGhostGuidance';

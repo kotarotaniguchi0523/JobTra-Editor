@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useMemo } from 'react';
 import { WorkspaceLayout } from './WorkspaceLayout';
@@ -53,9 +53,7 @@ export function PreviewPageClient({
         sidebarFooterSlot={sidebarFooterSlot}
         emptyDraftGuideSlot={emptyDraftGuideSlot}
       >
-        <div className="text-center py-16 text-neutral-400">
-          下書きが選択されていません。
-        </div>
+        <div className="py-16 text-center text-neutral-400">下書きが選択されていません。</div>
       </WorkspaceLayout>
     );
   }
@@ -70,7 +68,7 @@ export function PreviewPageClient({
       sidebarFooterSlot={sidebarFooterSlot}
       emptyDraftGuideSlot={emptyDraftGuideSlot}
     >
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="mx-auto max-w-4xl space-y-4">
         <DocumentPreview
           draft={activeDraft}
           charsNoWs={metrics.charsNoWhitespace}

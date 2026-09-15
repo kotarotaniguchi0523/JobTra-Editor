@@ -8,19 +8,19 @@ import { Sparkles, BookOpen } from 'lucide-react';
 export function HeaderBrand() {
   return (
     <div className="flex items-center gap-3 select-none">
-      <div className="w-8 h-8 rounded-md bg-neutral-900 flex items-center justify-center text-white font-mono font-bold text-sm tracking-wider shadow-2xs">
+      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-neutral-900 font-mono text-sm font-bold tracking-wider text-white shadow-2xs">
         ES
       </div>
       <div>
         <div className="flex items-center gap-2">
-          <span className="text-base font-bold text-neutral-900 tracking-tight">
+          <span className="text-base font-bold tracking-tight text-neutral-900">
             就活ESクラフト
           </span>
-          <span className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-neutral-100 text-neutral-600 border border-neutral-200">
+          <span className="hidden items-center gap-1 rounded border border-neutral-200 bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-600 sm:inline-flex">
             静的RSC
           </span>
         </div>
-        <p className="text-xs text-neutral-500 hidden sm:block">
+        <p className="hidden text-xs text-neutral-500 sm:block">
           思考をクリアにし、推敲を深めるエントリーシート執筆スタジオ
         </p>
       </div>
@@ -37,21 +37,21 @@ export function HeaderStaticLinks() {
     <div className="flex items-center gap-1.5 sm:gap-2">
       <a
         href="/about"
-        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer"
+        className="flex cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 sm:px-3"
         title="機能紹介・LPを見る（STAR法・削りツール・IndexedDB自動保存）"
         aria-label="機能紹介・LPを見る"
       >
-        <Sparkles className="w-4 h-4 text-amber-600" />
+        <Sparkles className="h-4 w-4 text-amber-600" />
         <span className="hidden md:inline">機能紹介</span>
       </a>
 
       <a
         href="/guide/star-method"
-        className="hidden lg:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md text-sm font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors cursor-pointer"
+        className="hidden cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 sm:px-3 lg:flex"
         title="STAR法・配分比率の推敲極意ガイド"
         aria-label="推敲の極意を見る"
       >
-        <BookOpen className="w-4 h-4 text-neutral-600" />
+        <BookOpen className="h-4 w-4 text-neutral-600" />
         <span>極意解説</span>
       </a>
     </div>

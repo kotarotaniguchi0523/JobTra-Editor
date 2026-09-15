@@ -1,7 +1,7 @@
 {
   "name": "react-example",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
+    "format:check": "oxfmt --check",
+    "format": "oxfmt",
     "test": "vitest run"
   },
   "dependencies": {
@@ -35,6 +37,7 @@
     "@types/react-dom": "19.3.0",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.28.2",
+    "oxfmt": "^0.68.0",
     "oxlint": "^1.82.0",
     "react-doctor": "^0.9.14",
     "tailwindcss": "^4.1.14",

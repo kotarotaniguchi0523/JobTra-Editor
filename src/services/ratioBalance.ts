@@ -108,8 +108,8 @@ export function calculateRatioBalance(text: string, targetCount = 400): RatioBal
     };
   };
 
-  const conclusion = evaluate('結論 (10%)', 0.10, conclusionChars);
-  const situation = evaluate('状況・課題 (20%)', 0.20, situationChars);
+  const conclusion = evaluate('結論 (10%)', 0.1, conclusionChars);
+  const situation = evaluate('状況・課題 (20%)', 0.2, situationChars);
   const action = evaluate('独自の工夫・行動 (45%)', 0.45, actionChars);
   const resultAndContribution = evaluate('成果・貢献 (25%)', 0.25, resultChars);
 
@@ -118,9 +118,11 @@ export function calculateRatioBalance(text: string, targetCount = 400): RatioBal
   if (charsNoWs === 0) {
     overallAdvice = 'まずは一文目の結論から書き始めましょう。';
   } else if (situation.status === 'long' && action.status === 'short') {
-    overallAdvice = '「状況や課題の説明」が長くなっています。状況を削り、自分自身の「工夫・行動」をもっと増やしましょう。';
+    overallAdvice =
+      '「状況や課題の説明」が長くなっています。状況を削り、自分自身の「工夫・行動」をもっと増やしましょう。';
   } else if (action.status === 'short') {
-    overallAdvice = '選考官が最も重視する「独自の工夫・行動」が少なめです。具体的な行動プロセスを厚くしましょう。';
+    overallAdvice =
+      '選考官が最も重視する「独自の工夫・行動」が少なめです。具体的な行動プロセスを厚くしましょう。';
   } else if (conclusion.status === 'long') {
     overallAdvice = '結論が長くなっています。一言で言い切る短い文に整えると伝わりやすくなります。';
   }

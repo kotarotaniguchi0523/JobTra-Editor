@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback, useEffectEvent } from 'react';
 
@@ -8,7 +8,7 @@ import { useState, useEffect, useCallback, useEffectEvent } from 'react';
 export function parseQueryParam<T extends string | number>(
   rawValue: string | null,
   defaultValue: T,
-  type: 'string' | 'number' = typeof defaultValue === 'number' ? 'number' : 'string'
+  type: 'string' | 'number' = typeof defaultValue === 'number' ? 'number' : 'string',
 ): T {
   if (rawValue === null || rawValue === '') return defaultValue;
   if (type === 'number') {
@@ -25,7 +25,7 @@ export function calculateNextSearchString<T extends string | number>(
   currentSearch: string,
   key: string,
   nextValue: T | null | '',
-  defaultValue: T
+  defaultValue: T,
 ): string {
   const params = new URLSearchParams(currentSearch);
   if (nextValue === null || nextValue === '' || nextValue === defaultValue) {
@@ -72,7 +72,7 @@ export function navigateToUrl(targetUrl: string): void {
 export function useUrlQueryState<T extends string | number>(
   key: string,
   defaultValue: T,
-  type: 'string' | 'number' = typeof defaultValue === 'number' ? 'number' : 'string'
+  type: 'string' | 'number' = typeof defaultValue === 'number' ? 'number' : 'string',
 ): [T, (nextVal: T | null | '') => void] {
   const [value, setValue] = useState<T>(() => {
     if (typeof window === 'undefined') return defaultValue;
@@ -107,20 +107,28 @@ export function useUrlQueryState<T extends string | number>(
     };
   }, []);
 
-  const setUrlValue = useCallback((nextVal: T | null | '') => {
-    const resolved = (nextVal === null || nextVal === '') ? defaultValue : nextVal;
-    setValue(resolved);
+  const setUrlValue = useCallback(
+    (nextVal: T | null | '') => {
+      const resolved = nextVal === null || nextVal === '' ? defaultValue : nextVal;
+      setValue(resolved);
 
-    if (typeof window !== 'undefined') {
-      try {
-        const nextSearch = calculateNextSearchString(window.location.search, key, nextVal, defaultValue);
-        const nextUrl = window.location.pathname + nextSearch + window.location.hash;
-        navigateToUrl(nextUrl);
-      } catch {
-        // Safe fail
+      if (typeof window !== 'undefined') {
+        try {
+          const nextSearch = calculateNextSearchString(
+            window.location.search,
+            key,
+            nextVal,
+            defaultValue,
+          );
+          const nextUrl = window.location.pathname + nextSearch + window.location.hash;
+          navigateToUrl(nextUrl);
+        } catch {
+          // Safe fail
+        }
       }
-    }
-  }, [key, defaultValue]);
+    },
+    [key, defaultValue],
+  );
 
   return [value, setUrlValue];
 }

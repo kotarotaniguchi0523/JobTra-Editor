@@ -10,8 +10,8 @@ import { PreviewPageClient } from '../../components/PreviewPageClient';
 
 function LoadingSpinner() {
   return (
-    <div className="p-8 text-center text-xs text-neutral-400 space-y-2">
-      <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-900 rounded-full animate-spin mx-auto" />
+    <div className="space-y-2 p-8 text-center text-xs text-neutral-400">
+      <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
       <p>ガイドを読み込み中...</p>
     </div>
   );
@@ -29,7 +29,9 @@ export default function PreviewPage() {
       sidebarFooterSlot={<SidebarFooter />}
       emptyDraftGuideSlot={<EmptyDraftGuide />}
       checklistSlot={
-        <Suspense fallback={<div className="p-4 text-xs text-neutral-400">チェックリスト読込中...</div>}>
+        <Suspense
+          fallback={<div className="p-4 text-xs text-neutral-400">チェックリスト読込中...</div>}
+        >
           {defer(<SubmissionChecklist />, { name: 'SubmissionChecklist' })}
         </Suspense>
       }

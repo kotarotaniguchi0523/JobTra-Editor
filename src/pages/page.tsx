@@ -9,8 +9,8 @@ import { WritePageClient } from '../components/WritePageClient';
 
 function LoadingSpinner() {
   return (
-    <div className="p-8 text-center text-xs text-neutral-400 space-y-2">
-      <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-900 rounded-full animate-spin mx-auto" />
+    <div className="space-y-2 p-8 text-center text-xs text-neutral-400">
+      <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
       <p>ガイドを読み込み中...</p>
     </div>
   );

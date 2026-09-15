@@ -1,11 +1,7 @@
 export default {
   // Funstack Static / Express full-stack architecture allowances
   ignore: {
-    files: [
-      'dist/**',
-      'tests/**',
-      '**/*.test.ts',
-    ],
+    files: ['dist/**', 'tests/**', '**/*.test.ts'],
   },
   rules: {
     // 1. レンダリング・アロケーション・JavaScript最適化（パフォーマンスの無駄を排除）
@@ -66,6 +62,3 @@ export default {
     'react-doctor/only-export-components': 'off',
   },
 };
-
-
-

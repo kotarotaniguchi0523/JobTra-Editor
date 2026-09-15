@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -87,7 +87,11 @@ export function DraftProvider({ children }: { children: ReactNode }) {
 
   // URLの id が変わったら activeDraftId も追従
   useEffect(() => {
-    if (currentUrlId && currentUrlId !== activeDraftId && drafts.some((d) => d.id === currentUrlId)) {
+    if (
+      currentUrlId &&
+      currentUrlId !== activeDraftId &&
+      drafts.some((d) => d.id === currentUrlId)
+    ) {
       startTransition(() => {
         setActiveDraftId(currentUrlId);
       });
@@ -95,31 +99,37 @@ export function DraftProvider({ children }: { children: ReactNode }) {
   }, [currentUrlId, activeDraftId, drafts]);
 
   // 下書き選択（URLクエリも更新）
-  const selectDraft = useCallback((id: string) => {
-    startTransition(() => {
-      setActiveDraftId(id);
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('id', id);
-        return next;
+  const selectDraft = useCallback(
+    (id: string) => {
+      startTransition(() => {
+        setActiveDraftId(id);
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('id', id);
+          return next;
+        });
       });
-    });
-  }, [setSearchParams]);
+    },
+    [setSearchParams],
+  );
 
   // 下書き新規作成
-  const createDraft = useCallback(async (category: ESQuestionCategory = 'gakuchika') => {
-    const newDraft = await storage.createDefaultDraft(category);
-    startTransition(() => {
-      setDrafts((prev) => [newDraft, ...prev]);
-      setActiveDraftId(newDraft.id);
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('id', newDraft.id);
-        return next;
+  const createDraft = useCallback(
+    async (category: ESQuestionCategory = 'gakuchika') => {
+      const newDraft = await storage.createDefaultDraft(category);
+      startTransition(() => {
+        setDrafts((prev) => [newDraft, ...prev]);
+        setActiveDraftId(newDraft.id);
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('id', newDraft.id);
+          return next;
+        });
       });
-    });
-    return newDraft.id;
-  }, [setSearchParams]);
+      return newDraft.id;
+    },
+    [setSearchParams],
+  );
 
   // 下書き更新（デバウンス保存または即時保存）
   const updateDraft = useCallback((updated: ESDraft, immediate: boolean = false) => {
@@ -165,57 +175,66 @@ export function DraftProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // 下書き削除
-  const deleteDraft = useCallback(async (id: string) => {
-    await storage.deleteDraft(id);
-    const filtered = drafts.filter((d) => d.id !== id);
-    let nextId = activeDraftId;
-    if (activeDraftId === id && filtered.length > 0) {
-      nextId = filtered[0].id;
-    }
-
-    startTransition(() => {
-      setDrafts(filtered);
-      if (nextId !== activeDraftId) {
-        setActiveDraftId(nextId);
-        setSearchParams((searchPrev) => {
-          const next = new URLSearchParams(searchPrev);
-          next.set('id', nextId);
-          return next;
-        });
+  const deleteDraft = useCallback(
+    async (id: string) => {
+      await storage.deleteDraft(id);
+      const filtered = drafts.filter((d) => d.id !== id);
+      let nextId = activeDraftId;
+      if (activeDraftId === id && filtered.length > 0) {
+        nextId = filtered[0].id;
       }
-    });
-  }, [activeDraftId, drafts, setSearchParams]);
+
+      startTransition(() => {
+        setDrafts(filtered);
+        if (nextId !== activeDraftId) {
+          setActiveDraftId(nextId);
+          setSearchParams((searchPrev) => {
+            const next = new URLSearchParams(searchPrev);
+            next.set('id', nextId);
+            return next;
+          });
+        }
+      });
+    },
+    [activeDraftId, drafts, setSearchParams],
+  );
 
   // 下書き複製
-  const duplicateDraft = useCallback(async (id: string) => {
-    const target = drafts.find((d) => d.id === id);
-    if (!target) return id;
-    const duplicated = await storage.duplicateDraft(target);
-    if (!duplicated) return id;
+  const duplicateDraft = useCallback(
+    async (id: string) => {
+      const target = drafts.find((d) => d.id === id);
+      if (!target) return id;
+      const duplicated = await storage.duplicateDraft(target);
+      if (!duplicated) return id;
 
-    startTransition(() => {
-      setDrafts((prev) => [duplicated, ...prev]);
-      setActiveDraftId(duplicated.id);
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('id', duplicated.id);
-        return next;
+      startTransition(() => {
+        setDrafts((prev) => [duplicated, ...prev]);
+        setActiveDraftId(duplicated.id);
+        setSearchParams((prev) => {
+          const next = new URLSearchParams(prev);
+          next.set('id', duplicated.id);
+          return next;
+        });
       });
-    });
-    return duplicated.id;
-  }, [drafts, setSearchParams]);
+      return duplicated.id;
+    },
+    [drafts, setSearchParams],
+  );
 
   // スター切り替え
-  const toggleStar = useCallback((id: string) => {
-    const target = drafts.find((d) => d.id === id);
-    if (!target) return;
-    const updated = { ...target, starred: !target.starred, updatedAt: Date.now() };
+  const toggleStar = useCallback(
+    (id: string) => {
+      const target = drafts.find((d) => d.id === id);
+      if (!target) return;
+      const updated = { ...target, starred: !target.starred, updatedAt: Date.now() };
 
-    startTransition(() => {
-      setDrafts((prev) => prev.map((d) => (d.id === id ? updated : d)));
-    });
-    storage.saveDraft(updated);
-  }, [drafts]);
+      startTransition(() => {
+        setDrafts((prev) => prev.map((d) => (d.id === id ? updated : d)));
+      });
+      storage.saveDraft(updated);
+    },
+    [drafts],
+  );
 
   // スナップショット保存
   const createSnapshot = useCallback(async (id: string, label: string) => {
@@ -228,54 +247,60 @@ export function DraftProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // スナップショット復元
-  const restoreSnapshot = useCallback(async (id: string, snapshot: DraftSnapshot) => {
-    const target = drafts.find((d) => d.id === id);
-    if (!target) return;
-    const updated: ESDraft = {
-      ...target,
-      content: snapshot.content,
-      updatedAt: Date.now(),
-    };
-    await storage.saveDraft(updated);
-    startTransition(() => {
-      setDrafts((prev) => prev.map((d) => (d.id === id ? updated : d)));
-    });
-  }, [drafts]);
+  const restoreSnapshot = useCallback(
+    async (id: string, snapshot: DraftSnapshot) => {
+      const target = drafts.find((d) => d.id === id);
+      if (!target) return;
+      const updated: ESDraft = {
+        ...target,
+        content: snapshot.content,
+        updatedAt: Date.now(),
+      };
+      await storage.saveDraft(updated);
+      startTransition(() => {
+        setDrafts((prev) => prev.map((d) => (d.id === id ? updated : d)));
+      });
+    },
+    [drafts],
+  );
 
   const activeDraft = useMemo(() => {
     return drafts.find((d) => d.id === activeDraftId) || (drafts.length > 0 ? drafts[0] : null);
   }, [drafts, activeDraftId]);
 
-  const value = useMemo<DraftContextType>(() => ({
-    drafts,
-    activeDraftId,
-    activeDraft,
-    isLoading,
-    isSaving: saveStatus === 'saving',
-    saveStatus,
-    selectDraft,
-    createDraft,
-    updateDraft,
-    deleteDraft,
-    duplicateDraft,
-    toggleStar,
-    createSnapshot,
-    restoreSnapshot,
-  }), [
-    drafts,
-    activeDraftId,
-    activeDraft,
-    isLoading,
-    saveStatus,
-    selectDraft,
-    createDraft,
-    updateDraft,
-    deleteDraft,
-    duplicateDraft,
-    toggleStar,
-    createSnapshot,
-    restoreSnapshot,
-  ]);
+  const value = useMemo<DraftContextType>(
+    () => ({
+      drafts,
+      activeDraftId,
+      activeDraft,
+      isLoading,
+      isSaving: saveStatus === 'saving',
+      saveStatus,
+      selectDraft,
+      createDraft,
+      updateDraft,
+      deleteDraft,
+      duplicateDraft,
+      toggleStar,
+      createSnapshot,
+      restoreSnapshot,
+    }),
+    [
+      drafts,
+      activeDraftId,
+      activeDraft,
+      isLoading,
+      saveStatus,
+      selectDraft,
+      createDraft,
+      updateDraft,
+      deleteDraft,
+      duplicateDraft,
+      toggleStar,
+      createSnapshot,
+      restoreSnapshot,
+    ],
+  );
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;
 }

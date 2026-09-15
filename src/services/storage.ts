@@ -31,7 +31,7 @@ const INITIAL_SAMPLE_DRAFTS: ESDraft[] = [
     updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
     tags: ['自己PR', '分析力', '実行力'],
     starred: false,
-  }
+  },
 ];
 
 class IndexedDbStorage {
@@ -150,7 +150,7 @@ class IndexedDbStorage {
       });
     } catch {
       const drafts = this.getLocalStorageDrafts();
-      return drafts.find(d => d.id === id) || null;
+      return drafts.find((d) => d.id === id) || null;
     }
   }
 
@@ -177,7 +177,7 @@ class IndexedDbStorage {
       });
     } catch {
       const drafts = this.getLocalStorageDrafts();
-      const index = drafts.findIndex(d => d.id === draftToSave.id);
+      const index = drafts.findIndex((d) => d.id === draftToSave.id);
       if (index >= 0) {
         drafts[index] = draftToSave;
       } else {
@@ -204,7 +204,7 @@ class IndexedDbStorage {
         };
       });
     } catch {
-      const drafts = this.getLocalStorageDrafts().filter(d => d.id !== id);
+      const drafts = this.getLocalStorageDrafts().filter((d) => d.id !== id);
       this.saveLocalStorageDrafts(drafts);
     }
   }

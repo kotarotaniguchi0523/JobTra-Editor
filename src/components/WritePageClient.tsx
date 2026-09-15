@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useDeferredValue, useMemo, lazy, Suspense } from 'react';
 import { WorkspaceLayout } from './WorkspaceLayout';
@@ -7,11 +7,16 @@ import { RatioBalanceMeter } from './RatioBalanceMeter';
 import { useDrafts } from '../context/DraftContext';
 import { calculateMetrics } from '../services/analyzer';
 import { calculateRatioBalance } from '../services/ratioBalance';
-import { detectRedundancies, applySculpt, applyAllSculpts, RedundancyMatch } from '../services/sculptor';
+import {
+  detectRedundancies,
+  applySculpt,
+  applyAllSculpts,
+  RedundancyMatch,
+} from '../services/sculptor';
 
 // 削りツールバーは必要な時だけ遅延読み込み
 const LazyChiselToolbar = lazy(() =>
-  import('./ChiselToolbar').then((m) => ({ default: m.ChiselToolbar }))
+  import('./ChiselToolbar').then((m) => ({ default: m.ChiselToolbar })),
 );
 
 interface WritePageClientProps {
@@ -113,13 +118,13 @@ export function WritePageClient({
       sidebarFooterSlot={sidebarFooterSlot}
       emptyDraftGuideSlot={emptyDraftGuideSlot}
     >
-      <div className="max-w-4xl mx-auto space-y-3">
+      <div className="mx-auto max-w-4xl space-y-3">
         {/* 1. 漢字・ひらがな黄金比率メーター */}
         <RatioBalanceMeter balance={ratioBalance} />
 
         {/* 2. 削りツールバー（候補があるときだけ遅延読み込みで表示） */}
         {redundancyMatches.length > 0 && (
-          <Suspense fallback={<div className="h-10 bg-amber-50/50 rounded animate-pulse" />}>
+          <Suspense fallback={<div className="h-10 animate-pulse rounded bg-amber-50/50" />}>
             <LazyChiselToolbar
               matches={redundancyMatches}
               onApplyOne={handleApplyOneChisel}

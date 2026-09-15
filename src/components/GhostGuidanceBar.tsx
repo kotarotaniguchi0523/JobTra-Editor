@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Compass, CornerDownLeft } from 'lucide-react';
@@ -14,23 +14,19 @@ export const GhostGuidanceBar: React.FC<GhostGuidanceBarProps> = ({
   onInsertSuggestion,
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3.5 py-2.5 bg-neutral-900 text-neutral-100 rounded-md shadow-xs">
-      <div className="flex items-start sm:items-center gap-2.5 min-w-0">
-        <div className="w-6 h-6 rounded bg-neutral-800 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
-          <Compass className="w-4 h-4 text-sky-400" />
+    <div className="flex flex-col justify-between gap-2.5 rounded-md bg-neutral-900 px-3.5 py-2.5 text-neutral-100 shadow-xs sm:flex-row sm:items-center">
+      <div className="flex min-w-0 items-start gap-2.5 sm:items-center">
+        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded bg-neutral-800 sm:mt-0">
+          <Compass className="h-4 w-4 text-sky-400" />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-sky-300 text-xs tracking-wide">
+            <span className="text-xs font-semibold tracking-wide text-sky-300">
               {guidance.phaseLabel}
             </span>
-            <span className="text-neutral-400 text-xs hidden md:inline">
-              思考の伴走ガイド
-            </span>
+            <span className="hidden text-xs text-neutral-400 md:inline">思考の伴走ガイド</span>
           </div>
-          <p className="text-neutral-200 text-sm truncate font-sans">
-            {guidance.question}
-          </p>
+          <p className="truncate font-sans text-sm text-neutral-200">{guidance.question}</p>
         </div>
       </div>
 
@@ -39,16 +35,16 @@ export const GhostGuidanceBar: React.FC<GhostGuidanceBarProps> = ({
         onClick={() => {
           onInsertSuggestion(guidance.tabSuggestion);
         }}
-        className="flex items-center gap-2 px-3 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white rounded border border-neutral-700 transition-colors cursor-pointer shrink-0 text-xs self-start sm:self-center"
+        className="flex shrink-0 cursor-pointer items-center gap-2 self-start rounded border border-neutral-700 bg-neutral-800 px-3 py-1.5 text-xs text-neutral-200 transition-colors hover:bg-neutral-700 hover:text-white sm:self-center"
         title="接続フレーズをエディタに挿入します（Tabキーでも挿入可能）"
       >
-        <span className="font-mono text-xs bg-neutral-900 px-1.5 py-0.5 rounded border border-neutral-700 text-sky-300 font-bold">
+        <span className="rounded border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 font-mono text-xs font-bold text-sky-300">
           Tab
         </span>
-        <span className="truncate max-w-[180px] sm:max-w-[240px]">
+        <span className="max-w-[180px] truncate sm:max-w-[240px]">
           「{guidance.tabSuggestion}」を挿入
         </span>
-        <CornerDownLeft className="w-3.5 h-3.5 text-neutral-400" />
+        <CornerDownLeft className="h-3.5 w-3.5 text-neutral-400" />
       </button>
     </div>
   );

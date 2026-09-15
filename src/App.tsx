@@ -12,8 +12,8 @@ import { ClientApp } from './components/ClientApp';
 
 function LoadingSpinner() {
   return (
-    <div className="p-8 text-center text-xs text-neutral-400 space-y-2">
-      <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-900 rounded-full animate-spin mx-auto" />
+    <div className="space-y-2 p-8 text-center text-xs text-neutral-400">
+      <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
       <p>ES推敲ハンドブックを読み込み中...</p>
     </div>
   );
@@ -21,7 +21,7 @@ function LoadingSpinner() {
 
 export default function App() {
   return (
-    <div className="min-h-full flex flex-col bg-neutral-50 text-neutral-900 font-sans antialiased">
+    <div className="flex min-h-full flex-col bg-neutral-50 font-sans text-neutral-900 antialiased">
       <ClientApp
         brandSlot={<HeaderBrand />}
         linksSlot={<HeaderStaticLinks />}

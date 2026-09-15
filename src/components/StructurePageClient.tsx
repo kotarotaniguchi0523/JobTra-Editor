@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useCallback } from 'react';
 import { WorkspaceLayout } from './WorkspaceLayout';
@@ -39,19 +39,22 @@ export function StructurePageClient({
   const [hasUnapplied, setHasUnapplied] = useState(false);
 
   // 各ブロックの変更
-  const handleBlockChange = useCallback((field: keyof StarBlocks, value: string) => {
-    if (!activeDraft) return;
-    const nextBlocks = {
-      ...(activeDraft.starBlocks || DEFAULT_STAR_BLOCKS),
-      [field]: value,
-    };
-    setHasUnapplied(true);
-    updateDraft({
-      ...activeDraft,
-      starBlocks: nextBlocks,
-      updatedAt: Date.now(),
-    });
-  }, [activeDraft, updateDraft]);
+  const handleBlockChange = useCallback(
+    (field: keyof StarBlocks, value: string) => {
+      if (!activeDraft) return;
+      const nextBlocks = {
+        ...(activeDraft.starBlocks || DEFAULT_STAR_BLOCKS),
+        [field]: value,
+      };
+      setHasUnapplied(true);
+      updateDraft({
+        ...activeDraft,
+        starBlocks: nextBlocks,
+        updatedAt: Date.now(),
+      });
+    },
+    [activeDraft, updateDraft],
+  );
 
   // ブロックから本文を合成して反映
   const handleApplyBlocksToContent = useCallback(() => {
@@ -73,7 +76,7 @@ export function StructurePageClient({
         isBlockMode: false,
         updatedAt: Date.now(),
       },
-      true
+      true,
     );
     setHasUnapplied(false);
   }, [activeDraft, updateDraft]);
@@ -101,7 +104,7 @@ export function StructurePageClient({
       sidebarFooterSlot={sidebarFooterSlot}
       emptyDraftGuideSlot={emptyDraftGuideSlot}
     >
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="mx-auto max-w-4xl space-y-4">
         <StarStructureEditor
           currentStarBlocks={blocks}
           onBlockChange={handleBlockChange}

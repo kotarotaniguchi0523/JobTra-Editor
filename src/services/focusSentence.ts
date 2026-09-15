@@ -29,7 +29,8 @@ export function extractFocusSentence(text: string, cursorPos: number): SentenceF
   const clampedPos = Math.max(0, Math.min(cursorPos, text.length));
 
   // 文境界デリミタ: 。 ！？ \n
-  const isDelimiter = (char: string) => char === '。' || char === '！' || char === '？' || char === '\n';
+  const isDelimiter = (char: string) =>
+    char === '。' || char === '！' || char === '？' || char === '\n';
 
   // 1. カーソルより前の直近の文境界を探す（開始位置）
   let start = 0;
@@ -54,7 +55,7 @@ export function extractFocusSentence(text: string, cursorPos: number): SentenceF
   const afterText = text.slice(end);
 
   // 全体の文数をカウント
-  const sentences = text.split(/(?<=[。！？\n])/).filter(s => s.length > 0);
+  const sentences = text.split(/(?<=[。！？\n])/).filter((s) => s.length > 0);
   const totalSentences = Math.max(1, sentences.length);
 
   // 現在の文インデックス

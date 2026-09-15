@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  detectRedundancies,
-  applySculpt,
-  applyAllSculpts,
-} from '../src/services/sculptor';
+import { detectRedundancies, applySculpt, applyAllSculpts } from '../src/services/sculptor';
 
 describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => {
   describe('detectRedundancies', () => {
@@ -20,8 +16,7 @@ describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => 
 
     it('冗長表現が含まれる場合、正確に検出して削減文字数を算出すること', () => {
       // Arrange
-      const input =
-        '私自身の強みといたしましては、目標達成に向けてチームを牽引することです。';
+      const input = '私自身の強みといたしましては、目標達成に向けてチームを牽引することです。';
 
       // Act
       const result = detectRedundancies(input);
@@ -31,7 +26,7 @@ describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => 
       expect(result[0].original).toBe('私自身の強みといたしましては');
       expect(result[0].suggested).toBe('私の強みは');
       expect(result[0].charsSaved).toBe(
-        '私自身の強みといたしましては'.length - '私の強みは'.length
+        '私自身の強みといたしましては'.length - '私の強みは'.length,
       );
       expect(result[0].charsSaved).toBe(9);
     });
@@ -56,8 +51,7 @@ describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => 
   describe('applySculpt', () => {
     it('指定された特定の1つの冗長表現のみをきれいに置換すること', () => {
       // Arrange
-      const text =
-        'この経験を通じて貢献することができると考えております。以上です。';
+      const text = 'この経験を通じて貢献することができると考えております。以上です。';
       const matches = detectRedundancies(text);
       expect(matches.length).toBeGreaterThan(0);
 
@@ -65,9 +59,7 @@ describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => 
       const sculptResult = applySculpt(text, matches[0]);
 
       // Assert
-      expect(sculptResult).toBe(
-        'この経験を通じて貢献できると考えます。以上です。'
-      );
+      expect(sculptResult).toBe('この経験を通じて貢献できると考えます。以上です。');
       expect(sculptResult.length).toBeLessThan(text.length);
     });
   });
@@ -93,8 +85,7 @@ describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => 
 
     it('冗長表現が一切ない締まった文章の場合、元の文章をそのまま維持すること', () => {
       // Arrange
-      const cleanText =
-        '私の強みは課題解決力です。新人離職率を10%低減させました。';
+      const cleanText = '私の強みは課題解決力です。新人離職率を10%低減させました。';
 
       // Act
       const { newText, charsSaved, appliedCount } = applyAllSculpts(cleanText);
