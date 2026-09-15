@@ -4,6 +4,7 @@ import { ESHandbook } from '../components/server/ESHandbook';
 import { AuditGuidelines } from '../components/server/AuditGuidelines';
 import { SidebarFooter } from '../components/server/SidebarFooter';
 import { EmptyDraftGuide } from '../components/server/EmptyDraftGuide';
+import { HeaderBrand, HeaderStaticLinks } from '../components/server/HeaderBrand';
 import { WritePageClient } from '../components/WritePageClient';
 
 function LoadingSpinner() {
@@ -22,6 +23,8 @@ function LoadingSpinner() {
 export default function HomePage() {
   return (
     <WritePageClient
+      brandSlot={<HeaderBrand />}
+      linksSlot={<HeaderStaticLinks />}
       sidebarFooterSlot={<SidebarFooter />}
       emptyDraftGuideSlot={<EmptyDraftGuide />}
       guidelinesSlot={

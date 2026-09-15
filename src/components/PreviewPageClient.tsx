@@ -8,6 +8,8 @@ import { calculateMetrics } from '../services/analyzer';
 import { DraftSnapshot } from '../types';
 
 interface PreviewPageClientProps {
+  brandSlot?: React.ReactNode;
+  linksSlot?: React.ReactNode;
   handbookSlot?: React.ReactNode;
   guidelinesSlot?: React.ReactNode;
   sidebarFooterSlot?: React.ReactNode;
@@ -16,6 +18,8 @@ interface PreviewPageClientProps {
 }
 
 export function PreviewPageClient({
+  brandSlot,
+  linksSlot,
   handbookSlot,
   guidelinesSlot,
   sidebarFooterSlot,
@@ -42,6 +46,8 @@ export function PreviewPageClient({
     return (
       <WorkspaceLayout
         activeMode="preview"
+        brandSlot={brandSlot}
+        linksSlot={linksSlot}
         handbookSlot={handbookSlot}
         guidelinesSlot={guidelinesSlot}
         sidebarFooterSlot={sidebarFooterSlot}
@@ -57,6 +63,8 @@ export function PreviewPageClient({
   return (
     <WorkspaceLayout
       activeMode="preview"
+      brandSlot={brandSlot}
+      linksSlot={linksSlot}
       handbookSlot={handbookSlot}
       guidelinesSlot={guidelinesSlot}
       sidebarFooterSlot={sidebarFooterSlot}

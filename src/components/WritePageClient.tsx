@@ -15,6 +15,8 @@ const LazyChiselToolbar = lazy(() =>
 );
 
 interface WritePageClientProps {
+  brandSlot?: React.ReactNode;
+  linksSlot?: React.ReactNode;
   handbookSlot?: React.ReactNode;
   guidelinesSlot?: React.ReactNode;
   sidebarFooterSlot?: React.ReactNode;
@@ -22,6 +24,8 @@ interface WritePageClientProps {
 }
 
 export function WritePageClient({
+  brandSlot,
+  linksSlot,
   handbookSlot,
   guidelinesSlot,
   sidebarFooterSlot,
@@ -102,6 +106,8 @@ export function WritePageClient({
   return (
     <WorkspaceLayout
       activeMode="write"
+      brandSlot={brandSlot}
+      linksSlot={linksSlot}
       handbookSlot={handbookSlot}
       guidelinesSlot={guidelinesSlot}
       sidebarFooterSlot={sidebarFooterSlot}

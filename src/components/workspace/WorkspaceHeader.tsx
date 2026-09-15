@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 
 interface WorkspaceHeaderProps {
+  brandSlot?: React.ReactNode;
+  linksSlot?: React.ReactNode;
   onOpenSidebar: () => void;
   isPending: boolean;
   isSaving: boolean;
@@ -23,6 +25,8 @@ interface WorkspaceHeaderProps {
 }
 
 export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(({
+  brandSlot,
+  linksSlot,
   onOpenSidebar,
   isPending,
   isSaving,
@@ -48,26 +52,28 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(({
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-2.5">
-          <a href="/" className="flex items-center gap-2.5 text-inherit no-underline">
-            <div className="w-8 h-8 rounded-md bg-neutral-900 flex items-center justify-center text-white font-mono font-bold text-sm tracking-wider">
-              ES
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-bold text-neutral-900 tracking-tight">
-                  就活ESクラフト
-                </h1>
-                {isPending && (
-                  <span className="flex items-center gap-1 text-xs text-neutral-400 font-medium animate-pulse">
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    同期中
-                  </span>
-                )}
+        {brandSlot || (
+          <div className="flex items-center gap-2.5">
+            <a href="/" className="flex items-center gap-2.5 text-inherit no-underline">
+              <div className="w-8 h-8 rounded-md bg-neutral-900 flex items-center justify-center text-white font-mono font-bold text-sm tracking-wider">
+                ES
               </div>
-            </div>
-          </a>
-        </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-bold text-neutral-900 tracking-tight">
+                    就活ESクラフト
+                  </h1>
+                  {isPending && (
+                    <span className="flex items-center gap-1 text-xs text-neutral-400 font-medium animate-pulse">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      同期中
+                    </span>
+                  )}
+                </div>
+              </div>
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="flex items-center gap-2">
@@ -86,16 +92,18 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(({
           )}
         </div>
 
-        {/* 機能紹介リンク */}
-        <a
-          id="header-lp-link"
-          href="/about"
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors"
-          title="機能紹介・LPを見る"
-        >
-          <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-          <span>機能紹介</span>
-        </a>
+        {/* 静的リンクスロット (RSC) */}
+        {linksSlot || (
+          <a
+            id="header-lp-link"
+            href="/about"
+            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-neutral-700 bg-neutral-100 hover:bg-neutral-200 transition-colors"
+            title="機能紹介・LPを見る"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+            <span>機能紹介</span>
+          </a>
+        )}
 
         {/* 推敲ハンドブック */}
         <button

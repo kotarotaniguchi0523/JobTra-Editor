@@ -5,6 +5,7 @@ import { AuditGuidelines } from '../../components/server/AuditGuidelines';
 import { SidebarFooter } from '../../components/server/SidebarFooter';
 import { EmptyDraftGuide } from '../../components/server/EmptyDraftGuide';
 import { SubmissionChecklist } from '../../components/server/SubmissionChecklist';
+import { HeaderBrand, HeaderStaticLinks } from '../../components/server/HeaderBrand';
 import { PreviewPageClient } from '../../components/PreviewPageClient';
 
 function LoadingSpinner() {
@@ -23,6 +24,8 @@ function LoadingSpinner() {
 export default function PreviewPage() {
   return (
     <PreviewPageClient
+      brandSlot={<HeaderBrand />}
+      linksSlot={<HeaderStaticLinks />}
       sidebarFooterSlot={<SidebarFooter />}
       emptyDraftGuideSlot={<EmptyDraftGuide />}
       checklistSlot={

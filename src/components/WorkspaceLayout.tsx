@@ -21,6 +21,8 @@ const LazyHandbookModal = lazy(() =>
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
   activeMode: 'write' | 'structure' | 'preview';
+  brandSlot?: React.ReactNode;
+  linksSlot?: React.ReactNode;
   handbookSlot?: React.ReactNode;
   guidelinesSlot?: React.ReactNode;
   sidebarFooterSlot?: React.ReactNode;
@@ -30,6 +32,8 @@ interface WorkspaceLayoutProps {
 export function WorkspaceLayout({
   children,
   activeMode,
+  brandSlot,
+  linksSlot,
   handbookSlot,
   guidelinesSlot,
   sidebarFooterSlot,
@@ -111,6 +115,8 @@ export function WorkspaceLayout({
       {/* 2. メイン領域 */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <WorkspaceHeader
+          brandSlot={brandSlot}
+          linksSlot={linksSlot}
           onOpenSidebar={() => setIsSidebarOpen(true)}
           isPending={isPending}
           isSaving={isSaving}

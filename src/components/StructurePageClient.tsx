@@ -7,6 +7,8 @@ import { useDrafts } from '../context/DraftContext';
 import { StarBlocks } from '../types';
 
 interface StructurePageClientProps {
+  brandSlot?: React.ReactNode;
+  linksSlot?: React.ReactNode;
   handbookSlot?: React.ReactNode;
   guidelinesSlot?: React.ReactNode;
   sidebarFooterSlot?: React.ReactNode;
@@ -23,6 +25,8 @@ const DEFAULT_STAR_BLOCKS: StarBlocks = {
 };
 
 export function StructurePageClient({
+  brandSlot,
+  linksSlot,
   handbookSlot,
   guidelinesSlot,
   sidebarFooterSlot,
@@ -90,6 +94,8 @@ export function StructurePageClient({
   return (
     <WorkspaceLayout
       activeMode="structure"
+      brandSlot={brandSlot}
+      linksSlot={linksSlot}
       handbookSlot={handbookSlot}
       guidelinesSlot={guidelinesSlot}
       sidebarFooterSlot={sidebarFooterSlot}

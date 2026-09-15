@@ -5,6 +5,7 @@ import { AuditGuidelines } from '../../components/server/AuditGuidelines';
 import { SidebarFooter } from '../../components/server/SidebarFooter';
 import { EmptyDraftGuide } from '../../components/server/EmptyDraftGuide';
 import { StarMethodGuide } from '../../components/server/StarMethodGuide';
+import { HeaderBrand, HeaderStaticLinks } from '../../components/server/HeaderBrand';
 import { StructurePageClient } from '../../components/StructurePageClient';
 
 function LoadingSpinner() {
@@ -23,6 +24,8 @@ function LoadingSpinner() {
 export default function StructurePage() {
   return (
     <StructurePageClient
+      brandSlot={<HeaderBrand />}
+      linksSlot={<HeaderStaticLinks />}
       sidebarFooterSlot={<SidebarFooter />}
       emptyDraftGuideSlot={<EmptyDraftGuide />}
       starGuideSlot={
