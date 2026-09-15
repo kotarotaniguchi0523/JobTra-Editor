@@ -35,13 +35,13 @@ export const GhostGuidanceBar: React.FC<GhostGuidanceBarProps> = ({
         onClick={() => {
           onInsertSuggestion(guidance.tabSuggestion);
         }}
-        className="flex shrink-0 cursor-pointer items-center gap-2 self-start rounded border border-neutral-700 bg-neutral-800 px-3 py-1.5 text-xs text-neutral-200 transition-colors hover:bg-neutral-700 hover:text-white sm:self-center"
+        className="flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 rounded border border-neutral-700 bg-neutral-800 px-3 py-2 text-xs text-neutral-200 transition-colors hover:bg-neutral-700 hover:text-white sm:w-auto sm:self-center sm:py-1.5"
         title="接続フレーズをエディタに挿入します（Tabキーでも挿入可能）"
       >
         <span className="rounded border border-neutral-700 bg-neutral-900 px-1.5 py-0.5 font-mono text-xs font-bold text-sky-300">
           Tab
         </span>
-        <span className="max-w-[180px] truncate sm:max-w-[240px]">
+        <span className="max-w-[200px] truncate sm:max-w-[240px]">
           「{guidance.tabSuggestion}」を挿入
         </span>
         <CornerDownLeft className="h-3.5 w-3.5 text-neutral-400" />

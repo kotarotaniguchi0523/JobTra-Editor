@@ -5,7 +5,7 @@ export const AboutHero: React.FC = () => {
   return (
     <section className="mx-auto max-w-4xl space-y-6 px-4 py-14 text-center sm:px-6 sm:py-20">
       <div className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700 shadow-2xs">
-        <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+        <span className="h-2 w-2 rounded-full bg-emerald-500" />
         <span>就活生のためのローカルファーストES推敲スタジオ</span>
       </div>
 

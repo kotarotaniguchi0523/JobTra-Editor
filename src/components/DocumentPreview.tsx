@@ -46,33 +46,33 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
     return (
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-12">
         {/* Formatted Clean Document */}
-        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-6 shadow-xs sm:p-8 lg:col-span-8">
-          <div className="mb-5 flex items-center justify-between border-b border-neutral-100 pb-3.5">
+        <div className="flex flex-col rounded-lg border border-neutral-200 bg-white p-4 shadow-xs sm:p-8 lg:col-span-8">
+          <div className="mb-5 flex flex-col gap-2 border-b border-neutral-100 pb-3.5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <span className="text-xs font-medium text-neutral-400 uppercase">
                 {draft.companyName ? `${draft.companyName} 提出用` : '提出用プレビュー'}
               </span>
-              <h3 className="mt-0.5 text-xl font-bold text-neutral-900">
+              <h3 className="mt-0.5 text-lg font-bold text-neutral-900 sm:text-xl">
                 {draft.title || '無題のエントリーシート'}
               </h3>
             </div>
-            <span className="rounded bg-neutral-100 px-2.5 py-1 font-mono text-sm font-medium text-neutral-600">
+            <span className="self-start rounded bg-neutral-100 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600 sm:self-center sm:text-sm">
               {charsNoWs} 文字 / 目標 {currentTarget} 文字
             </span>
           </div>
 
-          <div className="flex-1 font-sans text-lg leading-[1.75] tracking-wide whitespace-pre-wrap text-neutral-900 select-text sm:text-xl">
+          <div className="flex-1 font-sans text-base leading-[1.75] tracking-wide whitespace-pre-wrap text-neutral-900 select-text sm:text-xl">
             {draft.content || (
               <span className="text-neutral-400 italic">本文が入力されていません。</span>
             )}
           </div>
 
           {/* SPA Quick Navigation Bar */}
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 pt-4 text-xs">
+          <div className="mt-6 flex flex-col gap-3 border-t border-neutral-100 pt-4 text-xs sm:flex-row sm:items-center sm:justify-between">
             <span className="text-neutral-400">
               内容を修正・再推敲する場合はエディタへ移動してください
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <a
                 href={`/structure?id=${draft.id}`}
                 className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 font-medium text-neutral-700 no-underline transition-colors hover:bg-neutral-50"
@@ -137,7 +137,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
                 placeholder="例: 面談前フィードバック反映版"
                 aria-label="バージョンのラベル名"
                 autoFocus
-                className="w-full rounded border border-neutral-300 bg-white px-2.5 py-1.5 text-xs text-neutral-800 focus:border-neutral-900 focus:outline-hidden"
+                className="w-full rounded border border-neutral-300 bg-white px-2.5 py-1.5 text-sm text-neutral-800 focus:border-neutral-900 focus:outline-hidden"
               />
               <div className="flex justify-end gap-2">
                 <button

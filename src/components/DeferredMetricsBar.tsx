@@ -29,17 +29,19 @@ export const DeferredMetricsBar: React.FC<DeferredMetricsBarProps> = memo(
     return (
       <div className="flex flex-wrap items-center justify-between gap-2.5 rounded-lg border border-neutral-200 bg-white p-2.5 shadow-xs sm:px-4">
         {/* Main Character Gauge */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div>
             <div className="flex items-baseline gap-1.5">
               <span
-                className={`font-mono text-3xl font-bold tracking-tight ${
+                className={`font-mono text-2xl font-bold tracking-tight sm:text-3xl ${
                   isTargetFit ? 'text-emerald-700' : isOver ? 'text-rose-600' : 'text-neutral-900'
                 }`}
               >
                 {charsNoWs}
               </span>
-              <span className="font-mono text-sm text-neutral-500">/ {currentTarget} 字</span>
+              <span className="font-mono text-xs text-neutral-500 sm:text-sm">
+                / {currentTarget} 字
+              </span>
             </div>
             <div className="text-xs text-neutral-500">
               {isTargetFit ? (

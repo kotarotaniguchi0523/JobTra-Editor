@@ -7,20 +7,20 @@ import { Sparkles, BookOpen } from 'lucide-react';
  */
 export function HeaderBrand() {
   return (
-    <div className="flex items-center gap-3 select-none">
-      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-neutral-900 font-mono text-sm font-bold tracking-wider text-white shadow-2xs">
+    <div className="flex min-w-0 items-center gap-2.5 select-none sm:gap-3">
+      <div className="flex h-7.5 w-7.5 shrink-0 items-center justify-center rounded-md bg-neutral-900 font-mono text-xs font-bold tracking-wider text-white shadow-2xs sm:h-8 sm:w-8 sm:text-sm">
         ES
       </div>
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="text-base font-bold tracking-tight text-neutral-900">
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="truncate text-sm font-bold tracking-tight text-neutral-900 sm:text-base">
             就活ESクラフト
           </span>
-          <span className="hidden items-center gap-1 rounded border border-neutral-200 bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-600 sm:inline-flex">
+          <span className="hidden shrink-0 items-center gap-1 rounded border border-neutral-200 bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-600 lg:inline-flex">
             静的RSC
           </span>
         </div>
-        <p className="hidden text-xs text-neutral-500 sm:block">
+        <p className="hidden text-xs text-neutral-500 xl:block xl:max-w-md xl:truncate">
           思考をクリアにし、推敲を深めるエントリーシート執筆スタジオ
         </p>
       </div>
@@ -34,24 +34,24 @@ export function HeaderBrand() {
  */
 export function HeaderStaticLinks() {
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2">
+    <div className="flex shrink-0 items-center gap-1.5">
       <a
         href="/about"
-        className="flex cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 sm:px-3"
+        className="hidden shrink-0 cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-200 md:flex"
         title="機能紹介・LPを見る（STAR法・削りツール・IndexedDB自動保存）"
         aria-label="機能紹介・LPを見る"
       >
-        <Sparkles className="h-4 w-4 text-amber-600" />
-        <span className="hidden md:inline">機能紹介</span>
+        <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+        <span>機能紹介</span>
       </a>
 
       <a
         href="/guide/star-method"
-        className="hidden cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-200 sm:px-3 lg:flex"
+        className="hidden shrink-0 cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-200 xl:flex"
         title="STAR法・配分比率の推敲極意ガイド"
         aria-label="推敲の極意を見る"
       >
-        <BookOpen className="h-4 w-4 text-neutral-600" />
+        <BookOpen className="h-3.5 w-3.5 text-neutral-600" />
         <span>極意解説</span>
       </a>
     </div>

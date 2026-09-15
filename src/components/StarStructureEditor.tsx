@@ -168,14 +168,14 @@ export const StarStructureEditor: React.FC<StarStructureEditorProps> = memo(
         {/* RSC Static Knowledge Guide Slot */}
         {starGuideSlot}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-2">
+        <div className="flex flex-col gap-3 border-b border-neutral-100 pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-base font-semibold text-neutral-900">STAR論理構成エディタ</h3>
-            <p className="text-sm text-neutral-500">
+            <p className="text-xs text-neutral-500 sm:text-sm">
               各項目で思考を整理できます。「本文エディタへ反映」を押すまで本文を誤って上書きすることはありません。
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:self-center">
             {hasUnappliedChanges && (
               <span className="flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
                 <AlertCircle className="h-3.5 w-3.5" />
@@ -190,7 +190,7 @@ export const StarStructureEditor: React.FC<StarStructureEditorProps> = memo(
                   onSwitchToWriteMode();
                 });
               }}
-              className="flex cursor-pointer items-center gap-1.5 rounded bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+              className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 sm:w-auto sm:px-4"
             >
               <span>本文エディタへ反映して執筆へ</span>
               <ArrowRight className="h-4 w-4" />

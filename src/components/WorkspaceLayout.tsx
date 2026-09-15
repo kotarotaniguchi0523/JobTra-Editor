@@ -162,27 +162,37 @@ export function WorkspaceLayout({
 
           {/* 4. リアルタイム監査パネル（開いた時のみ React.lazy で遅延ロード） */}
           {isAuditOpen && activeDraft && (
-            <aside className="animate-fadeIn w-80 shrink-0 overflow-y-auto border-l border-neutral-200 bg-white shadow-lg lg:w-96 lg:shadow-none">
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center p-4 text-xs text-neutral-400">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    監査モジュールを読み込み中...
-                  </div>
-                }
-              >
-                <LazyReviewPanel
-                  checks={auditResult}
-                  metrics={metricsResult}
-                  guidelinesSlot={guidelinesSlot}
-                  onClose={() => setIsAuditOpen(false)}
-                  onApplyReplacement={(original, suggested) => {
-                    const nextContent = activeDraft.content.replace(original, suggested);
-                    handleUpdateDraft({ content: nextContent }, true);
-                  }}
-                />
-              </Suspense>
-            </aside>
+            <>
+              {/* モバイル用背景オーバーレイ */}
+              <button
+                type="button"
+                aria-label="文章監査パネルを閉じる"
+                className="fixed inset-0 z-40 h-full w-full cursor-default border-none bg-neutral-900/30 backdrop-blur-xs lg:hidden"
+                onClick={() => setIsAuditOpen(false)}
+              />
+
+              <aside className="animate-fadeIn fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col overflow-y-auto border-l border-neutral-200 bg-white shadow-2xl lg:static lg:z-auto lg:w-96 lg:shadow-none">
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center p-4 text-xs text-neutral-400">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      監査モジュールを読み込み中...
+                    </div>
+                  }
+                >
+                  <LazyReviewPanel
+                    checks={auditResult}
+                    metrics={metricsResult}
+                    guidelinesSlot={guidelinesSlot}
+                    onClose={() => setIsAuditOpen(false)}
+                    onApplyReplacement={(original, suggested) => {
+                      const nextContent = activeDraft.content.replace(original, suggested);
+                      handleUpdateDraft({ content: nextContent }, true);
+                    }}
+                  />
+                </Suspense>
+              </aside>
+            </>
           )}
         </div>
       </div>

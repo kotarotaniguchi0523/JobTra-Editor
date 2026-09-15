@@ -177,7 +177,7 @@ export const Sidebar: React.FC<SidebarProps> = memo(
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="企業名や内容で検索..."
                 aria-label="企業名や内容で検索"
-                className="w-full bg-transparent text-xs text-neutral-800 placeholder-neutral-400 focus:outline-hidden"
+                className="w-full bg-transparent text-sm text-neutral-800 placeholder-neutral-400 focus:outline-hidden"
               />
               {filter.searchQuery && (
                 <button

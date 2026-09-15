@@ -42,7 +42,7 @@ export const HandbookModal: React.FC<HandbookModalProps> = memo(({ isOpen, onClo
           open
           id="handbook-modal-dialog"
           aria-labelledby="handbook-modal-title"
-          className="relative z-10 m-0 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white p-0 text-neutral-900 shadow-xl"
+          className="relative z-10 m-0 flex max-h-[88vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white p-0 text-neutral-900 shadow-2xl"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-5 py-3.5">

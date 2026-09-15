@@ -46,33 +46,35 @@ export const WriteWorkspace: React.FC<WriteWorkspaceProps> = memo(
       <div className="space-y-2">
         {/* Tool Strip */}
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-neutral-600">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={onToggleFocusSentence}
-              className={`flex cursor-pointer items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 text-xs font-medium transition-colors sm:gap-1.5 sm:px-2.5 ${
                 isFocusSentenceEnabled
                   ? 'border-neutral-900 bg-neutral-900 text-white'
                   : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100'
               }`}
               title="いまカーソルがある一文のみをハイライト"
             >
-              <Focus className="h-3.5 w-3.5" />
-              <span>フォーカス・センテンス</span>
+              <Focus className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">フォーカス・センテンス</span>
+              <span className="sm:hidden">一文集中</span>
             </button>
 
             <button
               type="button"
               onClick={onToggleTypewriter}
-              className={`flex cursor-pointer items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
+              className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 text-xs font-medium transition-colors sm:gap-1.5 sm:px-2.5 ${
                 isTypewriterScrollEnabled
                   ? 'border-neutral-900 bg-neutral-900 text-white'
                   : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100'
               }`}
               title="入力行を常に視線の中央にキープ"
             >
-              <ScrollText className="h-3.5 w-3.5" />
-              <span>タイプライター視線固定</span>
+              <ScrollText className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">タイプライター視線固定</span>
+              <span className="sm:hidden">視線固定</span>
             </button>
           </div>
 
@@ -91,11 +93,13 @@ export const WriteWorkspace: React.FC<WriteWorkspaceProps> = memo(
 
         {/* Core Textarea Box */}
         <div className="flex flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xs">
-          <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-3.5 py-2 text-xs text-neutral-500">
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-neutral-50 px-3 py-1.5 text-xs text-neutral-500 sm:px-3.5 sm:py-2">
             <span className="font-mono text-xs">
-              {metrics.charsNoWhitespace} 文字（空白・改行除く） / 全 {metrics.totalChars} 字
+              {metrics.charsNoWhitespace} 字（空白除外） / 全 {metrics.totalChars} 字
             </span>
-            <span className="text-xs text-neutral-400">Tabキーで思考の伴走フレーズを即時挿入</span>
+            <span className="hidden text-xs text-neutral-400 sm:inline">
+              Tabキーで伴走フレーズを即時挿入
+            </span>
           </div>
 
           {isFocusSentenceEnabled && (

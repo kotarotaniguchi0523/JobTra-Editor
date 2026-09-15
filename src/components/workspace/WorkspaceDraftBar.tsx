@@ -26,7 +26,7 @@ const TARGET_PRESETS = [200, 300, 400, 500, 600, 800];
 export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
   ({ activeDraft, currentId, activeMode, onUpdateDraft }) => {
     return (
-      <div className="shrink-0 space-y-2 border-b border-neutral-200 bg-white px-4 py-2.5">
+      <div className="shrink-0 space-y-2 border-b border-neutral-200 bg-white px-3 py-2 sm:px-4 sm:py-2.5">
         <div className="grid grid-cols-1 items-center gap-2 md:grid-cols-12">
           <div className="md:col-span-8">
             <label htmlFor="draft-title-input" className="sr-only">
@@ -53,7 +53,7 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
               value={activeDraft.category}
               onChange={(e) => onUpdateDraft({ category: e.target.value as ESQuestionCategory })}
               aria-label="設問カテゴリ"
-              className="w-full cursor-pointer bg-transparent text-xs text-neutral-800 focus:outline-hidden"
+              className="w-full cursor-pointer bg-transparent text-sm text-neutral-800 focus:outline-hidden"
             >
               {Object.entries(CATEGORY_LABELS).map(([cat, label]) => (
                 <option key={cat} value={cat}>
@@ -65,13 +65,13 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
         </div>
 
         {/* 目標字数 ＆ SPAページ切り替えナビゲーション */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-100 pt-1">
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 text-xs font-semibold text-neutral-600">
+        <div className="flex flex-col gap-2 border-t border-neutral-100 pt-1.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto py-0.5">
+            <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-neutral-600">
               <Target className="h-3.5 w-3.5 text-neutral-500" />
               目標字数:
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex shrink-0 items-center gap-1">
               {TARGET_PRESETS.map((t) => (
                 <button
                   key={t}
@@ -90,46 +90,46 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
           </div>
 
           {/* SPA ルートタブ（Funstack Router によりSPA遷移） */}
-          <nav className="flex items-center rounded-md border border-neutral-200 bg-neutral-100 p-0.5 text-xs">
+          <nav className="flex w-full items-center rounded-md border border-neutral-200 bg-neutral-100 p-0.5 text-xs sm:w-auto">
             <a
               id="mode-tab-write"
               href={`/?id=${currentId}`}
-              className={`flex items-center gap-1.5 rounded px-3 py-1 font-medium no-underline transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2.5 py-1 font-medium whitespace-nowrap no-underline transition-colors sm:flex-initial sm:px-3 ${
                 activeMode === 'write'
                   ? 'bg-white text-neutral-900 shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-800'
               }`}
             >
-              <FileEdit className="h-3.5 w-3.5" />
+              <FileEdit className="h-3.5 w-3.5 shrink-0" />
               <span>執筆</span>
             </a>
 
             <a
               id="mode-tab-structure"
               href={`/structure?id=${currentId}`}
-              className={`flex items-center gap-1.5 rounded px-3 py-1 font-medium no-underline transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2.5 py-1 font-medium whitespace-nowrap no-underline transition-colors sm:flex-initial sm:px-3 ${
                 activeMode === 'structure'
                   ? 'bg-white text-neutral-900 shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-800'
               }`}
               title="STAR法（結論・課題・行動・成果・貢献）で思考を整理"
             >
-              <Layers className="h-3.5 w-3.5" />
+              <Layers className="h-3.5 w-3.5 shrink-0" />
               <span>STAR構成</span>
             </a>
 
             <a
               id="mode-tab-preview"
               href={`/preview?id=${currentId}`}
-              className={`flex items-center gap-1.5 rounded px-3 py-1 font-medium no-underline transition-colors ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2.5 py-1 font-medium whitespace-nowrap no-underline transition-colors sm:flex-initial sm:px-3 ${
                 activeMode === 'preview'
                   ? 'bg-white text-neutral-900 shadow-xs'
                   : 'text-neutral-500 hover:text-neutral-800'
               }`}
               title="客観的な閲覧と過去バージョンの復元"
             >
-              <Eye className="h-3.5 w-3.5" />
-              <span>プレビュー & 履歴</span>
+              <Eye className="h-3.5 w-3.5 shrink-0" />
+              <span>プレビュー</span>
               {(activeDraft.snapshots?.length || 0) > 0 && (
                 <span className="py-0.2 rounded-full bg-neutral-200 px-1.5 font-mono text-xs text-neutral-700">
                   {activeDraft.snapshots?.length}
