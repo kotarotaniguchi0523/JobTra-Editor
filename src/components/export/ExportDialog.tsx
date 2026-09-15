@@ -1,20 +1,29 @@
 'use client';
 
 import { Download, ExternalLink, X } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import type { ReactNode, SyntheticEvent } from 'react';
 
 interface ExportDialogProps {
+  isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
 }
 
-function openExportDialog(dialog: HTMLDialogElement | null): void {
-  if (dialog && !dialog.open) {
-    dialog.showModal();
-  }
-}
+export function ExportDialog({ isOpen, onClose, children }: ExportDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-export function ExportDialog({ onClose, children }: ExportDialogProps) {
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (isOpen && !dialog.open) {
+      dialog.showModal();
+    } else if (!isOpen && dialog.open) {
+      dialog.close();
+    }
+  }, [isOpen]);
+
   const handleCancel = (event: SyntheticEvent<HTMLDialogElement>) => {
     event.preventDefault();
     onClose();
@@ -22,7 +31,7 @@ export function ExportDialog({ onClose, children }: ExportDialogProps) {
 
   return (
     <dialog
-      ref={openExportDialog}
+      ref={dialogRef}
       aria-labelledby="export-modal-title"
       className="export-dialog fixed inset-0 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-4"
       onCancel={handleCancel}

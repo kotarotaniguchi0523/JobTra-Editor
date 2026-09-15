@@ -1,12 +1,12 @@
 import { Check, Download, Loader2 } from 'lucide-react';
 
 interface PdfExportButtonProps {
+  status: 'idle' | 'pending' | 'success' | 'error';
   isPending: boolean;
-  isSuccess: boolean;
-  onClick: () => void;
 }
 
-export function PdfExportButton({ isPending, isSuccess, onClick }: PdfExportButtonProps) {
+export function PdfExportButton({ status, isPending }: PdfExportButtonProps) {
+  const isSuccess = status === 'success';
   const buttonClass = isSuccess
     ? 'bg-emerald-600 hover:bg-emerald-700'
     : isPending
@@ -15,8 +15,7 @@ export function PdfExportButton({ isPending, isSuccess, onClick }: PdfExportButt
 
   return (
     <button
-      type="button"
-      onClick={onClick}
+      type="submit"
       disabled={isPending}
       className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white shadow-xs transition-all ${buttonClass}`}
     >

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useOptimistic, useState, useTransition } from 'react';
+import type { FormEvent } from 'react';
 import type { ESDraft } from '../../types';
 import { downloadFile, generateEsMarkdown } from '../../lib/exportMarkdown';
 import { getExportFilename } from '../../lib/exportFilename';
@@ -13,13 +14,19 @@ const DEFAULT_MARKDOWN_OPTIONS: MarkdownPanelOptions = {
   includeAudit: true,
 };
 
+type MarkdownActionState =
+  | { status: 'idle' }
+  | { status: 'success' }
+  | { status: 'error'; message: string };
+
+const INITIAL_MARKDOWN_STATE: MarkdownActionState = { status: 'idle' };
+
 interface MarkdownExportPanelProps {
   draft: ESDraft;
 }
 
 export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
   const [options, setOptions] = useState<MarkdownPanelOptions>(DEFAULT_MARKDOWN_OPTIONS);
-  const [isCopied, setIsCopied] = useState(false);
 
   const buildMarkdown = () =>
     generateEsMarkdown(draft, {
@@ -28,15 +35,61 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
       includeAuditSummary: options.includeAudit,
     });
 
-  const handleDownload = () => {
-    downloadFile(buildMarkdown(), getExportFilename(draft, 'md'), 'text/markdown');
+  const [downloadState, submitDownload, isDownloadPending] = useActionState(
+    async (): Promise<MarkdownActionState> => {
+      try {
+        downloadFile(buildMarkdown(), getExportFilename(draft, 'md'), 'text/markdown');
+        return { status: 'success' };
+      } catch (error) {
+        return {
+          status: 'error',
+          message: error instanceof Error ? error.message : 'Markdown保存に失敗しました。',
+        };
+      }
+    },
+    INITIAL_MARKDOWN_STATE,
+  );
+  const [copyState, submitCopy, isCopyPending] = useActionState(
+    async (): Promise<MarkdownActionState> => {
+      try {
+        await navigator.clipboard.writeText(buildMarkdown());
+        return { status: 'success' };
+      } catch (error) {
+        return {
+          status: 'error',
+          message: error instanceof Error ? error.message : 'Markdownのコピーに失敗しました。',
+        };
+      }
+    },
+    INITIAL_MARKDOWN_STATE,
+  );
+  const [optimisticCopied, setOptimisticCopied] = useOptimistic(
+    copyState.status === 'success',
+    (_currentState, nextState: boolean) => nextState,
+  );
+  const [, startTransition] = useTransition();
+
+  const handleDownload = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isDownloadPending) return;
+    startTransition(() => submitDownload());
   };
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(buildMarkdown());
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
+  const handleCopy = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isCopyPending) return;
+    startTransition(() => {
+      setOptimisticCopied(true);
+      submitCopy();
+    });
   };
+
+  const errorMessage =
+    copyState.status === 'error'
+      ? copyState.message
+      : downloadState.status === 'error'
+        ? downloadState.message
+        : null;
 
   return (
     <div className="space-y-4">
@@ -45,7 +98,14 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
         YAMLフロントマターにより、応募履歴や文字数のメタデータも保持されます。
       </div>
       <MarkdownExportOptions options={options} onChange={setOptions} />
-      <MarkdownExportActions isCopied={isCopied} onDownload={handleDownload} onCopy={handleCopy} />
+      <MarkdownExportActions
+        isCopied={optimisticCopied}
+        isDownloadPending={isDownloadPending}
+        isCopyPending={isCopyPending}
+        errorMessage={errorMessage}
+        onDownload={handleDownload}
+        onCopy={handleCopy}
+      />
     </div>
   );
 }

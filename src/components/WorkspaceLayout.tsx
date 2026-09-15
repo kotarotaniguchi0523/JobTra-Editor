@@ -222,15 +222,17 @@ export function WorkspaceLayout({
       )}
 
       {/* 6. エクスポートモーダル（ブラウザ内minitype PDF / Markdown） */}
-      {isExportOpen && activeDraft && (
+      {activeDraft && (
         <Suspense
           fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                エクスポート設定を読み込み中...
+            isExportOpen ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  エクスポート設定を読み込み中...
+                </div>
               </div>
-            </div>
+            ) : null
           }
         >
           <LazyExportModal

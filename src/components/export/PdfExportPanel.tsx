@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useActionState, useOptimistic, useState, useTransition } from 'react';
+import type { FormEvent } from 'react';
 import { Sparkles } from 'lucide-react';
 import type { ESDraft } from '../../types';
 import { downloadEsPdf } from '../../lib/pdfClient';
@@ -14,37 +15,53 @@ const DEFAULT_PDF_OPTIONS: PdfPanelOptions = {
   includeMeta: true,
 };
 
+type PdfExportState =
+  | { status: 'idle' }
+  | { status: 'pending' }
+  | { status: 'success' }
+  | { status: 'error'; message: string };
+
+const INITIAL_PDF_STATE: PdfExportState = { status: 'idle' };
+
 interface PdfExportPanelProps {
   draft: ESDraft;
 }
 
 export function PdfExportPanel({ draft }: PdfExportPanelProps) {
   const [options, setOptions] = useState<PdfPanelOptions>(DEFAULT_PDF_OPTIONS);
-  const [error, setError] = useState<PdfExportError | null>(null);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  const handleDownload = () => {
-    setError(null);
-    setIsSuccess(false);
-
-    startTransition(async () => {
+  const [actionState, submitExport, isPending] = useActionState(
+    async (): Promise<PdfExportState> => {
       const result = await downloadEsPdf(draft, options);
 
-      if (result.success) {
-        setIsSuccess(true);
-        setTimeout(() => setIsSuccess(false), 3000);
-        return;
-      }
+      if (result.success) return { status: 'success' };
 
-      setError({
-        kind: 'error',
+      return {
+        status: 'error',
         message:
           result.error ||
           'PDF生成に失敗しました。下の「ブラウザ印刷（PDF保存）」をご利用ください。',
-      });
+      };
+    },
+    INITIAL_PDF_STATE,
+  );
+  const [optimisticState, setOptimisticState] = useOptimistic(
+    actionState,
+    (_currentState, nextState: PdfExportState) => nextState,
+  );
+  const [, startTransition] = useTransition();
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isPending) return;
+
+    startTransition(() => {
+      setOptimisticState({ status: 'pending' });
+      submitExport();
     });
   };
+
+  const error: PdfExportError | null =
+    optimisticState.status === 'error' ? { kind: 'error', message: optimisticState.message } : null;
 
   return (
     <div className="space-y-4">
@@ -62,9 +79,9 @@ export function PdfExportPanel({ draft }: PdfExportPanelProps) {
       <ExportDocumentSummary draft={draft} />
       <PdfExportOptions options={options} onChange={setOptions} />
       <PdfExportFeedback error={error} />
-      <div className="pt-2">
-        <PdfExportButton isPending={isPending} isSuccess={isSuccess} onClick={handleDownload} />
-      </div>
+      <form onSubmit={handleSubmit} className="pt-2">
+        <PdfExportButton status={optimisticState.status} isPending={isPending} />
+      </form>
     </div>
   );
 }
