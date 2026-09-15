@@ -4,7 +4,7 @@
  * 白紙で止まらないための「直接的な問いかけ」と「Tabキー補完フレーズ」を提供する純粋ロジック。
  */
 
-export type ESPhase = 'conclusion' | 'situation' | 'action' | 'result' | 'contribution';
+type ESPhase = 'conclusion' | 'situation' | 'action' | 'result' | 'contribution';
 
 export interface GhostGuidance {
   phase: ESPhase;

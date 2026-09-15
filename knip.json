@@ -1,0 +1,19 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "doctor.config.ts",
+    "src/Root.tsx",
+    "src/build.ts",
+    "src/pages/**/*.tsx",
+    "scripts/**/*.ts",
+    "tests/**/*.test.ts"
+  ],
+  "project": [
+    "*.config.ts",
+    "src/**/*.{ts,tsx}",
+    "src/**/*.css",
+    "scripts/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "include": ["files", "dependencies", "binaries", "unresolved", "exports", "types"]
+}

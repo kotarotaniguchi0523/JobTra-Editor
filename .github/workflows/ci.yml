@@ -15,34 +15,34 @@ permissions:
   contents: read
 
 jobs:
-  # 1. 依存関係のインストール（単一キャッシュ & 単一ジョブでセットアップ）
+  # 1. lockfileと依存関係の再現性を先行確認
   setup:
     name: Setup & Cache Dependencies
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: '22.23.2'
           cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
 
-  # 2. 並列チェックジョブ群（インストールされたキャッシュを活用して並列実行）
+  # 2. npmキャッシュを利用した並列チェックジョブ群
   format-check:
     name: Oxfmt Format Check
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: '22.23.2'
           cache: 'npm'
 
       - name: Install dependencies (from cache)
@@ -54,14 +54,14 @@ jobs:
   test:
     name: Unit Tests (Vitest)
     needs: setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: '22.23.2'
           cache: 'npm'
 
       - name: Install dependencies (from cache)
@@ -69,3 +69,70 @@ jobs:
 
       - name: Run Tests
         run: npm test
+
+  lint:
+    name: TypeScript Check
+    needs: setup
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.23.2'
+          cache: 'npm'
+
+      - name: Install dependencies (from cache)
+        run: npm ci --prefer-offline
+
+      - name: Run TypeScript Check
+        run: npm run lint
+
+  knip:
+    name: Dependency Audit (Knip)
+    needs: setup
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.23.2'
+          cache: 'npm'
+
+      - name: Install dependencies (from cache)
+        run: npm ci --prefer-offline
+
+      - name: Run Knip
+        run: npm run knip
+
+  build:
+    name: RSC Production Build
+    needs: setup
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22.23.2'
+          cache: 'npm'
+
+      - name: Install dependencies (from cache)
+        run: npm ci --prefer-offline
+
+      - name: Build RSC application
+        run: npm run build
+
+      - name: Assert browser export is serverless
+        run: |
+          if grep -R -E -q 'better-sqlite3|/api/export/pdf' dist/public; then
+            echo 'Server-only PDF dependency or route leaked into the public browser bundle.'
+            exit 1
+          fi
+
+      - name: Verify minitype PDF CLI output
+        run: npm run verify:pdf

@@ -1,4 +1,4 @@
-import { JapaneseMetrics, AuditCheck, StarBlocks } from '../types';
+import { JapaneseMetrics, AuditCheck } from '../types';
 
 export function calculateMetrics(text: string): JapaneseMetrics {
   const totalChars = text.length;
@@ -239,17 +239,6 @@ export function auditText(text: string, targetCount: number): AuditCheck[] {
   }
 
   return checks;
-}
-
-// Assemble STAR blocks into single cohesive body
-export function assembleStarBlocks(blocks: StarBlocks): string {
-  const parts: string[] = [];
-  if (blocks.conclusion.trim()) parts.push(blocks.conclusion.trim());
-  if (blocks.situation.trim()) parts.push(blocks.situation.trim());
-  if (blocks.action.trim()) parts.push(blocks.action.trim());
-  if (blocks.result.trim()) parts.push(blocks.result.trim());
-  if (blocks.contribution.trim()) parts.push(blocks.contribution.trim());
-  return parts.join('\n\n');
 }
 
 // Format clean text for direct pasting into company web entry forms

@@ -1,7 +1,18 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateEsMarkdown } from '../src/lib/exportMarkdown';
-import { generateEsPdf } from '../src/server/exportPdf';
+import { buildEsPdfMarkdown, generateEsPdf } from '../src/lib/exportPdf';
 import type { ESDraft } from '../src/types';
+
+vi.mock('@minitype/minitype', () => ({
+  mdString: vi.fn(() => ({ blocks: [] })),
+  minitype: vi.fn(() => ({
+    toPdf: async () => new TextEncoder().encode(`%PDF-1.7\n${'x'.repeat(256)}`),
+  })),
+}));
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('Export Features', () => {
   const mockDraft: ESDraft = {
@@ -47,7 +58,12 @@ describe('Export Features', () => {
     expect(md).toContain('Exported from 就活ESクラフト');
   });
 
-  it('minitypeを用いてPDFのUint8Arrayバイナリが生成されること', async () => {
+  it('ブラウザ内minitypeでPDFのUint8Arrayバイナリが生成されること', async () => {
+    const fetchMock = vi.fn(async (_url: RequestInfo | URL) => {
+      return new Response(new ArrayBuffer(16), { status: 200 });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
     const pdfBytes = await generateEsPdf({
       title: mockDraft.title,
       company: mockDraft.companyName,
@@ -61,9 +77,32 @@ describe('Export Features', () => {
     });
 
     expect(pdfBytes).toBeInstanceOf(Uint8Array);
-    expect(pdfBytes.length).toBeGreaterThan(10000); // 有効なPDFバイナリ
+    expect(pdfBytes.length).toBeGreaterThan(100); // PDFバイナリ
     // PDFヘッダーシグネチャ %PDF- (0x25, 0x50, 0x44, 0x46, 0x2D) の検証
     const header = String.fromCharCode(...pdfBytes.slice(0, 5));
     expect(header).toBe('%PDF-');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls.every(([url]) => !String(url).includes('/api/export/pdf'))).toBe(
+      true,
+    );
   }, 15000);
+
+  it('PDFソースにメタ情報とSTAR構成が含まれること', () => {
+    const source = buildEsPdfMarkdown({
+      title: mockDraft.title,
+      company: mockDraft.companyName,
+      categoryLabel: 'ガクチカ（学生時代注力）',
+      targetCharCount: mockDraft.targetCount,
+      currentCharCount: mockDraft.content.replace(/\s/g, '').length,
+      content: mockDraft.content,
+      star: mockDraft.starBlocks,
+      includeStar: true,
+      includeMeta: true,
+    });
+
+    expect(source).toContain('# カフェでの顧客体験改善');
+    expect(source).toContain('応募先企業');
+    expect(source).toContain('## STAR論理構成メモ');
+    expect(source).toContain('### 3. Action');
+  });
 });

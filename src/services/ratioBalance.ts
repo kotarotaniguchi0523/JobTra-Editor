@@ -4,7 +4,7 @@
  * (結論10%, 状況20%, 行動・工夫45%, 成果・貢献25%) と現在の比率を対比する純粋ロジック。
  */
 
-export interface BlockTarget {
+interface BlockTarget {
   name: string;
   idealRatio: number; // 例: 0.1 (10%)
   idealChars: number; // 例: 40文字 (400字の場合)

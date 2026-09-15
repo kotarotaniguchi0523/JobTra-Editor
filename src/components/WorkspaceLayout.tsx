@@ -19,7 +19,7 @@ const LazyHandbookModal = lazy(() =>
 );
 
 const LazyExportModal = lazy(() =>
-  import('./ExportModal').then((m) => ({ default: m.ExportModal })),
+  import('./export/ExportModal').then((m) => ({ default: m.ExportModal })),
 );
 
 interface WorkspaceLayoutProps {
@@ -221,16 +221,18 @@ export function WorkspaceLayout({
         </Suspense>
       )}
 
-      {/* 6. エクスポートモーダル（minitype PDF / Markdown） */}
-      {isExportOpen && activeDraft && (
+      {/* 6. エクスポートモーダル（ブラウザ内minitype PDF / Markdown） */}
+      {activeDraft && (
         <Suspense
           fallback={
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                エクスポート設定を読み込み中...
+            isExportOpen ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  エクスポート設定を読み込み中...
+                </div>
               </div>
-            </div>
+            ) : null
           }
         >
           <LazyExportModal
