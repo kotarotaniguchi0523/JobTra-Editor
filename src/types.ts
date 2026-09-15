@@ -73,15 +73,3 @@ export interface AuditCheck {
     suggested: string;
   };
 }
-
-/** エディタの表示・編集モードを表す型 */
-export type EditorMode = 'write' | 'structure' | 'preview';
-
-/**
- * サイドバーの絞り込み検索条件
- */
-export interface FilterCriteria {
-  query: string;
-  category: string;
-  starredOnly: boolean;
-}

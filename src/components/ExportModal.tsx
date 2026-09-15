@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useTransition } from 'react';
 import {
   Download,
@@ -100,7 +102,7 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
   return (
     <div
       id="export-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 p-4 backdrop-blur-xs animate-in fade-in"
+      className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 p-4 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
@@ -122,7 +124,7 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
                 ドキュメントエクスポート
               </h2>
               <p className="text-xs text-neutral-500">
-                minitypeによる日本語組版PDFやMarkdownファイルとして保存
+                ブラウザ内minitypeによる日本語組版PDFやMarkdownファイルとして保存
               </p>
             </div>
           </div>
@@ -148,7 +150,7 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
             }`}
           >
             <FileText className="h-4 w-4 text-amber-600" />
-            <span>PDF 出力（minitype組版）</span>
+            <span>PDF 出力（ブラウザ内minitype組版）</span>
             <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
               公式推奨
             </span>
@@ -175,19 +177,19 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
               <div className="rounded-lg border border-amber-200 bg-amber-50/70 p-3.5 text-xs text-amber-900">
                 <div className="flex items-center gap-1.5 font-bold">
                   <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-                  <span>TypeScript製組版エンジン「minitype」による本格組版</span>
+                  <span>ブラウザ内TypeScript製組版エンジン「minitype」</span>
                 </div>
-                <p className="mt-1 text-amber-800 leading-relaxed">
+                <p className="mt-1 leading-relaxed text-amber-800">
                   禁則処理、段落揃え、行間調整が施されたA4縦の就活提出用PDFを生成します。
                   面接官が読みやすいレイアウトで出力されます。
                 </p>
               </div>
 
               {/* Document Summary */}
-              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 text-xs space-y-1.5">
+              <div className="space-y-1.5 rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-neutral-500">タイトル:</span>
-                  <span className="font-semibold text-neutral-800 truncate max-w-[280px]">
+                  <span className="max-w-[280px] truncate font-semibold text-neutral-800">
                     {draft.title || '無題のエントリーシート'}
                   </span>
                 </div>
@@ -200,7 +202,8 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
                 <div className="flex justify-between">
                   <span className="text-neutral-500">文字数:</span>
                   <span className="font-mono text-neutral-800">
-                    {draft.content ? draft.content.replace(/\s/g, '').length : 0} 字 / 目標 {draft.targetCount || 400} 字
+                    {draft.content ? draft.content.replace(/\s/g, '').length : 0} 字 / 目標{' '}
+                    {draft.targetCount || 400} 字
                   </span>
                 </div>
               </div>
@@ -231,7 +234,7 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
               {/* Error feedback */}
               {pdfError && (
                 <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600 mt-0.5" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
                   <div className="space-y-1">
                     <p className="font-medium">{pdfError}</p>
                     <button
@@ -252,18 +255,18 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
                   type="button"
                   onClick={handleDownloadPdf}
                   disabled={isPending}
-                  className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white transition-all shadow-xs ${
+                  className={`flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold text-white shadow-xs transition-all ${
                     isPdfSuccess
                       ? 'bg-emerald-600 hover:bg-emerald-700'
                       : isPending
-                        ? 'bg-neutral-600 cursor-not-allowed'
+                        ? 'cursor-not-allowed bg-neutral-600'
                         : 'bg-neutral-900 hover:bg-neutral-800'
                   }`}
                 >
                   {isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>minitype で組版PDFを生成中...</span>
+                      <span>ブラウザ内minitype で組版PDFを生成中...</span>
                     </>
                   ) : isPdfSuccess ? (
                     <>
@@ -273,7 +276,7 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
                   ) : (
                     <>
                       <Download className="h-4 w-4" />
-                      <span>PDF をダウンロード（minitype組版）</span>
+                      <span>PDF をダウンロード（ブラウザ内minitype組版）</span>
                     </>
                   )}
                 </button>
@@ -282,7 +285,7 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
           ) : (
             <div className="space-y-4">
               {/* Feature highlight */}
-              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 text-xs text-neutral-700 leading-relaxed">
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3.5 text-xs leading-relaxed text-neutral-700">
                 Notion、Obsidian、GitHub、各種テキストエディタで管理しやすい構造化Markdownファイル（.md）を出力します。
                 YAMLフロントマターにより、応募履歴や文字数のメタデータも保持されます。
               </div>
@@ -320,11 +323,11 @@ export function ExportModal({ isOpen, onClose, draft }: ExportModalProps) {
               </div>
 
               {/* Actions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2">
+              <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={handleDownloadMarkdown}
-                  className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 shadow-xs"
+                  className="flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-neutral-900 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-neutral-800"
                 >
                   <Download className="h-4 w-4" />
                   <span>.md ファイルを保存</span>

@@ -10,22 +10,29 @@ export interface MarkdownExportOptions {
 /**
  * 下書きデータから構造化されたMarkdownテキストを生成する
  */
-export function generateEsMarkdown(
-  draft: ESDraft,
-  options: MarkdownExportOptions = {},
-): string {
-  const {
-    includeStar = true,
-    includeAuditSummary = true,
-    includeFrontmatter = true,
-  } = options;
+export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOptions = {}): string {
+  const { includeStar = true, includeAuditSummary = true, includeFrontmatter = true } = options;
 
   const now = new Date().toISOString();
   const categoryLabel = (CATEGORY_LABELS && CATEGORY_LABELS[draft.category]) || draft.category;
   const company = draft.companyName || (draft as unknown as { company?: string }).company || '';
-  const targetCount = draft.targetCount || (draft as unknown as { targetCharCount?: number }).targetCharCount || 400;
+  const targetCount =
+    draft.targetCount || (draft as unknown as { targetCharCount?: number }).targetCharCount || 400;
   const currentCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
-  const star = draft.starBlocks || (draft as unknown as { starStructure?: { situation?: string; task?: string; action?: string; result?: string; conclusion?: string; contribution?: string } }).starStructure;
+  const star =
+    draft.starBlocks ||
+    (
+      draft as unknown as {
+        starStructure?: {
+          situation?: string;
+          task?: string;
+          action?: string;
+          result?: string;
+          conclusion?: string;
+          contribution?: string;
+        };
+      }
+    ).starStructure;
 
   const lines: string[] = [];
 
@@ -118,7 +125,11 @@ export function generateEsMarkdown(
   if (includeAuditSummary) {
     lines.push('## 推敲メモ');
     lines.push('');
-    const ratios = (draft as unknown as { ratios?: { situation?: number; task?: number; action?: number; result?: number } }).ratios;
+    const ratios = (
+      draft as unknown as {
+        ratios?: { situation?: number; task?: number; action?: number; result?: number };
+      }
+    ).ratios;
     if (ratios) {
       lines.push(`- **比率バランス**:`);
       lines.push(
@@ -140,15 +151,9 @@ export function generateEsMarkdown(
 /**
  * 文字列データを指定したファイル名でブラウザからダウンロード
  */
-export function downloadFile(
-  content: string | Blob,
-  filename: string,
-  mimeType: string,
-): void {
+export function downloadFile(content: string | Blob, filename: string, mimeType: string): void {
   const blob =
-    content instanceof Blob
-      ? content
-      : new Blob([content], { type: `${mimeType};charset=utf-8;` });
+    content instanceof Blob ? content : new Blob([content], { type: `${mimeType};charset=utf-8;` });
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');

@@ -62,8 +62,8 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
               <button
                 type="button"
                 onClick={() => setIsExportOpen(true)}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:border-neutral-400"
-                title="minitypeによる日本語組版PDFやMarkdownでエクスポート"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:border-neutral-400 hover:bg-neutral-50"
+                title="ブラウザ内minitypeによる日本語組版PDFやMarkdownでエクスポート"
               >
                 <Download className="h-3.5 w-3.5 text-amber-600" />
                 <span>エクスポート (PDF/MD)</span>
@@ -233,12 +233,8 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
         {/* RSC Static Checklist Slot */}
         {checklistSlot && <div className="lg:col-span-12">{checklistSlot}</div>}
 
-        {/* Export Modal (minitype PDF / Markdown) */}
-        <ExportModal
-          isOpen={isExportOpen}
-          onClose={() => setIsExportOpen(false)}
-          draft={draft}
-        />
+        {/* Export Modal (browser-side minitype PDF / Markdown) */}
+        <ExportModal isOpen={isExportOpen} onClose={() => setIsExportOpen(false)} draft={draft} />
       </div>
     );
   },

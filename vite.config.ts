@@ -5,6 +5,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
+const MINITYPE_BROWSER_BUN_SHIM_ID = '\0minitype-browser-bun-shim';
+
 export default defineConfig(() => {
   return {
     plugins: [
@@ -37,38 +39,36 @@ export default defineConfig(() => {
         },
       },
       {
-        name: 'minitype-pdf-export-api',
-        configureServer(server) {
-          server.middlewares.use(async (req, res, next) => {
-            const url = req.url || '';
-            if (url.startsWith('/api/export/pdf') && req.method === 'POST') {
-              try {
-                const chunks: Buffer[] = [];
-                for await (const chunk of req) {
-                  chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-                }
-                const rawBody = Buffer.concat(chunks).toString('utf-8');
-                const body = JSON.parse(rawBody || '{}');
+        name: 'minitype-browser-bun-shim',
+        enforce: 'pre',
+        resolveId(source, importer) {
+          if (
+            source === './shims/better-sqlite3.bun.js' &&
+            importer?.includes('@minitype/minitype/dist/index.browser.js')
+          ) {
+            return MINITYPE_BROWSER_BUN_SHIM_ID;
+          }
+        },
+        load(id) {
+          if (id !== MINITYPE_BROWSER_BUN_SHIM_ID) return;
 
-                const { generateEsPdf } = await import('./src/server/exportPdf.ts');
-                const pdfBuffer = await generateEsPdf(body);
-
-                res.writeHead(200, {
-                  'Content-Type': 'application/pdf',
-                  'Content-Disposition': 'attachment; filename="es-export.pdf"',
-                  'Content-Length': pdfBuffer.length,
-                });
-                res.end(Buffer.from(pdfBuffer));
-                return;
-              } catch (error) {
-                console.error('Error in minitype PDF generation:', error);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: (error as Error).message }));
-                return;
-              }
+          // minitype 0.1.6 ships this browser shim as type declarations only,
+          // while its browser bundle still contains a dynamic Bun import.
+          return `
+            class Statement {
+              all() { return []; }
+              run() { return { changes: 0, lastInsertRowid: 0 }; }
+              get() { return undefined; }
             }
-            next();
-          });
+            export default class Database {
+              constructor() {}
+              prepare() { return new Statement(); }
+              exec() {}
+              pragma() {}
+              transaction(fn) { return fn; }
+              close() {}
+            }
+          `;
         },
       },
       funstackStatic({

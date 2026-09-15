@@ -1,6 +1,9 @@
+'use client';
+
 import type { ESDraft } from '../types';
 import { CATEGORY_LABELS } from '../types';
 import { downloadFile } from './exportMarkdown';
+import { generateEsPdf } from './exportPdf';
 
 export interface PdfExportOptions {
   includeStar?: boolean;
@@ -8,7 +11,7 @@ export interface PdfExportOptions {
 }
 
 /**
- * minitype API を呼び出して就活ESのPDFをダウンロードする
+ * サーバーを経由せず、ブラウザ内で就活ESのPDFを生成してダウンロードする。
  */
 export async function downloadEsPdf(
   draft: ESDraft,
@@ -27,35 +30,23 @@ export async function downloadEsPdf(
   const currentCharCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
 
   try {
-    const response = await fetch('/api/export/pdf', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title: draft.title || 'エントリーシート',
-        company: company || undefined,
-        categoryLabel,
-        targetCharCount: draft.targetCount || 400,
-        currentCharCount,
-        content: draft.content,
-        star: draft.starBlocks,
-        includeStar,
-        includeMeta,
-      }),
+    const pdfBytes = await generateEsPdf({
+      title: draft.title || 'エントリーシート',
+      company: company || undefined,
+      categoryLabel,
+      targetCharCount: draft.targetCount || 400,
+      currentCharCount,
+      content: draft.content,
+      star: draft.starBlocks,
+      includeStar,
+      includeMeta,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`PDF生成サーバーエラー (${response.status}): ${errorText}`);
-    }
-
-    const blob = await response.blob();
-    downloadFile(blob, filename, 'application/pdf');
+    downloadFile(new Blob([pdfBytes], { type: 'application/pdf' }), filename, 'application/pdf');
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'PDF生成中にエラーが発生しました';
-    console.warn('minitype PDF API呼び出しに失敗しました。フォールバック印刷を案内します:', err);
+    console.warn('ブラウザ内PDF生成に失敗しました。フォールバック印刷を案内します:', err);
     return { success: false, fallbackTriggered: true, error: message };
   }
 }

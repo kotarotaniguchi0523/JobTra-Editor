@@ -35,6 +35,10 @@
    - 誤字脱字、指示代名詞の多用、業界用語の過多などを確認できる提出前確認リスト。
    - RSC（React Server Components）非同期配信による軽量なハンドブック表示。
 
+6. **ブラウザ内エクスポート**
+   - Markdown（`.md`）と、日本語組版エンジン minitype による印刷用PDFをブラウザ内で生成。
+   - PDF生成APIやアプリ用データベースを必要とせず、静的ホスティングだけで利用可能。
+
 ---
 
 ## 🛠 技術スタック
@@ -48,8 +52,9 @@
   - サーバーレス・静的ホスティング上で React Server Components (RSC) をビルド時事前レンダリング
   - `defer()` による遅延ペイロード分割配信とクライアントルーターとの協調動作
 - **Styling**: Tailwind CSS v4 (`^4.1.14`)
-- **Motion / Animation**: `motion` (`^12.23.24`), `canvas-confetti`
 - **Icons**: `lucide-react`
+- **PDF Export**: [`@minitype/minitype`](https://www.npmjs.com/package/@minitype/minitype) (`0.1.6`)
+  - ブラウザ用エントリと同梱フォントを使い、PDFをクライアント側で生成
 - **Language**: TypeScript (`~5.8.2`)
 
 ### 開発・品質管理・CI (Quality Assurance)
@@ -59,9 +64,11 @@
 - **React Diagnostics**: `react-doctor` (`^0.9.14`)
   - React 19 / RSC boundary、パフォーマンス、アクセシビリティ、セキュリティの自動スキャン
 - **Test Framework**: `vitest` (`^5.0.0`)
-  - ユニットテスト・ロジックテスト（26/26 件パス）
+  - ユニットテスト・ロジックテスト（29/29 件パス）
+- **Dependency Audit**: `knip` (`6.35.1`)
+  - 未使用ファイル・依存・exportをCIで検出
 - **CI / Pipeline**: GitHub Actions
-  - `ci.yml`: 依存関係の1回インストール、キャッシュ共有、`oxfmt --check` & `vitest` の高速並列実行
+  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、RSCビルド、minitype CLI PDF検証
   - `react-doctor.yml`: PR変更スキャン、インラインレビューコメント、ヘルススコア計測
   - `concurrency`（最新コミット優先自動キャンセル）および最小権限の原則（Least Privilege）を適用
 
@@ -105,6 +112,12 @@ npm test
 
 # プロダクションビルド
 npm run build
+
+# 不要なファイル・依存・exportの検出
+npm run knip
+
+# Node.js上でminitypeの実PDFを生成するスモークテスト
+npm run verify:pdf
 ```
 
 ---
@@ -122,8 +135,11 @@ npm run build
 │   │   └── ...                # Client Components (エディタ、サイドバー等)
 │   ├── context/               # DraftContext (ドラフト・状態管理)
 │   ├── services/              # 分析・ロジック層 (STAR法、文体監査、IndexedDB)
-│   ├── App.tsx                # ルートコンポーネント (RSC composition)
+│   ├── lib/                   # Markdown / ブラウザ内PDFエクスポート
+│   ├── Root.tsx               # RSCルートコンポーネント
+│   ├── build.ts               # Funstack Staticビルドエントリ
 │   └── types.ts               # グローバル型定義
+├── knip.json                  # 未使用コード・依存の検査設定
 └── tests/                     # ユニットテスト (Vitest)
 ```
 

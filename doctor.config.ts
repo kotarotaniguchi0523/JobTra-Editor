@@ -1,5 +1,7 @@
-export default {
-  // Funstack Static / Express full-stack architecture allowances
+import { defineConfig } from 'react-doctor/api';
+
+export default defineConfig({
+  // Funstack Static / template-derived architecture allowances
   ignore: {
     files: ['dist/**', 'tests/**', '**/*.test.ts'],
   },
@@ -22,8 +24,8 @@ export default {
     'react-doctor/unused-export': 'warn',
     'react-doctor/unused-type': 'warn',
     'react-doctor/unused-dev-dependency': 'warn',
-    // サーバー用（express/dotenv/@google/genai）や動的利用パッケージを検知した場合に備えてoff
-    'react-doctor/unused-dependency': 'off',
+    // プロジェクト全体の依存グラフを解析し、不要な依存を検出する。
+    'react-doctor/unused-dependency': 'warn',
 
     // 3. 状態管理・Reactアーキテクチャの規約強化（保守性の無駄を抑制）
     'react-doctor/prefer-useReducer': 'warn',
@@ -61,4 +63,4 @@ export default {
     // Funstack Static SSG用の generateStaticParams export を許容
     'react-doctor/only-export-components': 'off',
   },
-};
+});

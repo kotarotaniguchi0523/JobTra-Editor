@@ -221,7 +221,7 @@ export function WorkspaceLayout({
         </Suspense>
       )}
 
-      {/* 6. エクスポートモーダル（minitype PDF / Markdown） */}
+      {/* 6. エクスポートモーダル（ブラウザ内minitype PDF / Markdown） */}
       {isExportOpen && activeDraft && (
         <Suspense
           fallback={

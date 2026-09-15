@@ -5,7 +5,7 @@
  * 外部AIゼロ・完全クライアント完結。
  */
 
-export interface RedundancyRule {
+interface RedundancyRule {
   id: string;
   pattern: RegExp;
   replacement: string;
@@ -23,7 +23,7 @@ export interface RedundancyMatch {
   label: string;
 }
 
-export const REDUNDANCY_RULES: RedundancyRule[] = [
+const REDUNDANCY_RULES: RedundancyRule[] = [
   {
     id: 'kangaete_orimasu',
     pattern: /というふうに考えております/g,
