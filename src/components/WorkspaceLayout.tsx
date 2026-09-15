@@ -18,6 +18,10 @@ const LazyHandbookModal = lazy(() =>
   import('./HandbookModal').then((m) => ({ default: m.HandbookModal })),
 );
 
+const LazyExportModal = lazy(() =>
+  import('./ExportModal').then((m) => ({ default: m.ExportModal })),
+);
+
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
   activeMode: 'write' | 'structure' | 'preview';
@@ -57,6 +61,7 @@ export function WorkspaceLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isHandbookOpen, setIsHandbookOpen] = useState(false);
+  const [isExportOpen, setIsExportOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -128,6 +133,7 @@ export function WorkspaceLayout({
           onOpenHandbook={() => setIsHandbookOpen(true)}
           isCopied={isCopied}
           onCopyClean={handleCopyClean}
+          onOpenExport={activeDraft ? () => setIsExportOpen(true) : undefined}
         />
 
         {activeDraft && (
@@ -212,6 +218,26 @@ export function WorkspaceLayout({
           <LazyHandbookModal isOpen={isHandbookOpen} onClose={() => setIsHandbookOpen(false)}>
             {handbookSlot}
           </LazyHandbookModal>
+        </Suspense>
+      )}
+
+      {/* 6. エクスポートモーダル（minitype PDF / Markdown） */}
+      {isExportOpen && activeDraft && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                エクスポート設定を読み込み中...
+              </div>
+            </div>
+          }
+        >
+          <LazyExportModal
+            isOpen={isExportOpen}
+            onClose={() => setIsExportOpen(false)}
+            draft={activeDraft}
+          />
         </Suspense>
       )}
     </div>

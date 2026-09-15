@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useTransition, memo } from 'react';
-import { History, BookmarkPlus, Check, RotateCcw, FileEdit, Layers } from 'lucide-react';
+import { History, BookmarkPlus, Check, RotateCcw, FileEdit, Layers, Download } from 'lucide-react';
 import { ESDraft, DraftSnapshot } from '../types';
+import { ExportModal } from './ExportModal';
 
 interface DocumentPreviewProps {
   draft: ESDraft;
@@ -18,6 +19,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
     const [isNaming, setIsNaming] = useState(false);
     const [snapshotLabel, setSnapshotLabel] = useState('');
     const [restoredToast, setRestoredToast] = useState(false);
+    const [isExportOpen, setIsExportOpen] = useState(false);
     const [, startTransition] = useTransition();
 
     const handleSave = (e: React.FormEvent) => {
@@ -56,9 +58,20 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
                 {draft.title || '無題のエントリーシート'}
               </h3>
             </div>
-            <span className="self-start rounded bg-neutral-100 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600 sm:self-center sm:text-sm">
-              {charsNoWs} 文字 / 目標 {currentTarget} 文字
-            </span>
+            <div className="flex flex-wrap items-center gap-2 sm:self-center">
+              <button
+                type="button"
+                onClick={() => setIsExportOpen(true)}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-2.5 py-1 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50 hover:border-neutral-400"
+                title="minitypeによる日本語組版PDFやMarkdownでエクスポート"
+              >
+                <Download className="h-3.5 w-3.5 text-amber-600" />
+                <span>エクスポート (PDF/MD)</span>
+              </button>
+              <span className="rounded bg-neutral-100 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600 sm:text-sm">
+                {charsNoWs} 文字 / 目標 {currentTarget} 文字
+              </span>
+            </div>
           </div>
 
           <div className="flex-1 font-sans text-base leading-[1.75] tracking-wide whitespace-pre-wrap text-neutral-900 select-text sm:text-xl">
@@ -73,6 +86,14 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
               内容を修正・再推敲する場合はエディタへ移動してください
             </span>
             <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsExportOpen(true)}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-neutral-300 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 shadow-2xs transition-colors hover:bg-neutral-50"
+              >
+                <Download className="h-3.5 w-3.5 text-amber-600" />
+                <span>PDF / MD 出力</span>
+              </button>
               <a
                 href={`/structure?id=${draft.id}`}
                 className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-3 py-1.5 font-medium text-neutral-700 no-underline transition-colors hover:bg-neutral-50"
@@ -211,6 +232,13 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(
 
         {/* RSC Static Checklist Slot */}
         {checklistSlot && <div className="lg:col-span-12">{checklistSlot}</div>}
+
+        {/* Export Modal (minitype PDF / Markdown) */}
+        <ExportModal
+          isOpen={isExportOpen}
+          onClose={() => setIsExportOpen(false)}
+          draft={draft}
+        />
       </div>
     );
   },

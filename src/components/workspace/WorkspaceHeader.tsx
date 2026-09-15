@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo } from 'react';
-import { Menu, Sparkles, BookOpen, ShieldCheck, Check, Copy, Loader2 } from 'lucide-react';
+import { Menu, Sparkles, BookOpen, ShieldCheck, Check, Copy, Loader2, Download } from 'lucide-react';
 
 interface WorkspaceHeaderProps {
   brandSlot?: React.ReactNode;
@@ -14,6 +14,7 @@ interface WorkspaceHeaderProps {
   onOpenHandbook: () => void;
   isCopied: boolean;
   onCopyClean: () => void;
+  onOpenExport?: () => void;
 }
 
 export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
@@ -28,6 +29,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
     onOpenHandbook,
     isCopied,
     onCopyClean,
+    onOpenExport,
   }) => {
     return (
       <header
@@ -133,6 +135,21 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
             <span className="hidden sm:inline">文章監査</span>
             <span className="sm:hidden">監査</span>
           </button>
+
+          {/* エクスポート（minitype PDF / Markdown） */}
+          {onOpenExport && (
+            <button
+              id="header-export-btn"
+              type="button"
+              onClick={onOpenExport}
+              className="flex shrink-0 cursor-pointer items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold whitespace-nowrap text-neutral-800 transition-colors hover:bg-neutral-100 sm:gap-1.5 sm:px-2.5"
+              title="minitypeによる日本語組版PDFやMarkdownでエクスポート"
+            >
+              <Download className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+              <span className="hidden sm:inline">エクスポート</span>
+              <span className="sm:hidden">出力</span>
+            </button>
+          )}
 
           {/* 提出用コピー */}
           <button

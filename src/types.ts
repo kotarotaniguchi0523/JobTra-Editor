@@ -7,6 +7,16 @@ export type ESQuestionCategory =
   | 'future' // 入社後のビジョン・キャリア
   | 'custom'; // 自由記述
 
+export const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
+  gakuchika: 'ガクチカ（学生時代に力を入れたこと）',
+  shibou: '志望動機',
+  pr: '自己PR',
+  zasetsu: '困難・挫折の克服経験',
+  jiku: '就活の軸・大切にしたい価値観',
+  future: '将来のキャリアビジョン',
+  custom: '自由記述設問',
+};
+
 export interface StarBlocks {
   conclusion: string; // 結論・強み（一言で何を伝達するか）
   situation: string; // 状況・直面した課題や背景

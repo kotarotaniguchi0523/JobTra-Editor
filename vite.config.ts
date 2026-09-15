@@ -36,6 +36,41 @@ export default defineConfig(() => {
           });
         },
       },
+      {
+        name: 'minitype-pdf-export-api',
+        configureServer(server) {
+          server.middlewares.use(async (req, res, next) => {
+            const url = req.url || '';
+            if (url.startsWith('/api/export/pdf') && req.method === 'POST') {
+              try {
+                const chunks: Buffer[] = [];
+                for await (const chunk of req) {
+                  chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+                }
+                const rawBody = Buffer.concat(chunks).toString('utf-8');
+                const body = JSON.parse(rawBody || '{}');
+
+                const { generateEsPdf } = await import('./src/server/exportPdf.ts');
+                const pdfBuffer = await generateEsPdf(body);
+
+                res.writeHead(200, {
+                  'Content-Type': 'application/pdf',
+                  'Content-Disposition': 'attachment; filename="es-export.pdf"',
+                  'Content-Length': pdfBuffer.length,
+                });
+                res.end(Buffer.from(pdfBuffer));
+                return;
+              } catch (error) {
+                console.error('Error in minitype PDF generation:', error);
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: (error as Error).message }));
+                return;
+              }
+            }
+            next();
+          });
+        },
+      },
       funstackStatic({
         ssr: true,
         build: './src/build.ts',
