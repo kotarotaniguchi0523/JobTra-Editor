@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   useTransition,
   useRef,
   ReactNode,
@@ -82,7 +83,7 @@ export function DraftProvider({ children }: { children: ReactNode }) {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [currentUrlId]);
 
   // URLの id が変わったら activeDraftId も追従
   useEffect(() => {
@@ -166,22 +167,24 @@ export function DraftProvider({ children }: { children: ReactNode }) {
   // 下書き削除
   const deleteDraft = useCallback(async (id: string) => {
     await storage.deleteDraft(id);
+    const filtered = drafts.filter((d) => d.id !== id);
+    let nextId = activeDraftId;
+    if (activeDraftId === id && filtered.length > 0) {
+      nextId = filtered[0].id;
+    }
+
     startTransition(() => {
-      setDrafts((prev) => {
-        const filtered = prev.filter((d) => d.id !== id);
-        if (activeDraftId === id && filtered.length > 0) {
-          const nextId = filtered[0].id;
-          setActiveDraftId(nextId);
-          setSearchParams((searchPrev) => {
-            const next = new URLSearchParams(searchPrev);
-            next.set('id', nextId);
-            return next;
-          });
-        }
-        return filtered;
-      });
+      setDrafts(filtered);
+      if (nextId !== activeDraftId) {
+        setActiveDraftId(nextId);
+        setSearchParams((searchPrev) => {
+          const next = new URLSearchParams(searchPrev);
+          next.set('id', nextId);
+          return next;
+        });
+      }
     });
-  }, [activeDraftId, setSearchParams]);
+  }, [activeDraftId, drafts, setSearchParams]);
 
   // 下書き複製
   const duplicateDraft = useCallback(async (id: string) => {
@@ -204,16 +207,15 @@ export function DraftProvider({ children }: { children: ReactNode }) {
 
   // スター切り替え
   const toggleStar = useCallback((id: string) => {
+    const target = drafts.find((d) => d.id === id);
+    if (!target) return;
+    const updated = { ...target, starred: !target.starred, updatedAt: Date.now() };
+
     startTransition(() => {
-      setDrafts((prev) => {
-        const target = prev.find((d) => d.id === id);
-        if (!target) return prev;
-        const updated = { ...target, starred: !target.starred, updatedAt: Date.now() };
-        storage.saveDraft(updated);
-        return prev.map((d) => (d.id === id ? updated : d));
-      });
+      setDrafts((prev) => prev.map((d) => (d.id === id ? updated : d)));
     });
-  }, []);
+    storage.saveDraft(updated);
+  }, [drafts]);
 
   // スナップショット保存
   const createSnapshot = useCallback(async (id: string, label: string) => {
@@ -240,9 +242,11 @@ export function DraftProvider({ children }: { children: ReactNode }) {
     });
   }, [drafts]);
 
-  const activeDraft = drafts.find((d) => d.id === activeDraftId) || (drafts.length > 0 ? drafts[0] : null);
+  const activeDraft = useMemo(() => {
+    return drafts.find((d) => d.id === activeDraftId) || (drafts.length > 0 ? drafts[0] : null);
+  }, [drafts, activeDraftId]);
 
-  const value: DraftContextType = {
+  const value = useMemo<DraftContextType>(() => ({
     drafts,
     activeDraftId,
     activeDraft,
@@ -257,7 +261,21 @@ export function DraftProvider({ children }: { children: ReactNode }) {
     toggleStar,
     createSnapshot,
     restoreSnapshot,
-  };
+  }), [
+    drafts,
+    activeDraftId,
+    activeDraft,
+    isLoading,
+    saveStatus,
+    selectDraft,
+    createDraft,
+    updateDraft,
+    deleteDraft,
+    duplicateDraft,
+    toggleStar,
+    createSnapshot,
+    restoreSnapshot,
+  ]);
 
   return <DraftContext.Provider value={value}>{children}</DraftContext.Provider>;
 }

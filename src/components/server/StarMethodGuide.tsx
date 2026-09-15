@@ -23,32 +23,32 @@ export function StarMethodGuide() {
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
-        <div className="p-2.5 bg-white rounded border border-neutral-200 space-y-1">
+        <div className="p-2.5 bg-white/80 rounded space-y-1">
           <div className="flex items-center gap-1.5 font-bold text-neutral-900">
             <Target className="w-3.5 h-3.5 text-neutral-600" />
             <span>1. 結論ファースト</span>
           </div>
-          <p className="text-xs text-neutral-500 leading-normal">
+          <p className="text-xs text-neutral-600 leading-normal">
             冒頭で強みと成果を一言で提示。「私の強みは〜です」から始め、読者の認知負荷を最小化します。
           </p>
         </div>
 
-        <div className="p-2.5 bg-white rounded border border-neutral-200 space-y-1">
+        <div className="p-2.5 bg-white/80 rounded space-y-1">
           <div className="flex items-center gap-1.5 font-bold text-neutral-900">
             <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
             <span>2. 行動に45%割く</span>
           </div>
-          <p className="text-xs text-neutral-500 leading-normal">
+          <p className="text-xs text-neutral-600 leading-normal">
             「頑張った」はNG。どのような独自の仕組みを考案し、どう周囲を巻き込んだかのプロセスを書きます。
           </p>
         </div>
 
-        <div className="p-2.5 bg-white rounded border border-neutral-200 space-y-1">
+        <div className="p-2.5 bg-white/80 rounded space-y-1">
           <div className="flex items-center gap-1.5 font-bold text-neutral-900">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>3. 定量成果と再現性</span>
           </div>
-          <p className="text-xs text-neutral-500 leading-normal">
+          <p className="text-xs text-neutral-600 leading-normal">
             「数字」で成果を示し、過去の経験を「入社後にどう活かせるか」という再現性に結びつけます。
           </p>
         </div>

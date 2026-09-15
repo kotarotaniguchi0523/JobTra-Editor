@@ -74,11 +74,16 @@ export function StructurePageClient({
     setHasUnapplied(false);
   }, [activeDraft, updateDraft]);
 
-  // 執筆モードへ遷移
+  // 執筆モードへ遷移（SPAソフトナビゲーション）
   const handleSwitchToWriteMode = useCallback(() => {
     handleApplyBlocksToContent();
+    const targetUrl = `/?id=${activeDraft?.id || ''}`;
     if (typeof window !== 'undefined') {
-      window.location.href = `/?id=${activeDraft?.id || ''}`;
+      if ('navigation' in window && typeof (window as any).navigation?.navigate === 'function') {
+        (window as any).navigation.navigate(targetUrl);
+      } else {
+        window.location.href = targetUrl;
+      }
     }
   }, [activeDraft, handleApplyBlocksToContent]);
 

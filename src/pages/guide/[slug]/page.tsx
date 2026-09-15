@@ -25,11 +25,11 @@ const GUIDE_DATA: Record<string, GuideSectionData> = {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
           <div className="p-3 bg-white rounded border border-neutral-200">
             <span className="font-bold text-neutral-900 block mb-1">Action（行動）に6割を割く</span>
-            <p className="text-neutral-500 text-[11px]">状況説明が長すぎると「あなたが何をしたのか」が伝わりません。独自の工夫に最も文字数を使ってください。</p>
+            <p className="text-neutral-500 text-xs">状況説明が長すぎると「あなたが何をしたのか」が伝わりません。独自の工夫に最も文字数を使ってください。</p>
           </div>
           <div className="p-3 bg-white rounded border border-neutral-200">
             <span className="font-bold text-neutral-900 block mb-1">再現性（自己PRへの接続）</span>
-            <p className="text-neutral-500 text-[11px]">過去の武勇伝で終わらせず、その経験で得た強みを「入社後どう発揮するか」まで書き切ることが合格の条件です。</p>
+            <p className="text-neutral-500 text-xs">過去の武勇伝で終わらせず、その経験で得た強みを「入社後どう発揮するか」まで書き切ることが合格の条件です。</p>
           </div>
         </div>
       </div>
@@ -44,23 +44,23 @@ const GUIDE_DATA: Record<string, GuideSectionData> = {
         <div className="p-4 bg-neutral-50 rounded-lg border border-neutral-200 space-y-3">
           <h3 className="font-bold text-neutral-900 text-sm">400文字エントリーシートの配分モデル</h3>
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-[11px] pb-1 border-b border-neutral-200">
+            <div className="flex items-center justify-between text-xs pb-1 border-b border-neutral-200">
               <span className="font-semibold text-neutral-800">結論（Headline）</span>
               <span className="font-mono text-neutral-500">約60字 (15%)</span>
             </div>
-            <div className="flex items-center justify-between text-[11px] pb-1 border-b border-neutral-200">
+            <div className="flex items-center justify-between text-xs pb-1 border-b border-neutral-200">
               <span className="font-semibold text-neutral-800">状況・課題（Context & Conflict）</span>
               <span className="font-mono text-neutral-500">約80字 (20%)</span>
             </div>
-            <div className="flex items-center justify-between text-[11px] pb-1 border-b border-neutral-200">
+            <div className="flex items-center justify-between text-xs pb-1 border-b border-neutral-200">
               <span className="font-semibold text-neutral-800">独自の創意工夫（Action）</span>
               <span className="font-mono text-neutral-500">約180字 (45%)</span>
             </div>
-            <div className="flex items-center justify-between text-[11px] pb-1 border-b border-neutral-200">
+            <div className="flex items-center justify-between text-xs pb-1 border-b border-neutral-200">
               <span className="font-semibold text-neutral-800">定量的成果（Measurable Result）</span>
               <span className="font-mono text-neutral-500">約40字 (10%)</span>
             </div>
-            <div className="flex items-center justify-between text-[11px]">
+            <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-neutral-800">入社後の貢献（Future Contribution）</span>
               <span className="font-mono text-neutral-500">約40字 (10%)</span>
             </div>
@@ -114,15 +114,15 @@ const GUIDE_DATA: Record<string, GuideSectionData> = {
       <div className="space-y-3 text-xs leading-relaxed text-neutral-700">
         <div className="p-3 bg-white rounded-lg border border-neutral-200">
           <span className="font-bold text-neutral-900 block mb-0.5">1. 設問に対するストレートな回答</span>
-          <p className="text-neutral-500 text-[11px]">「ガクチカ」を聞かれているのに「自己PR」を書いていないか。「最初の一文」で問いに答えているか。</p>
+          <p className="text-neutral-500 text-xs">「ガクチカ」を聞かれているのに「自己PR」を書いていないか。「最初の一文」で問いに答えているか。</p>
         </div>
         <div className="p-3 bg-white rounded-lg border border-neutral-200">
           <span className="font-bold text-neutral-900 block mb-0.5">2. 自発的な行動と主体性</span>
-          <p className="text-neutral-500 text-[11px]">指示待ちではなく、自ら問題を発見して周囲を巻き込み動いたプロセスが描かれているか。</p>
+          <p className="text-neutral-500 text-xs">指示待ちではなく、自ら問題を発見して周囲を巻き込み動いたプロセスが描かれているか。</p>
         </div>
         <div className="p-3 bg-white rounded-lg border border-neutral-200">
           <span className="font-bold text-neutral-900 block mb-0.5">3. 定量的な根拠と客観的実績</span>
-          <p className="text-neutral-500 text-[11px]">「すごく改善した」ではなく「離職率を30%から5%に削減した」などの数字があるか。</p>
+          <p className="text-neutral-500 text-xs">「すごく改善した」ではなく「離職率を30%から5%に削減した」などの数字があるか。</p>
         </div>
       </div>
     ),
@@ -159,7 +159,7 @@ export default function GuideTopicPage({
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>エディタに戻る</span>
           </a>
-          <span className="text-[11px] font-mono text-neutral-400 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200">
+          <span className="text-xs font-mono text-neutral-400 bg-neutral-100 px-2.5 py-1 rounded-full border border-neutral-200">
             Funstack Static SSG: /guide/{params.slug}
           </span>
         </div>
@@ -168,7 +168,7 @@ export default function GuideTopicPage({
         <div className="bg-white rounded-xl border border-neutral-200 p-6 shadow-xs space-y-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               就活ES推敲極意
             </span>
           </div>
@@ -192,7 +192,7 @@ export default function GuideTopicPage({
         <div className="p-4 bg-neutral-900 text-white rounded-xl flex items-center justify-between shadow-xs">
           <div>
             <span className="font-semibold text-xs block">この原則をエディタで実践</span>
-            <p className="text-[11px] text-neutral-400">リアルタイム推敲チェックと文字数カウントを活用して執筆しましょう。</p>
+            <p className="text-xs text-neutral-400">リアルタイム推敲チェックと文字数カウントを活用して執筆しましょう。</p>
           </div>
           <a
             href="/"

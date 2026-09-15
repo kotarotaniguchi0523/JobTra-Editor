@@ -42,7 +42,7 @@ export function SubmissionChecklist() {
         {CHECKLIST_ITEMS.map((item, idx) => (
           <div
             key={item.id}
-            className="p-2.5 rounded bg-neutral-50 border border-neutral-200 text-xs flex items-start gap-2.5"
+            className="p-2.5 rounded bg-neutral-50 text-xs flex items-start gap-2.5"
           >
             <div className="w-4 h-4 rounded-full bg-neutral-200 flex items-center justify-center text-neutral-700 shrink-0 mt-0.5 font-mono text-xs font-semibold">
               {idx + 1}

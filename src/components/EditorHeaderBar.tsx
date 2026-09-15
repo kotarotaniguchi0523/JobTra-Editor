@@ -71,7 +71,7 @@ export const EditorHeaderBar: React.FC<EditorHeaderBarProps> = memo(({
           <label htmlFor="draft-category-select" className="text-xs font-semibold text-neutral-500 block mb-0.5">
             設問カテゴリ
           </label>
-          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-neutral-50 rounded-md border border-neutral-200">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-neutral-100/80 rounded-md">
             <Tag className="w-4 h-4 text-neutral-400 shrink-0" />
             <select
               id="draft-category-select"

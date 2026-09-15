@@ -22,7 +22,7 @@ export const ChiselToolbar: React.FC<ChiselToolbarProps> = ({
       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50/70 border border-emerald-200/80 rounded-md text-xs text-emerald-800">
         <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
         <span className="font-medium">贅肉のない引き締まった文体です</span>
-        <span className="text-[11px] text-emerald-600 ml-auto">二重敬語・迂言表現 0件</span>
+        <span className="text-xs text-emerald-600 ml-auto">二重敬語・迂言表現 0件</span>
       </div>
     );
   }
@@ -33,7 +33,7 @@ export const ChiselToolbar: React.FC<ChiselToolbarProps> = ({
         <div className="flex items-center gap-1.5 text-xs text-amber-900 font-medium">
           <Scissors className="w-3.5 h-3.5 text-amber-700 shrink-0" />
           <span>文字数を削れる冗長表現: {matches.length}箇所</span>
-          <span className="px-1.5 py-0.2 bg-amber-200 text-amber-900 rounded-full font-mono text-[10px] font-bold">
+          <span className="px-1.5 py-0.2 bg-amber-200 text-amber-900 rounded-full font-mono text-xs font-bold">
             合計 -{totalSaved}字
           </span>
         </div>
@@ -58,7 +58,7 @@ export const ChiselToolbar: React.FC<ChiselToolbarProps> = ({
             onClick={() => {
               onApplyOne(m);
             }}
-            className="flex items-center gap-1.5 px-2 py-0.5 bg-white border border-amber-300/80 rounded text-[11px] text-neutral-800 hover:bg-amber-100/60 hover:border-amber-400 transition-colors cursor-pointer group"
+            className="flex items-center gap-1.5 px-2 py-0.5 bg-white border border-amber-300/80 rounded text-xs text-neutral-800 hover:bg-amber-100/60 hover:border-amber-400 transition-colors cursor-pointer group"
             title={`${m.label}: 「${m.original}」を「${m.suggested}」に置換`}
           >
             <span className="line-through text-neutral-400 max-w-[120px] truncate">
@@ -68,13 +68,13 @@ export const ChiselToolbar: React.FC<ChiselToolbarProps> = ({
             <span className="font-semibold text-amber-900">
               {m.suggested}
             </span>
-            <span className="font-mono text-[10px] text-emerald-700 bg-emerald-50 px-1 rounded">
+            <span className="font-mono text-xs text-emerald-700 bg-emerald-50 px-1 rounded">
               -{m.charsSaved}字
             </span>
           </button>
         ))}
         {matches.length > 4 && (
-          <span className="text-[11px] text-amber-700 self-center">
+          <span className="text-xs text-amber-700 self-center">
             他 {matches.length - 4}件
           </span>
         )}

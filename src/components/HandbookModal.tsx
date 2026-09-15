@@ -56,7 +56,7 @@ export const HandbookModal: React.FC<HandbookModalProps> = memo(({
               </div>
               <div>
                 <h2 id="handbook-modal-title" className="font-bold text-sm text-neutral-900">就活ES推敲ハンドブック</h2>
-                <p className="text-[11px] text-neutral-500">Funstack Static RSC (Server Component + defer) で事前生成</p>
+                <p className="text-xs text-neutral-500">Funstack Static RSC (Server Component + defer) で事前生成</p>
               </div>
             </div>
             <button

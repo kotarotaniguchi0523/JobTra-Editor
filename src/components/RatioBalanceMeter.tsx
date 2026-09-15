@@ -23,7 +23,7 @@ export const RatioBalanceMeter: React.FC<RatioBalanceMeterProps> = ({ balance })
           <BarChart3 className="w-3.5 h-3.5 text-neutral-500" />
           <span>黄金比バランス診断（理想 10:20:45:25）</span>
         </div>
-        <span className="text-[11px] text-neutral-500">
+        <span className="text-xs text-neutral-500">
           目標 {balance.targetChars}字 基準
         </span>
       </div>
@@ -34,8 +34,8 @@ export const RatioBalanceMeter: React.FC<RatioBalanceMeterProps> = ({ balance })
           const ratioPercent = Math.min(100, Math.round((block.actualChars / Math.max(1, block.idealChars)) * 100));
 
           return (
-            <div key={key} className="p-2 bg-white rounded border border-neutral-200 space-y-1">
-              <div className="flex items-center justify-between text-[11px]">
+            <div key={key} className="p-2 bg-white/80 rounded space-y-1">
+              <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-neutral-700 truncate">{block.name}</span>
                 <span className="font-mono text-neutral-500">{block.actualChars}字</span>
               </div>
@@ -48,7 +48,7 @@ export const RatioBalanceMeter: React.FC<RatioBalanceMeterProps> = ({ balance })
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[10px] text-neutral-500 pt-0.5">
+              <div className="flex items-center justify-between text-xs text-neutral-500 pt-0.5">
                 <span>目安: 約{block.idealChars}字</span>
                 {block.status === 'perfect' && (
                   <span className="text-emerald-700 font-medium flex items-center gap-0.5">
@@ -71,7 +71,7 @@ export const RatioBalanceMeter: React.FC<RatioBalanceMeterProps> = ({ balance })
       </div>
 
       {/* Advice note */}
-      <div className="flex items-start gap-1.5 text-[11px] text-neutral-600 pt-0.5">
+      <div className="flex items-start gap-1.5 text-xs text-neutral-600 pt-0.5">
         <AlertCircle className="w-3.5 h-3.5 text-neutral-400 shrink-0 mt-0.5" />
         <p className="leading-normal">{balance.overallAdvice}</p>
       </div>

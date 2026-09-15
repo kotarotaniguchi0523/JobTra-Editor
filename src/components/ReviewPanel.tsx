@@ -71,15 +71,15 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
 
       {/* Quick Summary Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-sm">
-        <div className="p-3 bg-neutral-50 rounded border border-neutral-200">
-          <span className="text-xs text-neutral-400 block">文字数（空白除く）</span>
+        <div className="p-2.5 bg-neutral-50 rounded">
+          <span className="text-xs text-neutral-500 block">文字数（空白除く）</span>
           <span className="font-mono font-semibold text-neutral-900 text-base">
             {metrics.charsNoWhitespace}字
           </span>
         </div>
 
-        <div className="p-3 bg-neutral-50 rounded border border-neutral-200">
-          <span className="text-xs text-neutral-400 block">一文の平均長</span>
+        <div className="p-2.5 bg-neutral-50 rounded">
+          <span className="text-xs text-neutral-500 block">一文の平均長</span>
           <span className={`font-mono font-semibold text-base ${
             metrics.avgSentenceLength > 60 ? 'text-amber-700' : 'text-neutral-900'
           }`}>
@@ -87,8 +87,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           </span>
         </div>
 
-        <div className="p-3 bg-neutral-50 rounded border border-neutral-200">
-          <span className="text-xs text-neutral-400 block">漢字比率 (理想20-35%)</span>
+        <div className="p-2.5 bg-neutral-50 rounded">
+          <span className="text-xs text-neutral-500 block">漢字比率 (理想20-35%)</span>
           <span className={`font-mono font-semibold text-base ${
             metrics.kanjiRatio > 40 ? 'text-amber-700' : 'text-neutral-900'
           }`}>
@@ -96,8 +96,8 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           </span>
         </div>
 
-        <div className="p-3 bg-neutral-50 rounded border border-neutral-200">
-          <span className="text-xs text-neutral-400 block">文の数</span>
+        <div className="p-2.5 bg-neutral-50 rounded">
+          <span className="text-xs text-neutral-500 block">文の数</span>
           <span className="font-mono font-semibold text-neutral-900 text-base">
             {metrics.sentenceCount}文
           </span>

@@ -29,23 +29,19 @@ export const SidebarDraftItem: React.FC<SidebarDraftItemProps> = memo(({
 }) => {
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => onSelect(draft.id)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onSelect(draft.id);
-        }
-      }}
-      className={`w-full text-left p-2.5 rounded-md border transition-all cursor-pointer group relative ${
+      className={`w-full p-2.5 rounded-md border transition-all group relative ${
         isSelected
           ? 'bg-white border-neutral-300 shadow-xs ring-1 ring-neutral-900/5'
           : 'bg-white/60 border-neutral-200/80 hover:bg-white hover:border-neutral-300'
       }`}
     >
-      <div className="flex items-start justify-between gap-1.5 mb-1">
-        <div className="flex-1 min-w-0">
+      <div className="flex items-start justify-between gap-1.5 mb-2">
+        <button
+          type="button"
+          onClick={() => onSelect(draft.id)}
+          className="flex-1 min-w-0 text-left cursor-pointer focus:outline-hidden"
+          aria-label={`${draft.companyName || categoryLabel}: ${draft.title || '無題のエントリーシート'} を選択`}
+        >
           <span className="text-xs font-medium text-neutral-500 block truncate">
             {draft.companyName ? draft.companyName : categoryLabel}
           </span>
@@ -56,7 +52,10 @@ export const SidebarDraftItem: React.FC<SidebarDraftItemProps> = memo(({
           >
             {draft.title || '無題のエントリーシート'}
           </h4>
-        </div>
+          <span className="text-xs text-neutral-500 line-clamp-2 leading-relaxed mt-1 block font-sans font-normal">
+            {draft.content ? draft.content : '本文なし'}
+          </span>
+        </button>
 
         <button
           type="button"
@@ -67,7 +66,7 @@ export const SidebarDraftItem: React.FC<SidebarDraftItemProps> = memo(({
           className={`p-1 rounded-sm transition-colors cursor-pointer shrink-0 ${
             draft.starred
               ? 'text-amber-500 hover:text-amber-600'
-              : 'text-neutral-300 hover:text-neutral-500 opacity-0 group-hover:opacity-100'
+              : 'text-neutral-400 hover:text-neutral-600'
           }`}
           title={draft.starred ? 'スターを解除' : '重要マークをつける'}
           aria-label={draft.starred ? 'スターを解除' : '重要マークをつける'}
@@ -76,10 +75,6 @@ export const SidebarDraftItem: React.FC<SidebarDraftItemProps> = memo(({
         </button>
       </div>
 
-      <p className="text-xs text-neutral-500 line-clamp-2 leading-relaxed mb-2 font-sans">
-        {draft.content ? draft.content : '本文なし'}
-      </p>
-
       <div className="flex items-center justify-between text-xs text-neutral-400 pt-1.5 border-t border-neutral-100">
         <div className="flex items-center gap-1.5 font-mono">
           <span>{draft.content.replace(/\s/g, '').length}字</span>
@@ -87,7 +82,7 @@ export const SidebarDraftItem: React.FC<SidebarDraftItemProps> = memo(({
           <span>{draft.targetCount || 400}字</span>
         </div>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
           <button
             type="button"
             onClick={(e) => {

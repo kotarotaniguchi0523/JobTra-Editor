@@ -29,30 +29,30 @@ export function ESHandbook() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div className="p-3 bg-neutral-50 rounded-md border border-neutral-200 space-y-1">
-            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-[10px] rounded font-semibold">1. S & T: Situation / Task (15-20%)</span>
+            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-xs rounded font-semibold">1. S & T: Situation / Task (15-20%)</span>
             <p className="text-xs font-medium text-neutral-900">状況と直面した高い壁・課題</p>
-            <p className="text-[11px] text-neutral-600 leading-normal">
+            <p className="text-xs text-neutral-600 leading-normal">
               単なる事実説明ではなく、「何が困難で、なぜ自分が取り組む必要があったのか」という背景を明瞭にします。
             </p>
           </div>
           <div className="p-3 bg-neutral-50 rounded-md border border-neutral-200 space-y-1">
-            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-[10px] rounded font-semibold">2. A: Action (40-50%)</span>
+            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-xs rounded font-semibold">2. A: Action (40-50%)</span>
             <p className="text-xs font-medium text-neutral-900">あなた自身の独自の創意工夫・行動</p>
-            <p className="text-[11px] text-neutral-600 leading-normal">
+            <p className="text-xs text-neutral-600 leading-normal">
               ESの心臓部。「頑張った」ではなく「どのように周囲を動かし、どんな仕組みを考案したか」の施策を具体化します。
             </p>
           </div>
           <div className="p-3 bg-neutral-50 rounded-md border border-neutral-200 space-y-1">
-            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-[10px] rounded font-semibold">3. R: Result (15-20%)</span>
+            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-xs rounded font-semibold">3. R: Result (15-20%)</span>
             <p className="text-xs font-medium text-neutral-900">定量的成果・客観的変化と学び</p>
-            <p className="text-[11px] text-neutral-600 leading-normal">
+            <p className="text-xs text-neutral-600 leading-normal">
               「離職率が40%から10%へ減少」「売上対前年比120%達成」など客観的指標を提示し、得た教訓を定義します。
             </p>
           </div>
           <div className="p-3 bg-neutral-50 rounded-md border border-neutral-200 space-y-1">
-            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-[10px] rounded font-semibold">4. C: Contribution (10-15%)</span>
+            <span className="inline-block px-1.5 py-0.5 bg-neutral-900 text-white font-mono text-xs rounded font-semibold">4. C: Contribution (10-15%)</span>
             <p className="text-xs font-medium text-neutral-900">志望企業での再現性と貢献</p>
-            <p className="text-[11px] text-neutral-600 leading-normal">
+            <p className="text-xs text-neutral-600 leading-normal">
               過去の成功体験を行動特性（ポータブルスキル）に昇華させ、「貴社の〇〇事業においてどう活きるか」を締めに結びます。
             </p>
           </div>
@@ -70,14 +70,14 @@ export function ESHandbook() {
             <span>400字ES（最も標準的な分量）の理想配分</span>
             <span className="font-mono text-neutral-500">目標: 360〜400字 (90-100%)</span>
           </div>
-          <div className="w-full bg-neutral-100 rounded-full h-3 flex overflow-hidden text-[9px] font-mono text-white text-center">
+          <div className="w-full bg-neutral-100 rounded-full h-3 flex overflow-hidden text-xs font-mono text-white text-center">
             <div className="bg-neutral-800 flex items-center justify-center" style={{ width: '15%' }} title="結論: 60字">結論 60</div>
             <div className="bg-neutral-600 flex items-center justify-center" style={{ width: '20%' }} title="課題: 80字">課題 80</div>
             <div className="bg-neutral-900 flex items-center justify-center font-bold" style={{ width: '40%' }} title="施策: 160字">施策・行動 160</div>
             <div className="bg-neutral-500 flex items-center justify-center" style={{ width: '15%' }} title="結果: 60字">結果 60</div>
             <div className="bg-neutral-700 flex items-center justify-center" style={{ width: '10%' }} title="貢献: 40字">結び 40</div>
           </div>
-          <p className="text-[11px] text-neutral-500 leading-relaxed">
+          <p className="text-xs text-neutral-500 leading-relaxed">
             ※ 施策・行動（Action）が全体の40%未満だと「結果論」や「環境の幸運」と見なされやすくなります。最も文字数を割いて自己の思考プロセスを伝えましょう。
           </p>
         </div>
@@ -135,14 +135,14 @@ export function ESHandbook() {
             <Compass className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-neutral-900 block">主語と述語のねじれ解消</span>
-              <p className="text-[11px] text-neutral-500">一文が60文字を超えるとねじれが発生します。読点で区切らずに2文に分割してください。</p>
+              <p className="text-xs text-neutral-500">一文が60文字を超えるとねじれが発生します。読点で区切らずに2文に分割してください。</p>
             </div>
           </div>
           <div className="p-2.5 bg-neutral-50 rounded border border-neutral-200 flex items-start gap-2">
             <BookOpen className="w-4 h-4 text-neutral-500 shrink-0 mt-0.5" />
             <div>
               <span className="font-semibold text-neutral-900 block">文末「です・ます」の統一</span>
-              <p className="text-[11px] text-neutral-500">「〜である」が混在していないか、体言止めが不自然に多用されていないか点検します。</p>
+              <p className="text-xs text-neutral-500">「〜である」が混在していないか、体言止めが不自然に多用されていないか点検します。</p>
             </div>
           </div>
         </div>

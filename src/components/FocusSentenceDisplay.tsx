@@ -25,7 +25,7 @@ export const FocusSentenceDisplay: React.FC<FocusSentenceDisplayProps> = memo(({
 
   return (
     <div className="px-5 py-3 bg-neutral-50/80 border-b border-neutral-200 flex flex-col gap-1 transition-opacity duration-150">
-      <div className="flex items-center justify-between text-[11px] text-neutral-500">
+      <div className="flex items-center justify-between text-xs text-neutral-500">
         <span className="font-semibold text-neutral-700 flex items-center gap-1">
           <Focus className="w-3 h-3 text-neutral-900" />
           執筆中の一文（{focusSentenceCtx.sentenceIndex + 1} / {focusSentenceCtx.totalSentences} 文目）

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useTransition, memo } from 'react';
-import { History, BookmarkPlus, Check, RotateCcw } from 'lucide-react';
+import { History, BookmarkPlus, Check, RotateCcw, FileEdit, Layers } from 'lucide-react';
 import { ESDraft, DraftSnapshot } from '../types';
 
 interface DocumentPreviewProps {
@@ -72,6 +72,29 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(({
             <span className="text-neutral-400 italic">本文が入力されていません。</span>
           )}
         </div>
+
+        {/* SPA Quick Navigation Bar */}
+        <div className="pt-4 mt-6 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <span className="text-neutral-400">
+            内容を修正・再推敲する場合はエディタへ移動してください
+          </span>
+          <div className="flex items-center gap-2">
+            <a
+              href={`/structure?id=${draft.id}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-neutral-200 text-neutral-700 bg-white hover:bg-neutral-50 transition-colors font-medium no-underline"
+            >
+              <Layers className="w-3.5 h-3.5 text-neutral-500" />
+              <span>STAR構成で整理</span>
+            </a>
+            <a
+              href={`/?id=${draft.id}`}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-neutral-900 text-white hover:bg-neutral-800 transition-colors font-medium no-underline shadow-2xs"
+            >
+              <FileEdit className="w-3.5 h-3.5" />
+              <span>執筆エディタで推敲</span>
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Snapshots & History Manager */}
@@ -100,14 +123,14 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(({
         </div>
 
         {restoredToast && (
-          <div className="mb-2.5 p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded flex items-center gap-2 animate-fadeIn">
+          <div className="mb-2.5 p-2.5 bg-emerald-50 text-emerald-800 text-xs rounded flex items-center gap-2 animate-fadeIn">
             <Check className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>バージョンを本文に復元しました</span>
           </div>
         )}
 
         {isNaming && (
-          <form onSubmit={handleSave} className="p-3 bg-neutral-50 rounded-md border border-neutral-200 mb-3 space-y-2">
+          <form onSubmit={handleSave} className="p-3 bg-neutral-50 rounded-md mb-3 space-y-2">
             <label htmlFor="snapshot-label-input" className="text-xs font-medium text-neutral-600 block">
               バージョンのラベル名
             </label>
@@ -156,7 +179,7 @@ export const DocumentPreview: React.FC<DocumentPreviewProps> = memo(({
             draft.snapshots.map((snap) => (
               <div
                 key={snap.id}
-                className="p-3 bg-neutral-50 hover:bg-neutral-100/80 rounded border border-neutral-200 transition-colors flex items-start justify-between gap-2"
+                className="p-3 bg-neutral-50 hover:bg-neutral-100/80 rounded transition-colors flex items-start justify-between gap-2"
               >
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-semibold text-neutral-900 truncate">
