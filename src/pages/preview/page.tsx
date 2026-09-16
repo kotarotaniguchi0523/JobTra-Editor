@@ -7,7 +7,7 @@ import { EmptyDraftGuide } from '@widgets/workspace/rsc/EmptyDraftGuide';
 import { SubmissionChecklist } from '@widgets/preview/rsc/SubmissionChecklist';
 import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
 import { PreviewIsland } from '@widgets/preview/ui/PreviewIsland';
-import { WorkspaceLayout } from '@widgets/workspace/WorkspaceLayout';
+import { WorkspaceLayout } from '@widgets/workspace/rsc/WorkspaceLayout';
 
 function LoadingSpinner() {
   return (

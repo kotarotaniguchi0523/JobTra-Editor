@@ -7,7 +7,7 @@ import { EmptyDraftGuide } from '@widgets/workspace/rsc/EmptyDraftGuide';
 import { StarMethodGuide } from '@widgets/structure/rsc/StarMethodGuide';
 import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
 import { StructureIsland } from '@widgets/structure/ui/StructureIsland';
-import { WorkspaceLayout } from '@widgets/workspace/WorkspaceLayout';
+import { WorkspaceLayout } from '@widgets/workspace/rsc/WorkspaceLayout';
 
 function LoadingSpinner() {
   return (

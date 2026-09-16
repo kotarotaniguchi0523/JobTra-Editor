@@ -71,8 +71,13 @@
   - ユニットテスト・ロジックテスト（29/29 件パス）
 - **Dependency Audit**: `knip` (`6.35.1`)
   - 未使用ファイル・依存・exportをCIで検出
+- **Structural Conventions**: `konsistent` (`1.0.0-beta.4`)
+  - `konsistent.json` でfeature/widgetの責務境界、命名規約、Funstackの予約route名を検査
+- **Agent Context**: `lat.md` (`0.12.2`)
+  - `lat.md/` に設計判断を保持し、wiki linkとソース参照をCIで検証
 - **CI / Pipeline**: GitHub Actions
-  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、minitype CLI PDF検証
+  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、Konsistent、lat check、minitype CLI PDF検証
+    - `konsistent` と `lat check`も独立ジョブとして実行し、各チェックは並列に動作
   - `react-doctor.yml`: PR変更スキャン、インラインレビューコメント、ヘルススコア計測
   - `concurrency`（最新コミット優先自動キャンセル）および最小権限の原則（Least Privilege）を適用
 
@@ -120,6 +125,13 @@ npm run build
 # 不要なファイル・依存・exportの検出
 npm run knip
 
+# 構造規約のschema検証と監査
+npm run konsistent:validate
+npm run konsistent
+
+# Agent knowledge graphのリンク検証
+npm run lat:check
+
 # Node.js上でminitypeの実PDFを生成するスモークテスト
 npm run verify:pdf
 ```
@@ -132,6 +144,9 @@ npm run verify:pdf
 .
 ├── .github/workflows/         # GitHub Actions CI 設定 (ci.yml, react-doctor.yml)
 ├── .oxfmtrc.json              # oxfmt 設定ファイル
+├── konsistent.json             # feature-slice・命名・route構造の規約
+├── AGENTS.md                  # lat.md運用を含むエージェント向け作業規約
+├── lat.md/                    # 設計判断・状態所有権・出力仕様のknowledge graph
 ├── src/
 │   ├── app/                   # Static RSCのアプリシェル・build entry・runtime
 │   │   ├── Root.tsx
@@ -141,7 +156,7 @@ npm run verify:pdf
 │   ├── entities/draft/        # Draftの型、純粋な遷移、IndexedDB adapter
 │   ├── features/              # ユーザー機能（export、snapshot、文章支援）
 │   ├── widgets/               # 画面パーツ（workspace、editor、preview等）
-│   │   └── */rsc/             # build-time Server Componentの静的スロット
+│   │   └── */{ui,rsc}/         # interaction islandとbuild-time静的スロット
 │   ├── pages/                 # ファイルシステムルーティングのページ合成
 │   └── shared/validation/     # feature間で共有するValibot schema
 ├── knip.json                  # 未使用コード・依存の検査設定
