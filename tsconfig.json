@@ -12,7 +12,12 @@
     "allowJs": false,
     "jsx": "react-jsx",
     "paths": {
-      "@/*": ["./*"]
+      "@app/*": ["./src/app/*"],
+      "@entities/*": ["./src/entities/*"],
+      "@features/*": ["./src/features/*"],
+      "@pages/*": ["./src/pages/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@widgets/*": ["./src/widgets/*"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true

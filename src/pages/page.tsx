@@ -1,11 +1,12 @@
 import { Suspense } from 'react';
 import { defer } from '@funstack/static/server';
-import { ESHandbook } from '../components/server/ESHandbook';
-import { AuditGuidelines } from '../components/server/AuditGuidelines';
-import { SidebarFooter } from '../components/server/SidebarFooter';
-import { EmptyDraftGuide } from '../components/server/EmptyDraftGuide';
-import { HeaderBrand, HeaderStaticLinks } from '../components/server/HeaderBrand';
-import { WritePageClient } from '../components/WritePageClient';
+import { ESHandbook } from '@widgets/handbook/rsc/ESHandbook';
+import { AuditGuidelines } from '@widgets/audit/rsc/AuditGuidelines';
+import { SidebarFooter } from '@widgets/workspace/rsc/SidebarFooter';
+import { EmptyDraftGuide } from '@widgets/workspace/rsc/EmptyDraftGuide';
+import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
+import { WorkspaceLayout } from '@widgets/workspace/WorkspaceLayout';
+import { WriteEditorIsland } from '@widgets/editor/ui/WriteEditorIsland';
 
 function LoadingSpinner() {
   return (
@@ -22,7 +23,8 @@ function LoadingSpinner() {
  */
 export default function HomePage() {
   return (
-    <WritePageClient
+    <WorkspaceLayout
+      activeMode="write"
       brandSlot={<HeaderBrand />}
       linksSlot={<HeaderStaticLinks />}
       sidebarFooterSlot={<SidebarFooter />}
@@ -37,6 +39,8 @@ export default function HomePage() {
           {defer(<ESHandbook />, { name: 'ESHandbook' })}
         </Suspense>
       }
-    />
+    >
+      <WriteEditorIsland />
+    </WorkspaceLayout>
   );
 }

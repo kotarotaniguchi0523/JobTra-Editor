@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mdString, minitype } from '@minitype/minitype';
-import { buildEsPdfMarkdown, type ExportPdfOptions } from '../src/lib/exportPdf';
+import { buildEsPdfMarkdown, type ExportPdfOptions } from '@features/export/lib/exportPdf';
 
 const repositoryRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const outputPath = path.resolve(

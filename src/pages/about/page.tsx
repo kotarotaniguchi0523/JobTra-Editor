@@ -1,9 +1,9 @@
 import React from 'react';
 import { ArrowRight, BookOpen } from 'lucide-react';
-import { AboutHero } from './components/AboutHero';
-import { AboutFeatures } from './components/AboutFeatures';
-import { AboutWorkflow } from './components/AboutWorkflow';
-import { AboutFooter } from './components/AboutFooter';
+import { AboutHero } from '@pages/about/ui/AboutHero';
+import { AboutFeatures } from '@pages/about/ui/AboutFeatures';
+import { AboutWorkflow } from '@pages/about/ui/AboutWorkflow';
+import { AboutFooter } from '@pages/about/ui/AboutFooter';
 
 /**
  * Landing Page (LP) for 就活ESクラフト

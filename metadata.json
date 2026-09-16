@@ -1,6 +1,6 @@
 {
   "name": "就活ESクラフト - 楽しく書けるES作成エディタ",
-  "description": "就活エントリーシートの本質的・高機能下書きエディタ。Funstack Static SPAルーティング、RSC defer()によるペイロード分割、STAR法思考整理、文体・文字数リアルタイム監査、バージョン履歴、非同期IndexedDB保存を搭載。",
+  "description": "就活エントリーシートの本質的・高機能下書きエディタ。Static RSCによるページ構成、STAR法思考整理、文体・文字数リアルタイム監査、バージョン履歴、ブラウザ内IndexedDB保存、Markdownと印刷用PDFのローカル出力を搭載。",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": []
 }
