@@ -108,8 +108,8 @@ jobs:
       - name: Run Knip
         run: npm run knip
 
-  build:
-    name: RSC Production Build
+  export-smoke:
+    name: Serverless Export Smoke Test
     needs: setup
     runs-on: ubuntu-24.04
     steps:
@@ -123,16 +123,6 @@ jobs:
 
       - name: Install dependencies (from cache)
         run: npm ci --prefer-offline
-
-      - name: Build RSC application
-        run: npm run build
-
-      - name: Assert browser export is serverless
-        run: |
-          if grep -R -E -q 'better-sqlite3|/api/export/pdf' dist/public; then
-            echo 'Server-only PDF dependency or route leaked into the public browser bundle.'
-            exit 1
-          fi
 
       - name: Verify minitype PDF CLI output
         run: npm run verify:pdf

@@ -68,7 +68,7 @@
 - **Dependency Audit**: `knip` (`6.35.1`)
   - 未使用ファイル・依存・exportをCIで検出
 - **CI / Pipeline**: GitHub Actions
-  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、RSCビルド、minitype CLI PDF検証
+  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、minitype CLI PDF検証
   - `react-doctor.yml`: PR変更スキャン、インラインレビューコメント、ヘルススコア計測
   - `concurrency`（最新コミット優先自動キャンセル）および最小権限の原則（Least Privilege）を適用
 
