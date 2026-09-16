@@ -12,7 +12,7 @@ The root boundary is [[src/app/Root.tsx]], and route composition starts at [[src
 
 Client Components are limited to browser interaction, DOM integration, local pending UI, and access to browser persistence APIs.
 
-The current islands are [[src/app/runtime/DraftRuntime.tsx]], [[src/widgets/editor/ui/WriteEditorIsland.tsx]], [[src/widgets/preview/ui/PreviewIsland.tsx]], [[src/widgets/structure/ui/StructureIsland.tsx]], and [[src/widgets/workspace/ui/WorkspaceClientShell.tsx]]. Static content is passed through them by composition instead of being reimplemented inside a client subtree.
+The current islands are [[src/app/runtime/DraftRuntime.tsx]], [[src/widgets/editor/ui/WriteEditorIsland.tsx]], [[src/widgets/preview/ui/PreviewIsland.tsx]], [[src/widgets/structure/ui/StructureIsland.tsx]], [[src/widgets/workspace/ui/WorkspaceClientShell.tsx]], and the writing-only [[src/features/webmcp/ui/WebMcpIsland.tsx]]. Static content is passed through them by composition instead of being reimplemented inside a client subtree.
 
 ## Server-through-client composition
 

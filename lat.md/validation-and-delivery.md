@@ -8,6 +8,8 @@ Untrusted draft data and URL search parameters are parsed through [[src/shared/v
 
 Schemas define the accepted id, category, text, timestamp, snapshot, query, and URL parameter shapes; invalid values resolve to explicit safe fallbacks.
 
+WebMCP inputs use the same Valibot boundary through [[src/features/webmcp/model/writingToolSchemas.ts]], and the development-only `package.json` dependency `webmcp-types` supplies the current browser API types without entering the client bundle.
+
 ## React compiler policy
 
 [[vite.config.ts]] applies the React Compiler during the production transform, so manual `memo`, `useMemo`, and `useCallback` are not used as routine render protection.

@@ -6,6 +6,7 @@ import { SidebarFooter } from '@widgets/workspace/rsc/SidebarFooter';
 import { EmptyDraftGuide } from '@widgets/workspace/rsc/EmptyDraftGuide';
 import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
 import { WorkspaceLayout } from '@widgets/workspace/rsc/WorkspaceLayout';
+import { WebMcpIsland } from '@features/webmcp/ui/WebMcpIsland';
 import { WriteEditorIsland } from '@widgets/editor/ui/WriteEditorIsland';
 
 function LoadingSpinner() {
@@ -40,7 +41,10 @@ export default function HomePage() {
         </Suspense>
       }
     >
-      <WriteEditorIsland />
+      <>
+        <WriteEditorIsland />
+        <WebMcpIsland />
+      </>
     </WorkspaceLayout>
   );
 }

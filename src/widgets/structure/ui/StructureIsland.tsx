@@ -61,18 +61,6 @@ export function StructureIsland({ starGuideSlot }: StructureIslandProps) {
     );
   }
 
-  // 執筆モードへ遷移（SPAソフトナビゲーション）
-  function handleSwitchToWriteMode() {
-    const targetUrl = pathWithDraftId('/', activeDraft?.id);
-    if (typeof window !== 'undefined') {
-      if ('navigation' in window && typeof (window as any).navigation?.navigate === 'function') {
-        (window as any).navigation.navigate(targetUrl);
-      } else {
-        window.location.href = targetUrl;
-      }
-    }
-  }
-
   if (!activeDraft) return null;
 
   return (
@@ -80,7 +68,7 @@ export function StructureIsland({ starGuideSlot }: StructureIslandProps) {
       <StarStructureEditor
         currentStarBlocks={blocks}
         onBlockChange={handleBlockChange}
-        onSwitchToWriteMode={handleSwitchToWriteMode}
+        writeModeHref={pathWithDraftId('/', activeDraft.id)}
         onApplyBlocksToContent={handleApplyBlocksToContent}
         hasUnappliedChanges={hasUnapplied}
         starGuideSlot={starGuideSlot}
