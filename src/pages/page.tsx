@@ -5,7 +5,7 @@ import { AuditGuidelines } from '@widgets/audit/rsc/AuditGuidelines';
 import { SidebarFooter } from '@widgets/workspace/rsc/SidebarFooter';
 import { EmptyDraftGuide } from '@widgets/workspace/rsc/EmptyDraftGuide';
 import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
-import { WorkspaceLayout } from '@widgets/workspace/WorkspaceLayout';
+import { WorkspaceLayout } from '@widgets/workspace/rsc/WorkspaceLayout';
 import { WriteEditorIsland } from '@widgets/editor/ui/WriteEditorIsland';
 
 function LoadingSpinner() {

@@ -1,7 +1,7 @@
 import {
   WorkspaceClientShell,
   type WorkspaceClientShellProps,
-} from '@widgets/workspace/WorkspaceClientShell';
+} from '@widgets/workspace/ui/WorkspaceClientShell';
 
 type WorkspaceLayoutProps = WorkspaceClientShellProps;
 

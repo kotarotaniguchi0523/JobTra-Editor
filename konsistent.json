@@ -1,0 +1,89 @@
+{
+  "$schema": "node_modules/konsistent/konsistent.schema.json",
+  "version": "v1",
+  "conventions": [
+    {
+      "name": "feature-slice-roots",
+      "description": "Feature directories are ownership boundaries, not file buckets.",
+      "paths": "src/features/{feature}",
+      "must": {
+        "haveType": "directory"
+      }
+    },
+    {
+      "name": "feature-slice-layers",
+      "description": "Feature implementation files live below an explicit layer directory.",
+      "paths": "src/features/*/{layer}",
+      "must": {
+        "haveType": "directory"
+      }
+    },
+    {
+      "name": "widget-slice-roots",
+      "description": "Widget directories expose composition and interaction through named layers.",
+      "paths": "src/widgets/{widget}",
+      "must": {
+        "haveType": "directory"
+      }
+    },
+    {
+      "name": "widget-components-live-under-layers",
+      "description": "Widget React components are placed in ui or rsc layers, never at the slice root.",
+      "paths": "src/widgets/{widget}/{component}.tsx",
+      "mustNot": {
+        "haveType": "file"
+      }
+    },
+    {
+      "name": "feature-components-live-under-layers",
+      "description": "Feature React components are placed in ui or another semantic layer, never at the slice root.",
+      "paths": "src/features/{feature}/{component}.tsx",
+      "mustNot": {
+        "haveType": "file"
+      }
+    },
+    {
+      "name": "tsx-files-use-pascal-case",
+      "description": "Client, server, and UI React components use PascalCase filenames.",
+      "paths": [
+        "src/app/**/{component:matches(^[a-z_][A-Za-z0-9_-]*$)}.tsx",
+        "src/features/**/{component:matches(^[a-z_][A-Za-z0-9_-]*$)}.tsx",
+        "src/widgets/**/{component:matches(^[a-z_][A-Za-z0-9_-]*$)}.tsx",
+        "src/pages/**/ui/{component:matches(^[a-z_][A-Za-z0-9_-]*$)}.tsx"
+      ],
+      "mustNot": {
+        "haveType": "file"
+      }
+    },
+    {
+      "name": "tsx-files-have-no-separators",
+      "description": "React component filenames do not use kebab-case or snake_case separators.",
+      "paths": [
+        "src/app/**/{component:matches(^.*[-_].*$)}.tsx",
+        "src/features/**/{component:matches(^.*[-_].*$)}.tsx",
+        "src/widgets/**/{component:matches(^.*[-_].*$)}.tsx",
+        "src/pages/**/ui/{component:matches(^.*[-_].*$)}.tsx"
+      ],
+      "mustNot": {
+        "haveType": "file"
+      }
+    },
+    {
+      "name": "ts-modules-use-camel-case",
+      "description": "Non-component TypeScript modules use camelCase filenames.",
+      "paths": ["src/**/{module:matches(^[A-Z].*)}.ts", "src/**/{module:matches(^.*[-_].*$)}.ts"],
+      "mustNot": {
+        "haveType": "file"
+      }
+    },
+    {
+      "name": "route-reserved-files",
+      "description": "Funstack route entrypoints remain explicit reserved filenames.",
+      "paths": ["src/pages/**/page.tsx", "src/pages/layout.tsx"],
+      "must": {
+        "haveType": "file",
+        "export": ["default"]
+      }
+    }
+  ]
+}

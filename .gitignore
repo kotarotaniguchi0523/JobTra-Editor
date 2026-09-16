@@ -6,4 +6,4 @@ coverage/
 *.log
 font-caches.db
 .env*
-!.env.example
+.codex
