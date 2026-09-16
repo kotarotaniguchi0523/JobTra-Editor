@@ -2,8 +2,8 @@
   "$schema": "https://unpkg.com/knip@6/schema.json",
   "entry": [
     "doctor.config.ts",
-    "src/Root.tsx",
-    "src/build.ts",
+    "src/app/Root.tsx",
+    "src/app/build.ts",
     "src/pages/**/*.tsx",
     "scripts/**/*.ts",
     "tests/**/*.test.ts"

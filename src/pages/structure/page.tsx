@@ -1,12 +1,13 @@
 import { Suspense } from 'react';
 import { defer } from '@funstack/static/server';
-import { ESHandbook } from '../../components/server/ESHandbook';
-import { AuditGuidelines } from '../../components/server/AuditGuidelines';
-import { SidebarFooter } from '../../components/server/SidebarFooter';
-import { EmptyDraftGuide } from '../../components/server/EmptyDraftGuide';
-import { StarMethodGuide } from '../../components/server/StarMethodGuide';
-import { HeaderBrand, HeaderStaticLinks } from '../../components/server/HeaderBrand';
-import { StructurePageClient } from '../../components/StructurePageClient';
+import { ESHandbook } from '@widgets/handbook/rsc/ESHandbook';
+import { AuditGuidelines } from '@widgets/audit/rsc/AuditGuidelines';
+import { SidebarFooter } from '@widgets/workspace/rsc/SidebarFooter';
+import { EmptyDraftGuide } from '@widgets/workspace/rsc/EmptyDraftGuide';
+import { StarMethodGuide } from '@widgets/structure/rsc/StarMethodGuide';
+import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
+import { StructureIsland } from '@widgets/structure/ui/StructureIsland';
+import { WorkspaceLayout } from '@widgets/workspace/WorkspaceLayout';
 
 function LoadingSpinner() {
   return (
@@ -23,16 +24,12 @@ function LoadingSpinner() {
  */
 export default function StructurePage() {
   return (
-    <StructurePageClient
+    <WorkspaceLayout
+      activeMode="structure"
       brandSlot={<HeaderBrand />}
       linksSlot={<HeaderStaticLinks />}
       sidebarFooterSlot={<SidebarFooter />}
       emptyDraftGuideSlot={<EmptyDraftGuide />}
-      starGuideSlot={
-        <Suspense fallback={<div className="p-4 text-xs text-neutral-400">STAR解説読込中...</div>}>
-          {defer(<StarMethodGuide />, { name: 'StarMethodGuide' })}
-        </Suspense>
-      }
       guidelinesSlot={
         <Suspense fallback={<div className="p-4 text-xs text-neutral-400">監査基準読込中...</div>}>
           {defer(<AuditGuidelines />, { name: 'AuditGuidelines' })}
@@ -43,6 +40,16 @@ export default function StructurePage() {
           {defer(<ESHandbook />, { name: 'ESHandbook' })}
         </Suspense>
       }
-    />
+    >
+      <StructureIsland
+        starGuideSlot={
+          <Suspense
+            fallback={<div className="p-4 text-xs text-neutral-400">STAR解説読込中...</div>}
+          >
+            {defer(<StarMethodGuide />, { name: 'StarMethodGuide' })}
+          </Suspense>
+        }
+      />
+    </WorkspaceLayout>
   );
 }

@@ -46,11 +46,15 @@
 ### フロントエンド & アーキテクチャ
 
 - **Core Framework**: React 19 (`19.3.0`) / React DOM 19
+- **React Compiler**: `babel-plugin-react-compiler` (`^1.0.0`) を Vite の本番ビルドで適用
+  - 手動の `memo` / `useMemo` / `useCallback` に頼らず、コンパイラが再利用最適化を担当
 - **Build Tool**: Vite 8 (`^8.2.2`)
 - **Static & Routing**: [`@funstack/static`](https://uhyo.github.io/funstack-static/) (`^1.3.2`), [`@funstack/router`](https://github.com/uhyo/funstack-static) (`^1.4.0`)
   - [FUNSTACK Static 公式ドキュメント](https://uhyo.github.io/funstack-static/) / [GitHub リポジトリ](https://github.com/uhyo/funstack-static)
   - サーバーレス・静的ホスティング上で React Server Components (RSC) をビルド時事前レンダリング
   - `defer()` による遅延ペイロード分割配信とクライアントルーターとの協調動作
+- **State composition**: サーバーコンポーネントのレイアウトはスロットと `<Outlet />` を合成し、ブラウザローカルのドラフト状態は `useSyncExternalStore` の末端クライアントコンポーネントから購読
+  - Context / Provider で RSC ツリーをラップせず、IndexedDB のみをブラウザ側で利用
 - **Styling**: Tailwind CSS v4 (`^4.1.14`)
 - **Icons**: `lucide-react`
 - **PDF Export**: [`@minitype/minitype`](https://www.npmjs.com/package/@minitype/minitype) (`0.1.6`)
@@ -68,7 +72,7 @@
 - **Dependency Audit**: `knip` (`6.35.1`)
   - 未使用ファイル・依存・exportをCIで検出
 - **CI / Pipeline**: GitHub Actions
-  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、RSCビルド、minitype CLI PDF検証
+  - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、minitype CLI PDF検証
   - `react-doctor.yml`: PR変更スキャン、インラインレビューコメント、ヘルススコア計測
   - `concurrency`（最新コミット優先自動キャンセル）および最小権限の原則（Least Privilege）を適用
 
@@ -128,20 +132,27 @@ npm run verify:pdf
 .
 ├── .github/workflows/         # GitHub Actions CI 設定 (ci.yml, react-doctor.yml)
 ├── .oxfmtrc.json              # oxfmt 設定ファイル
-├── public/                    # 静的アセット
 ├── src/
-│   ├── components/            # UIコンポーネント
-│   │   ├── server/            # React Server Components (ガイド、ハンドブック等)
-│   │   └── ...                # Client Components (エディタ、サイドバー等)
-│   ├── context/               # DraftContext (ドラフト・状態管理)
-│   ├── services/              # 分析・ロジック層 (STAR法、文体監査、IndexedDB)
-│   ├── lib/                   # Markdown / ブラウザ内PDFエクスポート
-│   ├── Root.tsx               # RSCルートコンポーネント
-│   ├── build.ts               # Funstack Staticビルドエントリ
-│   └── types.ts               # グローバル型定義
+│   ├── app/                   # Static RSCのアプリシェル・build entry・runtime
+│   │   ├── Root.tsx
+│   │   ├── build.ts
+│   │   ├── runtime/DraftRuntime.tsx
+│   │   └── styles/index.css
+│   ├── entities/draft/        # Draftの型、純粋な遷移、IndexedDB adapter
+│   ├── features/              # ユーザー機能（export、snapshot、文章支援）
+│   ├── widgets/               # 画面パーツ（workspace、editor、preview等）
+│   │   └── */rsc/             # build-time Server Componentの静的スロット
+│   ├── pages/                 # ファイルシステムルーティングのページ合成
+│   └── shared/validation/     # feature間で共有するValibot schema
 ├── knip.json                  # 未使用コード・依存の検査設定
-└── tests/                     # ユニットテスト (Vitest)
+└── tests/                     # 所有者別のユニットテスト (Vitest)
+    ├── entities/draft/        # Draft状態遷移
+    ├── features/export/       # Export変換・PDF
+    ├── features/writing-assistance/ # 文章支援ロジック
+    └── shared/                # 共有Valibot境界
 ```
+
+ファイル名は、Reactコンポーネントを`PascalCase.tsx`、Hook・処理モジュールを`camelCase.ts`、featureディレクトリを`kebab-case`とします。`page.tsx`などFunstack Staticのルート予約名だけは例外です。型はDraft固有なら`entities/draft/model/types.ts`、文章支援固有なら`features/writing-assistance/model/types.ts`のように所有者の近くへ置き、汎用型の投げ込みファイルは作りません。
 
 ---
 

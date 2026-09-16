@@ -1,7 +1,8 @@
 import 'urlpattern-polyfill';
 import funstackStatic from '@funstack/static';
 import tailwindcss from '@tailwindcss/vite';
-import react from '@vitejs/plugin-react';
+import babel from '@rolldown/plugin-babel';
+import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
@@ -38,24 +39,32 @@ export default defineConfig(() => {
       },
       funstackStatic({
         ssr: true,
-        build: './src/build.ts',
+        build: './src/app/build.ts',
         fsRoutes: {
           dir: './src/pages',
-          root: './src/Root.tsx',
+          root: './src/app/Root.tsx',
           adapter: '@funstack/static/fs-routes/next-adapter',
         },
       }),
       react(),
+      // Compile client React components at build time. The compiler owns
+      // memoization, so components do not need manual memo/useMemo/useCallback.
+      babel({ presets: [reactCompilerPreset()] }),
       tailwindcss(),
     ],
     resolve: {
       alias: {
-        '@': path.resolve(import.meta.dirname, '.'),
+        '@app': path.resolve(import.meta.dirname, 'src/app'),
+        '@entities': path.resolve(import.meta.dirname, 'src/entities'),
+        '@features': path.resolve(import.meta.dirname, 'src/features'),
+        '@pages': path.resolve(import.meta.dirname, 'src/pages'),
+        '@shared': path.resolve(import.meta.dirname, 'src/shared'),
+        '@widgets': path.resolve(import.meta.dirname, 'src/widgets'),
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      // HMR can be disabled via DISABLE_HMR when the workspace edits files externally.
+      // File watching is disabled in the same mode to prevent unnecessary rebuilds.
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
