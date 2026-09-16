@@ -25,3 +25,9 @@ Derived values such as character counts, audit results, deferred projections, an
 Urgent typing and pointer feedback stays synchronous; navigation, persistence completion, panel replacement, and other non-urgent updates use transitions where they improve responsiveness.
 
 `useEffect` is reserved for external synchronization, such as bootstrapping the browser store and reflecting store/URL changes. Optimistic local edits are conditionally rolled back only when an asynchronous persistence operation fails.
+
+## AI writing context
+
+[[webmcp#WebMCP writing assistance]] exposes the current draft and existing derived writing analysis to browser agents without introducing a second state owner or mutation path.
+
+The first WebMCP phase is read-only. Draft text, STAR blocks, and snapshots remain in the external store; selected text remains a DOM-owned selection; AI-generated suggestions are returned to the user rather than automatically persisted.

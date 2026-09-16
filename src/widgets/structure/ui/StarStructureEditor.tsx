@@ -5,7 +5,7 @@ import { StarBlocks } from '@entities/draft/model/types';
 interface StarStructureEditorProps {
   currentStarBlocks: StarBlocks;
   onBlockChange: (field: keyof StarBlocks, value: string) => void;
-  onSwitchToWriteMode: () => void;
+  writeModeHref: string;
   onApplyBlocksToContent: () => void;
   hasUnappliedChanges?: boolean;
   starGuideSlot?: React.ReactNode;
@@ -91,7 +91,7 @@ function StarBlockField({
 export function StarStructureEditor({
   currentStarBlocks,
   onBlockChange,
-  onSwitchToWriteMode,
+  writeModeHref,
   onApplyBlocksToContent,
   hasUnappliedChanges = false,
   starGuideSlot,
@@ -121,17 +121,14 @@ export function StarStructureEditor({
               未反映の変更あり
             </span>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              onApplyBlocksToContent();
-              onSwitchToWriteMode();
-            }}
+          <a
+            href={writeModeHref}
+            onClick={onApplyBlocksToContent}
             className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 sm:w-auto sm:px-4"
           >
             <span>本文エディタへ反映して執筆へ</span>
             <ArrowRight className="h-4 w-4" />
-          </button>
+          </a>
         </div>
       </div>
 

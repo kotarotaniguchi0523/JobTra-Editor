@@ -33,3 +33,5 @@ Naming and placement rules keep ownership discoverable. `konsistent` makes the s
 It caught the two workspace boundary components before they were moved into `ui/` and `rsc/`. React Doctor and Knip prevent accidental client expansion and dead code from hiding in feature slices.
 
 Dependencies and GitHub Actions are pinned or lockfile-managed for reproducibility, checks run independently where possible, and generated caches or unrelated lockfiles are not committed.
+
+WebMCP tools should expose a small semantic path over existing application logic. For this editor, read-only context, local analysis, and snapshot comparison belong in the first phase; direct AI text mutation requires a later revision-checked command and human confirmation.
