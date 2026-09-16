@@ -1,7 +1,4 @@
-'use client';
-
-import { useActionState, useOptimistic, useState, useTransition } from 'react';
-import type { FormEvent } from 'react';
+import { useActionState, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import type { ESDraft } from '../../types';
 import { downloadEsPdf } from '../../lib/pdfClient';
@@ -30,7 +27,7 @@ interface PdfExportPanelProps {
 export function PdfExportPanel({ draft }: PdfExportPanelProps) {
   const [options, setOptions] = useState<PdfPanelOptions>(DEFAULT_PDF_OPTIONS);
   const [actionState, submitExport, isPending] = useActionState(
-    async (): Promise<PdfExportState> => {
+    async (_previousState: PdfExportState): Promise<PdfExportState> => {
       const result = await downloadEsPdf(draft, options);
 
       if (result.success) return { status: 'success' };
@@ -44,24 +41,8 @@ export function PdfExportPanel({ draft }: PdfExportPanelProps) {
     },
     INITIAL_PDF_STATE,
   );
-  const [optimisticState, setOptimisticState] = useOptimistic(
-    actionState,
-    (_currentState, nextState: PdfExportState) => nextState,
-  );
-  const [, startTransition] = useTransition();
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isPending) return;
-
-    startTransition(() => {
-      setOptimisticState({ status: 'pending' });
-      submitExport();
-    });
-  };
-
   const error: PdfExportError | null =
-    optimisticState.status === 'error' ? { kind: 'error', message: optimisticState.message } : null;
+    actionState.status === 'error' ? { kind: 'error', message: actionState.message } : null;
 
   return (
     <div className="space-y-4">
@@ -79,8 +60,8 @@ export function PdfExportPanel({ draft }: PdfExportPanelProps) {
       <ExportDocumentSummary draft={draft} />
       <PdfExportOptions options={options} onChange={setOptions} />
       <PdfExportFeedback error={error} />
-      <form onSubmit={handleSubmit} className="pt-2">
-        <PdfExportButton status={optimisticState.status} isPending={isPending} />
+      <form action={submitExport} className="pt-2">
+        <PdfExportButton status={actionState.status} isPending={isPending} />
       </form>
     </div>
   );

@@ -1,5 +1,6 @@
 import type { ESDraft } from '../types';
 import { CATEGORY_LABELS } from '../types';
+import { parseMarkdownYamlString } from '../validation/schemas';
 
 export interface MarkdownExportOptions {
   includeStar?: boolean;
@@ -38,9 +39,9 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
 
   if (includeFrontmatter) {
     lines.push('---');
-    lines.push(`title: "${(draft.title || '無題').replace(/"/g, '\\"')}"`);
+    lines.push(`title: "${parseMarkdownYamlString(draft.title || '無題')}"`);
     if (company) {
-      lines.push(`company: "${company.replace(/"/g, '\\"')}"`);
+      lines.push(`company: "${parseMarkdownYamlString(company)}"`);
     }
     lines.push(`category: "${draft.category}"`);
     lines.push(`category_label: "${categoryLabel}"`);

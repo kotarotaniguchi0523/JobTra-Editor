@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "funstack-static-knowledge": {
+      "source": "uhyo/funstack-static",
+      "sourceType": "github",
+      "skillPath": "packages/static/skills/funstack-static-knowledge/SKILL.md",
+      "computedHash": "bc27ba01a58040094e332829364057559187e9e9d0eb797d0c39b1d841ee9053"
+    }
+  }
+}

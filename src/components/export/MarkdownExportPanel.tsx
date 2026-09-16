@@ -1,7 +1,4 @@
-'use client';
-
-import { useActionState, useOptimistic, useState, useTransition } from 'react';
-import type { FormEvent } from 'react';
+import { useActionState, useState } from 'react';
 import type { ESDraft } from '../../types';
 import { downloadFile, generateEsMarkdown } from '../../lib/exportMarkdown';
 import { getExportFilename } from '../../lib/exportFilename';
@@ -36,7 +33,7 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
     });
 
   const [downloadState, submitDownload, isDownloadPending] = useActionState(
-    async (): Promise<MarkdownActionState> => {
+    async (_previousState: MarkdownActionState): Promise<MarkdownActionState> => {
       try {
         downloadFile(buildMarkdown(), getExportFilename(draft, 'md'), 'text/markdown');
         return { status: 'success' };
@@ -50,7 +47,7 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
     INITIAL_MARKDOWN_STATE,
   );
   const [copyState, submitCopy, isCopyPending] = useActionState(
-    async (): Promise<MarkdownActionState> => {
+    async (_previousState: MarkdownActionState): Promise<MarkdownActionState> => {
       try {
         await navigator.clipboard.writeText(buildMarkdown());
         return { status: 'success' };
@@ -63,27 +60,6 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
     },
     INITIAL_MARKDOWN_STATE,
   );
-  const [optimisticCopied, setOptimisticCopied] = useOptimistic(
-    copyState.status === 'success',
-    (_currentState, nextState: boolean) => nextState,
-  );
-  const [, startTransition] = useTransition();
-
-  const handleDownload = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isDownloadPending) return;
-    startTransition(() => submitDownload());
-  };
-
-  const handleCopy = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isCopyPending) return;
-    startTransition(() => {
-      setOptimisticCopied(true);
-      submitCopy();
-    });
-  };
-
   const errorMessage =
     copyState.status === 'error'
       ? copyState.message
@@ -99,12 +75,12 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
       </div>
       <MarkdownExportOptions options={options} onChange={setOptions} />
       <MarkdownExportActions
-        isCopied={optimisticCopied}
+        isCopied={copyState.status === 'success'}
         isDownloadPending={isDownloadPending}
         isCopyPending={isCopyPending}
         errorMessage={errorMessage}
-        onDownload={handleDownload}
-        onCopy={handleCopy}
+        onDownload={submitDownload}
+        onCopy={submitCopy}
       />
     </div>
   );

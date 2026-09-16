@@ -32,6 +32,10 @@ describe('useUrlQueryState Navigation API Exclusive Logic - AAA Tests', () => {
       const result = parseQueryParam(raw, 400, 'number');
       expect(result).toBe(400);
     });
+
+    it('数値の後ろに余分な文字がある場合はデフォルト値を返すこと', () => {
+      expect(parseQueryParam('800px', 400, 'number')).toBe(400);
+    });
   });
 
   describe('calculateNextSearchString', () => {

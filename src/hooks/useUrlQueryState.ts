@@ -1,34 +1,47 @@
-/**
- * URLクエリパラメータを型安全にパースする純粋関数
- */
+import {
+  parseQueryValue,
+  parseSearchParamKey,
+  parseSearchParamValue,
+  parseSearchParams,
+} from '../validation/schemas';
+
+/** URLクエリパラメータをValibotで検証して型安全にパースする純粋関数 */
 export function parseQueryParam<T extends string | number>(
-  rawValue: string | null,
+  rawValue: unknown,
   defaultValue: T,
   type: 'string' | 'number' = typeof defaultValue === 'number' ? 'number' : 'string',
 ): T {
   if (rawValue === null || rawValue === '') return defaultValue;
-  if (type === 'number') {
-    const num = parseInt(rawValue, 10);
-    return (isNaN(num) ? defaultValue : num) as T;
-  }
-  return rawValue as T;
+
+  const parsedValue = parseQueryValue(rawValue, type);
+  return (parsedValue ?? defaultValue) as T;
 }
 
-/**
- * クエリパラメータの更新後のURLサーチ文字列を生成する純粋関数
- */
+/** Valibotで現在値・キー・次値を検証し、更新後のURLサーチ文字列を生成する純粋関数 */
 export function calculateNextSearchString<T extends string | number>(
   currentSearch: string,
   key: string,
   nextValue: T | null | '',
   defaultValue: T,
 ): string {
-  const params = new URLSearchParams(currentSearch);
+  const params = new URLSearchParams(parseSearchParams(currentSearch));
+  const parsedKey = parseSearchParamKey(key);
+
+  if (!parsedKey) return params.toString() ? `?${params.toString()}` : '';
+
   if (nextValue === null || nextValue === '' || nextValue === defaultValue) {
-    params.delete(key);
+    params.delete(parsedKey);
   } else {
-    params.set(key, String(nextValue));
+    const parsedValue = parseQueryValue(
+      String(nextValue),
+      typeof defaultValue === 'number' ? 'number' : 'string',
+    );
+    const serializedValue = parseSearchParamValue(
+      parsedValue === null ? null : String(parsedValue),
+    );
+    if (serializedValue !== null) params.set(parsedKey, serializedValue);
   }
+
   const str = params.toString();
   return str ? `?${str}` : '';
 }
@@ -39,7 +52,7 @@ export interface NavigationTarget {
   };
 }
 
-/** Navigation API 専用ディスパッチャー関数（フォールバック不使用） */
+/** Navigation API専用ディスパッチャー関数（フォールバック不使用） */
 export function executeNavigation(targetUrl: string, targetWin?: NavigationTarget): boolean {
   if (!targetWin?.navigation?.navigate) {
     return false;

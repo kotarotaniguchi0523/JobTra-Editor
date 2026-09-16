@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useDeferredValue, useMemo } from 'react';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { DocumentPreview } from './DocumentPreview';
-import { useDrafts } from '../context/DraftContext';
+import { useDraftActions, useDraftData } from '../context/DraftContext';
 import { calculateMetrics } from '../services/analyzer';
 import { DraftSnapshot } from '../types';
 
@@ -26,11 +26,14 @@ export function PreviewPageClient({
   emptyDraftGuideSlot,
   checklistSlot,
 }: PreviewPageClientProps) {
-  const { activeDraft, createSnapshot, restoreSnapshot } = useDrafts();
+  const { activeDraft } = useDraftData();
+  const { createSnapshot, restoreSnapshot } = useDraftActions();
+  const content = activeDraft?.content || '';
+  const deferredContent = useDeferredValue(content);
 
   const metrics = useMemo(() => {
-    return calculateMetrics(activeDraft?.content || '');
-  }, [activeDraft?.content]);
+    return calculateMetrics(deferredContent);
+  }, [deferredContent]);
 
   const handleSaveSnapshot = (label: string) => {
     if (!activeDraft) return;
@@ -39,7 +42,7 @@ export function PreviewPageClient({
 
   const handleRestoreSnapshot = (snap: DraftSnapshot) => {
     if (!activeDraft) return;
-    restoreSnapshot(activeDraft.id, snap);
+    restoreSnapshot(activeDraft, snap);
   };
 
   if (!activeDraft) {

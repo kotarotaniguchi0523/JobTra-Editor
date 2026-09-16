@@ -1,6 +1,4 @@
-'use client';
-
-import React, { memo, useRef, useEffect, useState, useTransition } from 'react';
+import React, { memo, useRef } from 'react';
 
 interface DeferredTextareaProps {
   id: string;
@@ -16,9 +14,9 @@ interface DeferredTextareaProps {
 /**
  * DeferredTextarea:
  * 入力コンポーネントとしての責務を最小単位に分離。
- * ローカル状態とIMEバッファを直接保持することで0msの完全な打鍵感を実現し、
- * 親コンポーネントの重い再レンダリングやトランジションが
- * キーストロークを遮断（あるいはIME変換を破壊）しないように防御します。
+ * 入力値は親のdraft reducerを唯一のsource of truthとしてurgentに同期します。
+ * 重い解析側はuseDeferredValueで遅延させ、DOM refはタイプライター表示のスクロールという
+ * 命令的な処理に限定します。IMEも通常のcontrolled inputとしてReactに同期させます。
  */
 export const DeferredTextarea: React.FC<DeferredTextareaProps> = memo(
   ({
@@ -31,26 +29,7 @@ export const DeferredTextarea: React.FC<DeferredTextareaProps> = memo(
     minHeight = '340px',
     isTypewriterScrollEnabled = true,
   }) => {
-    const [localText, setLocalText] = useState<string>(value);
-    const [prevValue, setPrevValue] = useState<string>(value);
-    const [, startTransition] = useTransition();
-    const isComposingRef = useRef<boolean>(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-    // React公式パターン: Props変化時の状態同期をuseEffectではなくレンダー中に実行
-    if (value !== prevValue) {
-      setPrevValue(value);
-      if (!isComposingRef.current) {
-        setLocalText(value);
-      }
-    }
-
-    const handleCursorChange = (pos: number) => {
-      startTransition(() => {
-        onCursorChange(pos);
-      });
-    };
 
     const handleScrollToCursor = (pos: number, text: string) => {
       if (!isTypewriterScrollEnabled || !textareaRef.current) return;
@@ -66,63 +45,32 @@ export const DeferredTextarea: React.FC<DeferredTextareaProps> = memo(
       });
     };
 
-    const notifyChange = (val: string, pos: number) => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        startTransition(() => {
-          onChange(val, pos);
-        });
-      }, 120);
-    };
-
-    useEffect(() => {
-      return () => {
-        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-      };
-    }, []);
-
     return (
       <div className="relative p-4 sm:p-6">
         <textarea
           id={id}
           ref={textareaRef}
-          value={localText}
+          value={value}
           onChange={(e) => {
             const val = e.target.value;
             const pos = e.target.selectionStart;
-            setLocalText(val);
-            handleCursorChange(pos);
+            onCursorChange(pos);
             handleScrollToCursor(pos, val);
-            if (!isComposingRef.current) {
-              notifyChange(val, pos);
-            }
+            onChange(val, pos);
           }}
           onSelect={(e) => {
-            handleCursorChange(e.currentTarget.selectionStart);
+            onCursorChange(e.currentTarget.selectionStart);
           }}
           onClick={(e) => {
-            handleCursorChange(e.currentTarget.selectionStart);
+            onCursorChange(e.currentTarget.selectionStart);
           }}
           onKeyUp={(e) => {
-            handleCursorChange(e.currentTarget.selectionStart);
-          }}
-          onCompositionStart={() => {
-            isComposingRef.current = true;
-          }}
-          onCompositionEnd={(e) => {
-            isComposingRef.current = false;
-            const val = e.currentTarget.value;
-            const pos = e.currentTarget.selectionStart;
-            setLocalText(val);
-            handleCursorChange(pos);
-            notifyChange(val, pos);
+            onCursorChange(e.currentTarget.selectionStart);
           }}
           onKeyDown={(e) => {
             if (
               e.key === 'Tab' &&
-              !isComposingRef.current &&
+              !(e.nativeEvent as KeyboardEvent).isComposing &&
               !e.shiftKey &&
               !e.ctrlKey &&
               !e.altKey &&
@@ -130,9 +78,7 @@ export const DeferredTextarea: React.FC<DeferredTextareaProps> = memo(
               onInsertTabSuggestion
             ) {
               e.preventDefault();
-              startTransition(() => {
-                onInsertTabSuggestion();
-              });
+              onInsertTabSuggestion();
             }
           }}
           placeholder={placeholder}

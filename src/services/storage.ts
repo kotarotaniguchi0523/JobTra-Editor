@@ -1,4 +1,11 @@
 import { ESDraft } from '../types';
+import {
+  parseCategory,
+  parseDraft,
+  parseDraftCollection,
+  parseDraftId,
+  parseSnapshotLabel,
+} from '../validation/schemas';
 
 const DB_NAME = 'es_craft_indexed_db';
 const DB_VERSION = 1;
@@ -79,7 +86,7 @@ class IndexedDbStorage {
     try {
       const data = localStorage.getItem(DB_NAME);
       if (data) {
-        return JSON.parse(data);
+        return parseDraftCollection(JSON.parse(data)) || [...INITIAL_SAMPLE_DRAFTS];
       }
     } catch (e) {
       console.warn('LocalStorage read error', e);
@@ -89,7 +96,12 @@ class IndexedDbStorage {
 
   private saveLocalStorageDrafts(drafts: ESDraft[]): void {
     try {
-      localStorage.setItem(DB_NAME, JSON.stringify(drafts));
+      const validated = parseDraftCollection(drafts);
+      if (!validated) {
+        console.warn('LocalStorage draft validation failed');
+        return;
+      }
+      localStorage.setItem(DB_NAME, JSON.stringify(validated));
     } catch (e) {
       console.warn('LocalStorage save error', e);
     }
@@ -104,8 +116,8 @@ class IndexedDbStorage {
         const request = store.getAll();
 
         request.onsuccess = () => {
-          let list = request.result as ESDraft[];
-          if (!list || list.length === 0) {
+          const list = parseDraftCollection(request.result) || [];
+          if (list.length === 0) {
             // First time: seed sample drafts
             this.seedInitialDrafts().then(resolve).catch(reject);
             return;
@@ -133,15 +145,18 @@ class IndexedDbStorage {
   }
 
   public async getDraft(id: string): Promise<ESDraft | null> {
+    const validId = parseDraftId(id);
+    if (!validId) return null;
+
     try {
       const db = await this.openDb();
       return new Promise<ESDraft | null>((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readonly');
         const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(id);
+        const request = store.get(validId);
 
         request.onsuccess = () => {
-          resolve(request.result || null);
+          resolve(parseDraft(request.result));
         };
 
         request.onerror = () => {
@@ -150,13 +165,18 @@ class IndexedDbStorage {
       });
     } catch {
       const drafts = this.getLocalStorageDrafts();
-      return drafts.find((d) => d.id === id) || null;
+      return drafts.find((d) => d.id === validId) || null;
     }
   }
 
   public async saveDraft(draft: ESDraft): Promise<void> {
+    const validatedDraft = parseDraft(draft);
+    if (!validatedDraft) {
+      throw new Error('Draft validation failed');
+    }
+
     const draftToSave: ESDraft = {
-      ...draft,
+      ...validatedDraft,
       updatedAt: Date.now(),
     };
 
@@ -188,12 +208,15 @@ class IndexedDbStorage {
   }
 
   public async deleteDraft(id: string): Promise<void> {
+    const validId = parseDraftId(id);
+    if (!validId) return;
+
     try {
       const db = await this.openDb();
       return new Promise<void>((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(id);
+        const request = store.delete(validId);
 
         request.onsuccess = () => {
           resolve();
@@ -204,7 +227,7 @@ class IndexedDbStorage {
         };
       });
     } catch {
-      const drafts = this.getLocalStorageDrafts().filter((d) => d.id !== id);
+      const drafts = this.getLocalStorageDrafts().filter((d) => d.id !== validId);
       this.saveLocalStorageDrafts(drafts);
     }
   }
@@ -225,7 +248,7 @@ class IndexedDbStorage {
       id: 'draft_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
       title: '新規エントリーシート',
       companyName: '',
-      category: category as any,
+      category: parseCategory(category),
       targetCount: 400,
       isBlockMode: false,
       content: '',
@@ -240,12 +263,15 @@ class IndexedDbStorage {
   }
 
   public async addSnapshot(id: string, label: string): Promise<ESDraft | null> {
-    const draft = await this.getDraft(id);
+    const validId = parseDraftId(id);
+    if (!validId) return null;
+
+    const draft = await this.getDraft(validId);
     if (!draft) return null;
 
     const snapshot = {
       id: 'snap_' + Date.now(),
-      label: label.trim() || '無題のスナップショット',
+      label: parseSnapshotLabel(label),
       content: draft.content,
       charCount: draft.content.replace(/\s+/g, '').length,
       timestamp: Date.now(),

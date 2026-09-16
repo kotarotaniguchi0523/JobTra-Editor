@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useTransition } from 'react';
+import React from 'react';
 import { CheckCircle2, AlertTriangle, Info, ArrowRight, FileCheck2, X } from 'lucide-react';
 import { AuditCheck, JapaneseMetrics } from '../types';
 
@@ -19,7 +17,6 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
   onClose,
   guidelinesSlot,
 }) => {
-  const [, startTransition] = useTransition();
   const warnings = checks.filter((c) => c.status === 'warning');
 
   return (
@@ -48,11 +45,7 @@ export const ReviewPanel: React.FC<ReviewPanelProps> = ({
           {onClose && (
             <button
               type="button"
-              onClick={() => {
-                startTransition(() => {
-                  onClose();
-                });
-              }}
+              onClick={onClose}
               className="rounded p-1.5 text-neutral-400 hover:text-neutral-700"
               title="閉じる"
               aria-label="閉じる"

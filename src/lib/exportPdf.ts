@@ -1,5 +1,3 @@
-'use client';
-
 import type { BrowserFontData } from '@minitype/minitype';
 
 export interface ExportPdfOptions {

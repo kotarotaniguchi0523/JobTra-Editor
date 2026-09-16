@@ -1,5 +1,3 @@
-'use client';
-
 import React, { memo } from 'react';
 import { Focus } from 'lucide-react';
 import { extractFocusSentence } from '../services/focusSentence';
