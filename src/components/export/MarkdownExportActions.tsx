@@ -1,13 +1,11 @@
 import { AlertCircle, Check, Copy, Download, Loader2 } from 'lucide-react';
-import type { FormEvent } from 'react';
-
 interface MarkdownExportActionsProps {
   isCopied: boolean;
   isDownloadPending: boolean;
   isCopyPending: boolean;
   errorMessage: string | null;
-  onDownload: (event: FormEvent<HTMLFormElement>) => void;
-  onCopy: (event: FormEvent<HTMLFormElement>) => void;
+  onDownload: (formData: FormData) => void;
+  onCopy: (formData: FormData) => void;
 }
 
 export function MarkdownExportActions({
@@ -21,7 +19,7 @@ export function MarkdownExportActions({
   return (
     <div className="space-y-2 pt-2">
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-        <form onSubmit={onDownload}>
+        <form action={onDownload}>
           <button
             type="submit"
             disabled={isDownloadPending}
@@ -40,7 +38,7 @@ export function MarkdownExportActions({
             )}
           </button>
         </form>
-        <form onSubmit={onCopy}>
+        <form action={onCopy}>
           <button
             type="submit"
             disabled={isCopyPending}

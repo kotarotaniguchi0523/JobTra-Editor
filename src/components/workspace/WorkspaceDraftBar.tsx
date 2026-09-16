@@ -1,8 +1,7 @@
-'use client';
-
 import React, { memo } from 'react';
 import { Tag, Target, FileEdit, Layers, Eye } from 'lucide-react';
 import { ESDraft, ESQuestionCategory } from '../../types';
+import { parseCategory, pathWithDraftId } from '../../validation/schemas';
 
 interface WorkspaceDraftBarProps {
   activeDraft: ESDraft;
@@ -51,7 +50,7 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
             <select
               id="draft-category-select"
               value={activeDraft.category}
-              onChange={(e) => onUpdateDraft({ category: e.target.value as ESQuestionCategory })}
+              onChange={(e) => onUpdateDraft({ category: parseCategory(e.target.value) })}
               aria-label="設問カテゴリ"
               className="w-full cursor-pointer bg-transparent text-sm text-neutral-800 focus:outline-hidden"
             >
@@ -93,7 +92,7 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
           <nav className="flex w-full items-center rounded-md border border-neutral-200 bg-neutral-100 p-0.5 text-xs sm:w-auto">
             <a
               id="mode-tab-write"
-              href={`/?id=${currentId}`}
+              href={pathWithDraftId('/', currentId)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2.5 py-1 font-medium whitespace-nowrap no-underline transition-colors sm:flex-initial sm:px-3 ${
                 activeMode === 'write'
                   ? 'bg-white text-neutral-900 shadow-xs'
@@ -106,7 +105,7 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
 
             <a
               id="mode-tab-structure"
-              href={`/structure?id=${currentId}`}
+              href={pathWithDraftId('/structure', currentId)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2.5 py-1 font-medium whitespace-nowrap no-underline transition-colors sm:flex-initial sm:px-3 ${
                 activeMode === 'structure'
                   ? 'bg-white text-neutral-900 shadow-xs'
@@ -120,7 +119,7 @@ export const WorkspaceDraftBar: React.FC<WorkspaceDraftBarProps> = memo(
 
             <a
               id="mode-tab-preview"
-              href={`/preview?id=${currentId}`}
+              href={pathWithDraftId('/preview', currentId)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded px-2.5 py-1 font-medium whitespace-nowrap no-underline transition-colors sm:flex-initial sm:px-3 ${
                 activeMode === 'preview'
                   ? 'bg-white text-neutral-900 shadow-xs'

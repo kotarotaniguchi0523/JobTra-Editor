@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useDeferredValue, useMemo, lazy, Suspense } from 'react';
+import React, { useCallback, useDeferredValue, useMemo, lazy, Suspense } from 'react';
 import { WorkspaceLayout } from './WorkspaceLayout';
 import { WriteWorkspace } from './WriteWorkspace';
 import { RatioBalanceMeter } from './RatioBalanceMeter';
-import { useDrafts } from '../context/DraftContext';
+import { useDraftActions, useDraftData } from '../context/DraftContext';
 import { calculateMetrics } from '../services/analyzer';
 import { calculateRatioBalance } from '../services/ratioBalance';
 import {
@@ -36,16 +36,11 @@ export function WritePageClient({
   sidebarFooterSlot,
   emptyDraftGuideSlot,
 }: WritePageClientProps) {
-  const { activeDraft, updateDraft } = useDrafts();
-
-  // 単純なローカル状態（リデューサー不使用）
-  const [cursorPos, setCursorPos] = useState(0);
-  const [isFocusSentenceEnabled, setIsFocusSentenceEnabled] = useState(false);
-  const [isTypewriterScrollEnabled, setIsTypewriterScrollEnabled] = useState(false);
+  const { activeDraft } = useDraftData();
+  const { updateDraft } = useDraftActions();
 
   const content = activeDraft?.content || '';
   const deferredContent = useDeferredValue(content);
-  const deferredCursorPos = useDeferredValue(cursorPos);
 
   // 日本語メトリクス計算
   const metrics = useMemo(() => {
@@ -62,51 +57,43 @@ export function WritePageClient({
     return detectRedundancies(deferredContent);
   }, [deferredContent]);
 
-  const totalSavedChars = useMemo(() => {
-    return redundancyMatches.reduce((acc, m) => acc + m.charsSaved, 0);
-  }, [redundancyMatches]);
+  const totalSavedChars = redundancyMatches.reduce((acc, m) => acc + m.charsSaved, 0);
 
   // 本文コミットハンドラ
-  const handleContentCommit = (newContent: string, newPos: number) => {
-    if (!activeDraft) return;
-    setCursorPos(newPos);
-    updateDraft({ ...activeDraft, content: newContent, updatedAt: Date.now() });
-  };
+  const handleContentCommit = useCallback(
+    (newContent: string, _newPos: number) => {
+      if (!activeDraft) return;
+      updateDraft({ ...activeDraft, content: newContent, updatedAt: Date.now() });
+    },
+    [activeDraft, updateDraft],
+  );
 
   // 書式整理（連続改行のトリムなど）
-  const handleCleanFormatting = () => {
+  const handleCleanFormatting = useCallback(() => {
     if (!activeDraft) return;
     const cleaned = activeDraft.content
       .replace(/[ \t]+$/gm, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
     updateDraft({ ...activeDraft, content: cleaned, updatedAt: Date.now() }, true);
-  };
-
-  // フレーズ挿入
-  const handleInsertPhrase = (phrase: string) => {
-    if (!activeDraft) return;
-    const before = content.slice(0, cursorPos);
-    const after = content.slice(cursorPos);
-    const nextContent = before + phrase + after;
-    const nextPos = cursorPos + phrase.length;
-    setCursorPos(nextPos);
-    updateDraft({ ...activeDraft, content: nextContent, updatedAt: Date.now() }, true);
-  };
+  }, [activeDraft, updateDraft]);
 
   // 1箇所の削りを適用
-  const handleApplyOneChisel = (match: RedundancyMatch) => {
-    if (!activeDraft) return;
-    const nextContent = applySculpt(activeDraft.content, match);
-    updateDraft({ ...activeDraft, content: nextContent, updatedAt: Date.now() }, true);
-  };
+  const handleApplyOneChisel = useCallback(
+    (match: RedundancyMatch) => {
+      if (!activeDraft) return;
+      const nextContent = applySculpt(activeDraft.content, match);
+      updateDraft({ ...activeDraft, content: nextContent, updatedAt: Date.now() }, true);
+    },
+    [activeDraft, updateDraft],
+  );
 
   // 全ての削りを一括適用
-  const handleApplyAllChisel = () => {
+  const handleApplyAllChisel = useCallback(() => {
     if (!activeDraft) return;
     const { newText } = applyAllSculpts(activeDraft.content);
     updateDraft({ ...activeDraft, content: newText, updatedAt: Date.now() }, true);
-  };
+  }, [activeDraft, updateDraft]);
 
   return (
     <WorkspaceLayout
@@ -137,18 +124,10 @@ export function WritePageClient({
         {/* 3. メインエディタエリア */}
         <WriteWorkspace
           content={content}
-          cursorPos={cursorPos}
-          isFocusSentenceEnabled={isFocusSentenceEnabled}
-          isTypewriterScrollEnabled={isTypewriterScrollEnabled}
           metrics={metrics}
           deferredContent={deferredContent}
-          deferredCursorPos={deferredCursorPos}
-          onToggleFocusSentence={() => setIsFocusSentenceEnabled(!isFocusSentenceEnabled)}
-          onToggleTypewriter={() => setIsTypewriterScrollEnabled(!isTypewriterScrollEnabled)}
           onCleanFormatting={handleCleanFormatting}
           onContentCommit={handleContentCommit}
-          onCursorChange={setCursorPos}
-          onInsertPhrase={handleInsertPhrase}
         />
       </div>
     </WorkspaceLayout>

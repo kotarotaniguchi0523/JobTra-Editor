@@ -1,5 +1,3 @@
-'use client';
-
 import React, { memo } from 'react';
 import { Trash2, Copy, Star } from 'lucide-react';
 import { ESDraft } from '../types';

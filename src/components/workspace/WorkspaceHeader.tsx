@@ -1,5 +1,3 @@
-'use client';
-
 import React, { memo } from 'react';
 import {
   Menu,
@@ -7,22 +5,23 @@ import {
   BookOpen,
   ShieldCheck,
   Check,
-  Copy,
   Loader2,
   Download,
+  AlertTriangle,
 } from 'lucide-react';
+import { CopyCleanButton } from './CopyCleanButton';
+import type { DraftSaveStatus } from '../../hooks/useDraftPersistence';
 
 interface WorkspaceHeaderProps {
   brandSlot?: React.ReactNode;
   linksSlot?: React.ReactNode;
   onOpenSidebar: () => void;
-  isPending: boolean;
   isSaving: boolean;
+  saveStatus: DraftSaveStatus;
   isAuditOpen: boolean;
   onToggleAudit: () => void;
   onOpenHandbook: () => void;
-  isCopied: boolean;
-  onCopyClean: () => void;
+  copyContent: string | null;
   onOpenExport?: () => void;
 }
 
@@ -31,13 +30,12 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
     brandSlot,
     linksSlot,
     onOpenSidebar,
-    isPending,
     isSaving,
+    saveStatus,
     isAuditOpen,
     onToggleAudit,
     onOpenHandbook,
-    isCopied,
-    onCopyClean,
+    copyContent,
     onOpenExport,
   }) => {
     return (
@@ -70,12 +68,6 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
                     <h1 className="truncate text-sm font-bold tracking-tight text-neutral-900 sm:text-base">
                       就活ESクラフト
                     </h1>
-                    {isPending && (
-                      <span className="flex shrink-0 items-center gap-1 text-xs font-medium text-neutral-400">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        <span className="hidden sm:inline">同期中</span>
-                      </span>
-                    )}
                   </div>
                 </div>
               </a>
@@ -90,6 +82,14 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
               <span className="flex items-center gap-1.5 text-neutral-600">
                 <Loader2 className="h-3.5 w-3.5 animate-spin text-neutral-400" />
                 保存中...
+              </span>
+            ) : saveStatus === 'error' ? (
+              <span
+                className="flex items-center gap-1.5 text-rose-700"
+                title="自動保存に失敗しました。ブラウザの保存領域を確認してください。"
+              >
+                <AlertTriangle className="h-3.5 w-3.5" />
+                保存エラー
               </span>
             ) : (
               <span
@@ -161,31 +161,7 @@ export const WorkspaceHeader: React.FC<WorkspaceHeaderProps> = memo(
           )}
 
           {/* 提出用コピー */}
-          <button
-            id="clean-copy-btn"
-            type="button"
-            onClick={onCopyClean}
-            className={`flex shrink-0 cursor-pointer items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all sm:gap-1.5 sm:px-3 ${
-              isCopied
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-neutral-900 text-white hover:bg-neutral-800'
-            }`}
-            title="余分な空白・改行を整えてWeb提出用形式でクリップボードにコピー"
-          >
-            {isCopied ? (
-              <>
-                <Check className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">コピー完了</span>
-                <span className="sm:hidden">完了</span>
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5 shrink-0" />
-                <span className="hidden sm:inline">提出用にコピー</span>
-                <span className="sm:hidden">コピー</span>
-              </>
-            )}
-          </button>
+          <CopyCleanButton content={copyContent} />
         </div>
       </header>
     );

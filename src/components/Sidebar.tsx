@@ -1,9 +1,9 @@
-'use client';
-
-import React, { useReducer, useTransition, memo } from 'react';
+import React, { memo, useDeferredValue, useMemo, useReducer } from 'react';
 import { Plus, Search, Star, HardDrive, Sparkles, ArrowRight } from 'lucide-react';
-import { ESDraft } from '../types';
-import { SidebarDraftItem } from './SidebarDraftItem';
+import type { ESDraft } from '../types';
+import type { DraftSaveStatus } from '../hooks/useDraftPersistence';
+import { SidebarDraftList } from './SidebarDraftList';
+import { parseSearchQuery } from '../validation/schemas';
 
 interface SidebarProps {
   drafts: ESDraft[];
@@ -14,12 +14,13 @@ interface SidebarProps {
   onDuplicateDraft: (id: string) => void;
   onToggleStar: (id: string) => void;
   isSaving: boolean;
+  saveStatus: DraftSaveStatus;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
   footerSlot?: React.ReactNode;
 }
 
-const CATEGORY_TAG_LABELS: Record<string, string> = {
+const CATEGORY_TAG_LABELS = {
   all: 'すべて',
   gakuchika: 'ガクチカ',
   shibou: '志望動機',
@@ -27,34 +28,71 @@ const CATEGORY_TAG_LABELS: Record<string, string> = {
   zasetsu: '困難・挫折',
   jiku: '就活軸',
   future: '入社後',
-};
+  custom: '自由記述',
+} as const;
 
-// 3つの useState を 1 つの Reducer に統合
+type CategoryFilter = keyof typeof CATEGORY_TAG_LABELS;
+type FilterSelection = { kind: 'category'; value: CategoryFilter } | { kind: 'starred' };
+
 interface FilterState {
-  searchQuery: string;
-  selectedFilter: string;
-  showStarredOnly: boolean;
+  searchInput: string;
+  selection: FilterSelection;
 }
 
 type FilterAction =
-  | { type: 'SET_SEARCH'; query: string }
-  | { type: 'CLEAR_SEARCH' }
-  | { type: 'SET_FILTER'; filter: string }
-  | { type: 'TOGGLE_STARRED' };
+  | { type: 'set-search'; value: string }
+  | { type: 'clear-search' }
+  | { type: 'select-category'; value: CategoryFilter }
+  | { type: 'toggle-starred' };
+
+const INITIAL_FILTER_STATE: FilterState = {
+  searchInput: '',
+  selection: { kind: 'category', value: 'all' },
+};
 
 function filterReducer(state: FilterState, action: FilterAction): FilterState {
   switch (action.type) {
-    case 'SET_SEARCH':
-      return { ...state, searchQuery: action.query };
-    case 'CLEAR_SEARCH':
-      return { ...state, searchQuery: '' };
-    case 'SET_FILTER':
-      return { ...state, selectedFilter: action.filter, showStarredOnly: false };
-    case 'TOGGLE_STARRED':
-      return { ...state, showStarredOnly: !state.showStarredOnly };
-    default:
-      return state;
+    case 'set-search':
+      // Keep the raw input as the controlled source of truth. Validation and
+      // normalization belong to the deferred search projection, not onChange.
+      return { ...state, searchInput: action.value };
+    case 'clear-search':
+      return state.searchInput ? { ...state, searchInput: '' } : state;
+    case 'select-category':
+      return { ...state, selection: { kind: 'category', value: action.value } };
+    case 'toggle-starred':
+      return {
+        ...state,
+        selection:
+          state.selection.kind === 'starred'
+            ? { kind: 'category', value: 'all' }
+            : { kind: 'starred' },
+      };
   }
+}
+
+function filterDrafts(
+  drafts: ESDraft[],
+  selection: FilterSelection,
+  searchQuery: string,
+): ESDraft[] {
+  return drafts.filter((draft) => {
+    if (selection.kind === 'starred' && !draft.starred) return false;
+    if (
+      selection.kind === 'category' &&
+      selection.value !== 'all' &&
+      draft.category !== selection.value
+    ) {
+      return false;
+    }
+
+    if (!searchQuery) return true;
+
+    const matchTitle = draft.title.toLowerCase().includes(searchQuery);
+    const matchCompany = (draft.companyName || '').toLowerCase().includes(searchQuery);
+    const matchContent = draft.content.toLowerCase().includes(searchQuery);
+    return matchTitle || matchCompany || matchContent;
+  });
 }
 
 export const Sidebar: React.FC<SidebarProps> = memo(
@@ -67,55 +105,27 @@ export const Sidebar: React.FC<SidebarProps> = memo(
     onDuplicateDraft,
     onToggleStar,
     isSaving,
+    saveStatus,
     isMobileOpen,
     onCloseMobile,
     footerSlot,
   }) => {
-    const [filter, dispatchFilter] = useReducer(filterReducer, {
-      searchQuery: '',
-      selectedFilter: 'all',
-      showStarredOnly: false,
-    });
+    const [filter, dispatchFilter] = useReducer(filterReducer, INITIAL_FILTER_STATE);
 
-    // React 19 useTransition: フィルタリング・検索および下書き操作のトランジション追跡
-    const [isFilterPending, startTransition] = useTransition();
-
-    const handleSearchChange = (q: string) => {
-      startTransition(() => {
-        dispatchFilter({ type: 'SET_SEARCH', query: q });
-      });
-    };
-
-    const handleClearSearch = () => {
-      startTransition(() => {
-        dispatchFilter({ type: 'CLEAR_SEARCH' });
-      });
-    };
-
-    const handleSelectFilter = (cat: string) => {
-      startTransition(() => {
-        dispatchFilter({ type: 'SET_FILTER', filter: cat });
-      });
-    };
-
-    const handleToggleStarredOnly = () => {
-      startTransition(() => {
-        dispatchFilter({ type: 'TOGGLE_STARRED' });
-      });
-    };
-
-    const filteredDrafts = drafts.filter((d) => {
-      if (filter.showStarredOnly && !d.starred) return false;
-      if (filter.selectedFilter !== 'all' && d.category !== filter.selectedFilter) return false;
-      if (filter.searchQuery.trim()) {
-        const q = filter.searchQuery.toLowerCase();
-        const matchTitle = d.title.toLowerCase().includes(q);
-        const matchCompany = (d.companyName || '').toLowerCase().includes(q);
-        const matchContent = d.content.toLowerCase().includes(q);
-        return matchTitle || matchCompany || matchContent;
-      }
-      return true;
-    });
+    // Keep the source input and filter controls responsive. Only the list
+    // projection consumes deferred values, so a large catalog never blocks a
+    // keystroke or delays the selected button's visual state.
+    const deferredDrafts = useDeferredValue(drafts);
+    const deferredFilter = useDeferredValue(filter);
+    const deferredSearchQuery = useMemo(
+      () => parseSearchQuery(deferredFilter.searchInput),
+      [deferredFilter.searchInput],
+    );
+    const filteredDrafts = useMemo(
+      () => filterDrafts(deferredDrafts, deferredFilter.selection, deferredSearchQuery),
+      [deferredDrafts, deferredFilter.selection, deferredSearchQuery],
+    );
+    const isFilterPending = deferredDrafts !== drafts || deferredFilter !== filter;
 
     return (
       <>
@@ -125,11 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = memo(
             type="button"
             aria-label="サイドバーを閉じる"
             className="fixed inset-0 z-40 h-full w-full cursor-default border-none bg-neutral-900/30 backdrop-blur-xs lg:hidden"
-            onClick={() => {
-              startTransition(() => {
-                onCloseMobile();
-              });
-            }}
+            onClick={onCloseMobile}
           />
         )}
 
@@ -152,10 +158,8 @@ export const Sidebar: React.FC<SidebarProps> = memo(
               id="sidebar-new-draft-btn"
               type="button"
               onClick={() => {
-                startTransition(() => {
-                  onCreateNewDraft();
-                  if (window.innerWidth < 1024) onCloseMobile();
-                });
+                onCreateNewDraft();
+                if (window.innerWidth < 1024) onCloseMobile();
               }}
               className="flex cursor-pointer items-center gap-1.5 rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-neutral-800"
               title="新しいエントリーシートを作成"
@@ -173,16 +177,19 @@ export const Sidebar: React.FC<SidebarProps> = memo(
               <input
                 id="sidebar-search-input"
                 type="text"
-                value={filter.searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                value={filter.searchInput}
+                maxLength={200}
+                onChange={(event) =>
+                  dispatchFilter({ type: 'set-search', value: event.target.value })
+                }
                 placeholder="企業名や内容で検索..."
                 aria-label="企業名や内容で検索"
                 className="w-full bg-transparent text-sm text-neutral-800 placeholder-neutral-400 focus:outline-hidden"
               />
-              {filter.searchQuery && (
+              {filter.searchInput && (
                 <button
                   type="button"
-                  onClick={handleClearSearch}
+                  onClick={() => dispatchFilter({ type: 'clear-search' })}
                   aria-label="検索キーワードをクリア"
                   className="px-1 text-xs text-neutral-400 hover:text-neutral-600"
                 >
@@ -195,75 +202,56 @@ export const Sidebar: React.FC<SidebarProps> = memo(
             <div className="flex scrollbar-none items-center gap-1 overflow-x-auto pb-0.5">
               <button
                 type="button"
-                onClick={handleToggleStarredOnly}
+                aria-pressed={filter.selection.kind === 'starred'}
+                onClick={() => dispatchFilter({ type: 'toggle-starred' })}
                 className={`flex shrink-0 cursor-pointer items-center gap-1 rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
-                  filter.showStarredOnly
+                  filter.selection.kind === 'starred'
                     ? 'border-amber-300 bg-amber-50 text-amber-800'
                     : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
                 }`}
               >
                 <Star
-                  className={`h-3 w-3 ${filter.showStarredOnly ? 'fill-amber-500 text-amber-500' : ''}`}
+                  className={`h-3 w-3 ${filter.selection.kind === 'starred' ? 'fill-amber-500 text-amber-500' : ''}`}
                 />
                 <span>重要</span>
               </button>
 
-              {Object.entries(CATEGORY_TAG_LABELS).map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleSelectFilter(key)}
-                  className={`shrink-0 cursor-pointer rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
-                    filter.selectedFilter === key && !filter.showStarredOnly
-                      ? 'border-neutral-900 bg-neutral-900 text-white'
-                      : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+              {Object.entries(CATEGORY_TAG_LABELS).map(([key, label]) => {
+                const category = key as CategoryFilter;
+                const isSelected =
+                  filter.selection.kind === 'category' && filter.selection.value === category;
+
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => dispatchFilter({ type: 'select-category', value: category })}
+                    className={`shrink-0 cursor-pointer rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
+                      isSelected
+                        ? 'border-neutral-900 bg-neutral-900 text-white'
+                        : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Drafts List */}
           <div
-            className={`flex-1 space-y-2 overflow-y-auto p-3 transition-opacity duration-150 ${isFilterPending ? 'opacity-70' : 'opacity-100'}`}
+            className={`flex-1 overflow-y-auto transition-opacity duration-150 ${isFilterPending ? 'opacity-70' : 'opacity-100'}`}
           >
-            {filteredDrafts.length === 0 ? (
-              <div className="py-12 text-center text-xs text-neutral-400">
-                条件に一致する下書きはありません
-              </div>
-            ) : (
-              filteredDrafts.map((d) => (
-                <SidebarDraftItem
-                  key={d.id}
-                  draft={d}
-                  isSelected={d.id === currentDraftId}
-                  onSelect={(id) => {
-                    startTransition(() => {
-                      onSelectDraft(id);
-                      if (window.innerWidth < 1024) onCloseMobile();
-                    });
-                  }}
-                  onDuplicate={(id) => {
-                    startTransition(() => {
-                      onDuplicateDraft(id);
-                    });
-                  }}
-                  onDelete={(id) => {
-                    startTransition(() => {
-                      onDeleteDraft(id);
-                    });
-                  }}
-                  onToggleStar={(id) => {
-                    startTransition(() => {
-                      onToggleStar(id);
-                    });
-                  }}
-                  categoryLabel={CATEGORY_TAG_LABELS[d.category] || '下書き'}
-                />
-              ))
-            )}
+            <SidebarDraftList
+              drafts={filteredDrafts}
+              currentDraftId={currentDraftId}
+              onSelectDraft={onSelectDraft}
+              onCloseMobile={onCloseMobile}
+              onDeleteDraft={onDeleteDraft}
+              onDuplicateDraft={onDuplicateDraft}
+              onToggleStar={onToggleStar}
+            />
           </div>
 
           {/* Footer: RSC footerSlot preferred */}
@@ -291,8 +279,13 @@ export const Sidebar: React.FC<SidebarProps> = memo(
                 </div>
                 <span
                   className={`inline-block h-2 w-2 rounded-full ${
-                    isSaving ? 'animate-ping bg-amber-400' : 'bg-emerald-500'
+                    saveStatus === 'error'
+                      ? 'bg-rose-500'
+                      : isSaving
+                        ? 'animate-ping bg-amber-400'
+                        : 'bg-emerald-500'
                   }`}
+                  title={saveStatus === 'error' ? '自動保存に失敗しました' : undefined}
                 />
               </div>
             </div>

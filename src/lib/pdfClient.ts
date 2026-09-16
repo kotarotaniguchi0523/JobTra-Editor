@@ -1,5 +1,3 @@
-'use client';
-
 import type { ESDraft } from '../types';
 import { CATEGORY_LABELS } from '../types';
 import { downloadFile } from './exportMarkdown';

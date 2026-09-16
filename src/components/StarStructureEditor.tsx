@@ -1,14 +1,4 @@
-'use client';
-
-import React, {
-  useState,
-  useRef,
-  useDeferredValue,
-  useId,
-  memo,
-  useTransition,
-  useEffect,
-} from 'react';
+import React, { memo, useId } from 'react';
 import { ArrowRight, AlertCircle } from 'lucide-react';
 import { StarBlocks } from '../types';
 
@@ -45,39 +35,6 @@ const StarBlockField: React.FC<BlockFieldProps> = memo(
     rows = 2,
     highlight = false,
   }) => {
-    const [localVal, setLocalVal] = useState(value);
-    const [prevValue, setPrevValue] = useState(value);
-    const [, startTransition] = useTransition();
-    const isComposingRef = useRef(false);
-    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-    // レンダー中同期（useEffectでのsetStateを回避）
-    if (value !== prevValue) {
-      setPrevValue(value);
-      if (!isComposingRef.current) {
-        setLocalVal(value);
-      }
-    }
-
-    const commitValue = (val: string) => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        startTransition(() => {
-          onBlockChange(field, val);
-        });
-      }, 120);
-    };
-
-    useEffect(() => {
-      return () => {
-        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-      };
-    }, []);
-
-    const deferredCount = useDeferredValue(localVal.length);
-
     return (
       <div
         className={`rounded-md p-3.5 transition-colors sm:p-4 ${
@@ -109,27 +66,15 @@ const StarBlockField: React.FC<BlockFieldProps> = memo(
               highlight ? 'text-sm font-bold text-neutral-900' : 'text-sm text-neutral-500'
             }`}
           >
-            {deferredCount}字
+            {value.length}字
           </span>
         </div>
         <textarea
           id={id}
-          value={localVal}
+          value={value}
           onChange={(e) => {
             const v = e.target.value;
-            setLocalVal(v);
-            if (!isComposingRef.current) {
-              commitValue(v);
-            }
-          }}
-          onCompositionStart={() => {
-            isComposingRef.current = true;
-          }}
-          onCompositionEnd={(e) => {
-            isComposingRef.current = false;
-            const v = e.currentTarget.value;
-            setLocalVal(v);
-            commitValue(v);
+            onBlockChange(field, v);
           }}
           placeholder={placeholder}
           aria-label={label}
@@ -156,7 +101,6 @@ export const StarStructureEditor: React.FC<StarStructureEditorProps> = memo(
     hasUnappliedChanges = false,
     starGuideSlot,
   }) => {
-    const [, startTransition] = useTransition();
     const conclusionId = useId();
     const situationId = useId();
     const actionId = useId();
@@ -185,10 +129,8 @@ export const StarStructureEditor: React.FC<StarStructureEditorProps> = memo(
             <button
               type="button"
               onClick={() => {
-                startTransition(() => {
-                  onApplyBlocksToContent();
-                  onSwitchToWriteMode();
-                });
+                onApplyBlocksToContent();
+                onSwitchToWriteMode();
               }}
               className="flex w-full cursor-pointer items-center justify-center gap-1.5 rounded bg-neutral-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-800 sm:w-auto sm:px-4"
             >

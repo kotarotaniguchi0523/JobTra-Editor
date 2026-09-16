@@ -5,8 +5,6 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
-const MINITYPE_BROWSER_BUN_SHIM_ID = '\0minitype-browser-bun-shim';
-
 export default defineConfig(() => {
   return {
     plugins: [
@@ -36,39 +34,6 @@ export default defineConfig(() => {
             }
             next();
           });
-        },
-      },
-      {
-        name: 'minitype-browser-bun-shim',
-        enforce: 'pre',
-        resolveId(source, importer) {
-          if (
-            source === './shims/better-sqlite3.bun.js' &&
-            importer?.includes('@minitype/minitype/dist/index.browser.js')
-          ) {
-            return MINITYPE_BROWSER_BUN_SHIM_ID;
-          }
-        },
-        load(id) {
-          if (id !== MINITYPE_BROWSER_BUN_SHIM_ID) return;
-
-          // minitype 0.1.6 ships this browser shim as type declarations only,
-          // while its browser bundle still contains a dynamic Bun import.
-          return `
-            class Statement {
-              all() { return []; }
-              run() { return { changes: 0, lastInsertRowid: 0 }; }
-              get() { return undefined; }
-            }
-            export default class Database {
-              constructor() {}
-              prepare() { return new Statement(); }
-              exec() {}
-              pragma() {}
-              transaction(fn) { return fn; }
-              close() {}
-            }
-          `;
         },
       },
       funstackStatic({

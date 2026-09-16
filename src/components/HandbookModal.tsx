@@ -1,6 +1,4 @@
-'use client';
-
-import React, { Activity, useTransition, memo } from 'react';
+import React, { Activity, memo } from 'react';
 import { X, Sparkles } from 'lucide-react';
 
 interface HandbookModalProps {
@@ -17,7 +15,6 @@ interface HandbookModalProps {
  * Pattern from @funstack/static/dist/docs/learn/DeferAndActivity.md
  */
 export const HandbookModal: React.FC<HandbookModalProps> = memo(({ isOpen, onClose, children }) => {
-  const [, startTransition] = useTransition();
   return (
     <Activity mode={isOpen ? 'visible' : 'hidden'}>
       <div
@@ -31,11 +28,7 @@ export const HandbookModal: React.FC<HandbookModalProps> = memo(({ isOpen, onClo
           type="button"
           aria-label="モーダルを閉じる"
           className="fixed inset-0 h-full w-full cursor-default border-none bg-neutral-900/50 backdrop-blur-xs"
-          onClick={() => {
-            startTransition(() => {
-              onClose();
-            });
-          }}
+          onClick={onClose}
         />
 
         <dialog
@@ -61,11 +54,7 @@ export const HandbookModal: React.FC<HandbookModalProps> = memo(({ isOpen, onClo
             </div>
             <button
               type="button"
-              onClick={() => {
-                startTransition(() => {
-                  onClose();
-                });
-              }}
+              onClick={onClose}
               aria-label="閉じる"
               className="cursor-pointer rounded-md p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
             >

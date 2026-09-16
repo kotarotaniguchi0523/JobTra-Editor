@@ -1,17 +1,14 @@
-'use client';
-
-import React, { useState, useTransition, useMemo, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useTransition, useCallback, Suspense, lazy } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useDrafts } from '../context/DraftContext';
+import { useDraftActions, useDraftData, useDraftSaveStatus } from '../context/DraftContext';
 import { Sidebar } from './Sidebar';
 import { WorkspaceHeader } from './workspace/WorkspaceHeader';
 import { WorkspaceDraftBar } from './workspace/WorkspaceDraftBar';
 import { ESDraft } from '../types';
-import { cleanForSubmission, auditText, calculateMetrics } from '../services/analyzer';
 
-// 開いていない重いUIコンポーネントは React.lazy で遅延読み込み
-const LazyReviewPanel = lazy(() =>
-  import('./ReviewPanel').then((m) => ({ default: m.ReviewPanel })),
+// クライアントの重いUIは遅延読み込みし、静的ガイドはActivityで先読み可能にする
+const LazyWorkspaceAuditPanel = lazy(() =>
+  import('./WorkspaceAuditPanel').then((m) => ({ default: m.WorkspaceAuditPanel })),
 );
 
 const LazyHandbookModal = lazy(() =>
@@ -33,6 +30,8 @@ interface WorkspaceLayoutProps {
   emptyDraftGuideSlot?: React.ReactNode;
 }
 
+type WorkspacePanel = 'sidebar' | 'audit' | 'handbook' | 'export' | null;
+
 export function WorkspaceLayout({
   children,
   activeMode,
@@ -43,55 +42,29 @@ export function WorkspaceLayout({
   sidebarFooterSlot,
   emptyDraftGuideSlot,
 }: WorkspaceLayoutProps) {
-  const {
-    drafts,
-    activeDraftId,
-    activeDraft,
-    isLoading,
-    isSaving,
-    selectDraft,
-    createDraft,
-    updateDraft,
-    deleteDraft,
-    duplicateDraft,
-    toggleStar,
-  } = useDrafts();
+  const { drafts, activeDraftId, activeDraft, isLoading } = useDraftData();
+  const { isSaving, saveStatus } = useDraftSaveStatus();
+  const { selectDraft, createDraft, updateDraft, deleteDraft, duplicateDraft, toggleStar } =
+    useDraftActions();
 
-  // 単純なローカルフラグで状態管理
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
-  const [isHandbookOpen, setIsHandbookOpen] = useState(false);
-  const [isExportOpen, setIsExportOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [openPanel, setOpenPanel] = useState<WorkspacePanel>(null);
+  const [, startTransition] = useTransition();
+
+  const setPanel = useCallback(
+    (panel: WorkspacePanel) => {
+      // Opening a lazy/heavy panel may suspend. Closing and mobile drawer
+      // interactions are small urgent updates and should never lag.
+      if (panel === null || panel === 'sidebar') {
+        setOpenPanel(panel);
+      } else {
+        startTransition(() => setOpenPanel(panel));
+      }
+    },
+    [startTransition],
+  );
 
   const currentId = activeDraftId || activeDraft?.id || '';
 
-  // 監査用メトリクスとチェック
-  const activeContent = activeDraft?.content || '';
-  const auditResult = useMemo(
-    () => auditText(activeContent, activeDraft?.targetCount || 400),
-    [activeContent, activeDraft?.targetCount],
-  );
-  const metricsResult = useMemo(() => calculateMetrics(activeContent), [activeContent]);
-
-  // クリップボードへ提出用コピー
-  const handleCopyClean = useCallback(() => {
-    if (!activeDraft) return;
-    const cleanText = cleanForSubmission(activeDraft.content);
-    navigator.clipboard.writeText(cleanText).then(() => {
-      startTransition(() => {
-        setIsCopied(true);
-      });
-      setTimeout(() => {
-        startTransition(() => {
-          setIsCopied(false);
-        });
-      }, 2000);
-    });
-  }, [activeDraft]);
-
-  // 下書き更新ハンドラ
   const handleUpdateDraft = useCallback(
     (partial: Partial<ESDraft>, immediate: boolean = false) => {
       if (!activeDraft) return;
@@ -100,23 +73,58 @@ export function WorkspaceLayout({
     [activeDraft, updateDraft],
   );
 
+  const handleSelectDraft = useCallback(
+    (id: string) => {
+      selectDraft(id);
+      setPanel(null);
+    },
+    [selectDraft, setPanel],
+  );
+
+  const handleCreateNewDraft = useCallback(() => {
+    void createDraft();
+  }, [createDraft]);
+
+  const handleDeleteDraft = useCallback(
+    (id: string) => {
+      const nextActiveId =
+        activeDraftId === id ? (drafts.find((draft) => draft.id !== id)?.id ?? '') : activeDraftId;
+      void deleteDraft(id, nextActiveId);
+    },
+    [activeDraftId, deleteDraft, drafts],
+  );
+
+  const handleDuplicateDraft = useCallback(
+    (id: string) => {
+      const target = drafts.find((draft) => draft.id === id);
+      if (target) void duplicateDraft(target);
+    },
+    [drafts, duplicateDraft],
+  );
+
+  const handleToggleStar = useCallback(
+    (id: string) => {
+      const target = drafts.find((draft) => draft.id === id);
+      if (target) void toggleStar(target);
+    },
+    [drafts, toggleStar],
+  );
+
   return (
     <div className="flex h-dvh overflow-hidden bg-neutral-100 font-sans text-neutral-900">
       {/* 1. 共通サイドバー */}
       <Sidebar
         drafts={drafts}
         currentDraftId={currentId}
-        onSelectDraft={(id) => {
-          selectDraft(id);
-          setIsSidebarOpen(false);
-        }}
-        onCreateNewDraft={() => createDraft()}
-        onDuplicateDraft={(id) => duplicateDraft(id)}
-        onDeleteDraft={(id) => deleteDraft(id)}
-        onToggleStar={(id) => toggleStar(id)}
+        onSelectDraft={handleSelectDraft}
+        onCreateNewDraft={handleCreateNewDraft}
+        onDuplicateDraft={handleDuplicateDraft}
+        onDeleteDraft={handleDeleteDraft}
+        onToggleStar={handleToggleStar}
         isSaving={isSaving}
-        isMobileOpen={isSidebarOpen}
-        onCloseMobile={() => setIsSidebarOpen(false)}
+        saveStatus={saveStatus}
+        isMobileOpen={openPanel === 'sidebar'}
+        onCloseMobile={() => setPanel(null)}
         footerSlot={sidebarFooterSlot}
       />
 
@@ -125,15 +133,14 @@ export function WorkspaceLayout({
         <WorkspaceHeader
           brandSlot={brandSlot}
           linksSlot={linksSlot}
-          onOpenSidebar={() => setIsSidebarOpen(true)}
-          isPending={isPending}
+          onOpenSidebar={() => setPanel('sidebar')}
           isSaving={isSaving}
-          isAuditOpen={isAuditOpen}
-          onToggleAudit={() => setIsAuditOpen(!isAuditOpen)}
-          onOpenHandbook={() => setIsHandbookOpen(true)}
-          isCopied={isCopied}
-          onCopyClean={handleCopyClean}
-          onOpenExport={activeDraft ? () => setIsExportOpen(true) : undefined}
+          saveStatus={saveStatus}
+          isAuditOpen={openPanel === 'audit'}
+          onToggleAudit={() => setPanel(openPanel === 'audit' ? null : 'audit')}
+          onOpenHandbook={() => setPanel('handbook')}
+          copyContent={activeDraft?.content || null}
+          onOpenExport={activeDraft ? () => setPanel('export') : undefined}
         />
 
         {activeDraft && (
@@ -166,66 +173,63 @@ export function WorkspaceLayout({
             )}
           </main>
 
-          {/* 4. リアルタイム監査パネル（開いた時のみ React.lazy で遅延ロード） */}
-          {isAuditOpen && activeDraft && (
-            <>
-              {/* モバイル用背景オーバーレイ */}
-              <button
-                type="button"
-                aria-label="文章監査パネルを閉じる"
-                className="fixed inset-0 z-40 h-full w-full cursor-default border-none bg-neutral-900/30 backdrop-blur-xs lg:hidden"
-                onClick={() => setIsAuditOpen(false)}
-              />
-
-              <aside className="animate-fadeIn fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col overflow-y-auto border-l border-neutral-200 bg-white shadow-2xl lg:static lg:z-auto lg:w-96 lg:shadow-none">
-                <Suspense
-                  fallback={
+          {/* 4. リアルタイム監査パネル（開いた時のみ遅延ロード） */}
+          {openPanel === 'audit' && activeDraft && (
+            <Suspense
+              fallback={
+                <>
+                  <button
+                    type="button"
+                    aria-label="文章監査パネルを閉じる"
+                    className="fixed inset-0 z-40 h-full w-full cursor-default border-none bg-neutral-900/30 backdrop-blur-xs lg:hidden"
+                    onClick={() => setPanel(null)}
+                  />
+                  <aside className="animate-fadeIn fixed inset-y-0 right-0 z-50 flex w-full max-w-sm items-center justify-center overflow-y-auto border-l border-neutral-200 bg-white shadow-2xl lg:static lg:z-auto lg:w-96 lg:shadow-none">
                     <div className="flex items-center justify-center p-4 text-xs text-neutral-400">
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       監査モジュールを読み込み中...
                     </div>
-                  }
-                >
-                  <LazyReviewPanel
-                    checks={auditResult}
-                    metrics={metricsResult}
-                    guidelinesSlot={guidelinesSlot}
-                    onClose={() => setIsAuditOpen(false)}
-                    onApplyReplacement={(original, suggested) => {
-                      const nextContent = activeDraft.content.replace(original, suggested);
-                      handleUpdateDraft({ content: nextContent }, true);
-                    }}
-                  />
-                </Suspense>
-              </aside>
-            </>
+                  </aside>
+                </>
+              }
+            >
+              <LazyWorkspaceAuditPanel
+                draft={activeDraft}
+                guidelinesSlot={guidelinesSlot}
+                onClose={() => setPanel(null)}
+                onApplyReplacement={(original, suggested) => {
+                  const nextContent = activeDraft.content.replace(original, suggested);
+                  handleUpdateDraft({ content: nextContent }, true);
+                }}
+              />
+            </Suspense>
           )}
         </div>
       </div>
 
-      {/* 5. 推敲ハンドブックモーダル（開いた時のみ React.lazy で遅延ロード） */}
-      {isHandbookOpen && (
-        <Suspense
-          fallback={
+      {/* 5. 推敲ハンドブックモーダル（hidden Activityで静的ペイロードを先読み） */}
+      <Suspense
+        fallback={
+          openPanel === 'handbook' ? (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
               <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 推敲ガイドを読み込み中...
               </div>
             </div>
-          }
-        >
-          <LazyHandbookModal isOpen={isHandbookOpen} onClose={() => setIsHandbookOpen(false)}>
-            {handbookSlot}
-          </LazyHandbookModal>
-        </Suspense>
-      )}
+          ) : null
+        }
+      >
+        <LazyHandbookModal isOpen={openPanel === 'handbook'} onClose={() => setPanel(null)}>
+          {handbookSlot}
+        </LazyHandbookModal>
+      </Suspense>
 
       {/* 6. エクスポートモーダル（ブラウザ内minitype PDF / Markdown） */}
       {activeDraft && (
         <Suspense
           fallback={
-            isExportOpen ? (
+            openPanel === 'export' ? (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                 <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -236,8 +240,8 @@ export function WorkspaceLayout({
           }
         >
           <LazyExportModal
-            isOpen={isExportOpen}
-            onClose={() => setIsExportOpen(false)}
+            isOpen={openPanel === 'export'}
+            onClose={() => setPanel(null)}
             draft={activeDraft}
           />
         </Suspense>

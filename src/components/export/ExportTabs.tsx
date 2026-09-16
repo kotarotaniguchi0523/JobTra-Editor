@@ -1,5 +1,3 @@
-'use client';
-
 import { FileCode, FileText } from 'lucide-react';
 
 export type ExportTab = 'pdf' | 'md';

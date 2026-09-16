@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { RatioBalanceResult } from '../services/ratioBalance';
 import { BarChart3, AlertCircle, CheckCircle2 } from 'lucide-react';

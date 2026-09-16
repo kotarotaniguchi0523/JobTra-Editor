@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Compass, CornerDownLeft } from 'lucide-react';
 import { GhostGuidance } from '../services/ghostGuidance';

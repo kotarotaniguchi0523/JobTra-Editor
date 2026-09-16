@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import { Scissors, Check, ArrowRight } from 'lucide-react';
 import { RedundancyMatch } from '../services/sculptor';

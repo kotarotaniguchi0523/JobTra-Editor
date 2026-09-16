@@ -1,12 +1,9 @@
-'use client';
-
 import React, { memo } from 'react';
 import { GhostGuidanceBar } from './GhostGuidanceBar';
-import { analyzeGhostContext } from '../services/ghostGuidance';
+import type { GhostGuidance } from '../services/ghostGuidance';
 
 interface DeferredGhostGuidanceProps {
-  content: string;
-  cursorPos: number;
+  guidance: GhostGuidance;
   onInsertSuggestion: (phrase: string) => void;
 }
 
@@ -17,12 +14,10 @@ interface DeferredGhostGuidanceProps {
  * 入力中のメインスレッドをブロックしません。
  */
 export const DeferredGhostGuidance: React.FC<DeferredGhostGuidanceProps> = memo(
-  ({ content, cursorPos, onInsertSuggestion }) => {
-    const ghostGuidance = analyzeGhostContext(content, cursorPos);
-
+  ({ guidance, onInsertSuggestion }) => {
     return (
       <div className="border-t border-neutral-800 bg-neutral-900 p-2.5">
-        <GhostGuidanceBar guidance={ghostGuidance} onInsertSuggestion={onInsertSuggestion} />
+        <GhostGuidanceBar guidance={guidance} onInsertSuggestion={onInsertSuggestion} />
       </div>
     );
   },
