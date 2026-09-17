@@ -52,7 +52,9 @@ test.describe('ES editor browser workflows', () => {
 
     await editor.openPreview();
 
-    await expect(editor.page.getByText('STAR構成を確認するES')).toBeVisible();
+    await expect(
+      editor.page.getByRole('main').getByRole('heading', { name: 'STAR構成を確認するES' }),
+    ).toBeVisible();
     await expect(editor.page.getByText('【結論】')).toBeVisible();
     await expect(editor.page.getByText('課題を見つけて改善をやり抜く力です。')).toBeVisible();
   });

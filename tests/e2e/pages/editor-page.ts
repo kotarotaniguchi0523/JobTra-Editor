@@ -4,6 +4,7 @@ export class EditorPage {
   readonly page: Page;
   readonly sidebar: Locator;
   readonly newDraftButton: Locator;
+  readonly draftCountBadge: Locator;
   readonly draftTitle: Locator;
   readonly draftCategory: Locator;
   readonly body: Locator;
@@ -14,6 +15,7 @@ export class EditorPage {
     this.page = page;
     this.sidebar = page.locator('#app-sidebar');
     this.newDraftButton = page.locator('#sidebar-new-draft-btn');
+    this.draftCountBadge = this.sidebar.getByText(/^\d+件$/);
     this.draftTitle = page.locator('#draft-title-input');
     this.draftCategory = page.locator('#draft-category-select');
     this.body = page.locator('#es-body-textarea');
@@ -32,7 +34,8 @@ export class EditorPage {
   }
 
   async draftCount(): Promise<number> {
-    return this.sidebar.getByRole('button', { name: /を選択$/ }).count();
+    const text = await this.draftCountBadge.textContent();
+    return Number.parseInt(text?.replace('件', '') ?? '0', 10);
   }
 
   async createDraft(): Promise<void> {
@@ -51,6 +54,7 @@ export class EditorPage {
   }
 
   async waitForSaved(): Promise<void> {
+    await expect(this.page.getByText('保存中...', { exact: true })).toBeVisible({ timeout: 3_000 });
     await expect(this.page.getByTitle('IndexedDBに自動保存されています')).toBeVisible();
   }
 
