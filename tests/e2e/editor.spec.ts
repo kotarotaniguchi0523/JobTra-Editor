@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { DeviceSyncPage } from './pages/device-sync-page';
 import { EditorPage } from './pages/editor-page';
 import { StructurePage } from './pages/structure-page';
 
@@ -9,7 +10,7 @@ test.describe('ES editor browser workflows', () => {
     await editor.goto();
 
     await expect(editor.page).toHaveTitle('就活ESクラフト - 楽しく書けるES作成エディタ');
-    await expect(editor.page.getByText('就活ESクラフト').first()).toBeVisible();
+    await expect(editor.page.locator('#app-top-header')).toBeVisible();
     await expect.poll(() => editor.draftCount()).toBe(2);
     await expect(editor.body).toHaveValue(/学生時代に注力したことは/);
 
@@ -59,5 +60,17 @@ test.describe('ES editor browser workflows', () => {
     await expect(
       editor.page.getByRole('main').getByText('課題を見つけて改善をやり抜く力です。'),
     ).toBeVisible();
+  });
+
+  test('opens the one-scan device sync flow and generates a short-lived QR token', async ({
+    page,
+  }) => {
+    const editor = new EditorPage(page);
+    const deviceSync = new DeviceSyncPage(page);
+
+    await editor.goto();
+    await deviceSync.open();
+    await deviceSync.createPairingQr();
+    await deviceSync.close();
   });
 });

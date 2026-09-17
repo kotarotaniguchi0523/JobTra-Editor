@@ -59,10 +59,21 @@ export interface RevisionStore<T extends JsonValue = JsonValue> {
 export interface SyncChannel<T extends JsonValue = JsonValue> {
   send(message: SyncMessage<T>): Promise<void>;
   onMessage(handler: (message: SyncMessage<T>) => void): () => void;
+  /**
+   * Optional transport readiness hook. WebRTC transports need to wait for a
+   * peer before their first message; in-memory test channels are ready
+   * immediately and can omit it.
+   */
+  waitForPeer?(timeoutMs: number): Promise<void>;
   close(): void;
 }
 
 export type SyncSummary = {
   sent: number;
   received: number;
+};
+
+export type SyncSnapshot<T extends JsonValue = JsonValue> = {
+  revisions: Revision<T>[];
+  heads: RevisionHeads[];
 };

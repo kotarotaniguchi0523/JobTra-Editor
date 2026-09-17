@@ -4,6 +4,7 @@ import type {
   RevisionStore,
   SyncChannel,
   SyncMessage,
+  SyncSnapshot,
   SyncSummary,
 } from './types.js';
 
@@ -13,11 +14,14 @@ export async function syncStores<T extends JsonValue>(options: {
   store: RevisionStore<T>;
   channel: SyncChannel<T>;
   timeoutMs?: number;
+  onSnapshot?: (snapshot: SyncSnapshot<T>) => void;
 }): Promise<SyncSummary> {
   const timeoutMs = options.timeoutMs ?? 10_000;
+  await options.channel.waitForPeer?.(timeoutMs);
   const localRevisions = await options.store.getRevisions();
   const localIds = new Set(localRevisions.map((revision) => revision.id));
   const localHeads = await options.store.getHeads();
+  options.onSnapshot?.({ revisions: localRevisions, heads: localHeads });
 
   return new Promise<SyncSummary>((resolve, reject) => {
     let sent = false;
@@ -28,8 +32,10 @@ export async function syncStores<T extends JsonValue>(options: {
     const receivedIds = new Set<string>();
     let sentRevisionIds: string[] = [];
     let acknowledged = new Set<string>();
+    let remoteHello = false;
     let unsubscribe: (() => void) | undefined;
     let processing = Promise.resolve();
+    let helloRetry: ReturnType<typeof setInterval> | null = null;
 
     const timer = setTimeout(() => finish(new Error('sync timed out')), timeoutMs);
 
@@ -37,6 +43,7 @@ export async function syncStores<T extends JsonValue>(options: {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      if (helloRetry !== null) clearInterval(helloRetry);
       unsubscribe?.();
       if (error !== undefined) reject(error);
       else resolve({ sent: sentRevisionIds.length, received });
@@ -64,10 +71,34 @@ export async function syncStores<T extends JsonValue>(options: {
       maybeFinish();
     };
 
+    const hello: SyncMessage<T> = {
+      kind: 'hello',
+      revisionIds: [...localIds].sort(),
+      heads: localHeads,
+    };
+    const sendHello = (): void => {
+      if (settled || remoteHello) return;
+      void options.channel
+        .send(hello)
+        .catch((error: unknown) =>
+          finish(error instanceof Error ? error : new Error(String(error))),
+        );
+    };
+
     const onMessage = (message: SyncMessage<T>): void => {
       processing = processing.then(async () => {
         try {
           if (message.kind === 'hello') {
+            const firstRemoteHello = !remoteHello;
+            remoteHello = true;
+            if (helloRetry !== null) {
+              clearInterval(helloRetry);
+              helloRetry = null;
+            }
+            // If our first hello was sent before the peer subscribed, echoing
+            // one hello back gives the peer a reliable handshake without
+            // creating an endless hello loop.
+            if (firstRemoteHello) await options.channel.send(hello);
             await sendOurMissingRevisions(new Set(message.revisionIds));
             return;
           }
@@ -99,13 +130,8 @@ export async function syncStores<T extends JsonValue>(options: {
     };
 
     unsubscribe = options.channel.onMessage(onMessage);
-    void options.channel
-      .send({
-        kind: 'hello',
-        revisionIds: [...localIds].sort(),
-        heads: localHeads,
-      })
-      .catch((error: unknown) => finish(error instanceof Error ? error : new Error(String(error))));
+    sendHello();
+    helloRetry = setInterval(sendHello, Math.min(250, Math.max(25, Math.floor(timeoutMs / 4))));
   });
 }
 

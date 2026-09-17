@@ -30,6 +30,12 @@ const LazyExportModal = lazy(() =>
   import('@features/export/ui/ExportModal').then((m) => ({ default: m.ExportModal })),
 );
 
+const LazyDeviceSyncPanel = lazy(() =>
+  import('@features/device-sync/ui/DeviceSyncPanel').then((m) => ({
+    default: m.DeviceSyncPanel,
+  })),
+);
+
 export interface WorkspaceClientShellProps {
   children: ReactNode;
   activeMode: 'write' | 'structure' | 'preview';
@@ -41,7 +47,7 @@ export interface WorkspaceClientShellProps {
   emptyDraftGuideSlot?: ReactNode;
 }
 
-type WorkspacePanel = 'sidebar' | 'audit' | 'handbook' | 'export' | null;
+type WorkspacePanel = 'sidebar' | 'audit' | 'handbook' | 'export' | 'sync' | null;
 
 /**
  * Owns browser interaction for the shared workspace. Static pages pass their
@@ -138,6 +144,7 @@ export function WorkspaceClientShell({
           onOpenHandbook={() => setPanel('handbook')}
           copyContent={activeDraft?.content || null}
           onOpenExport={activeDraft ? () => setPanel('export') : undefined}
+          onOpenSync={() => setPanel('sync')}
         />
 
         {activeDraft && (
@@ -241,6 +248,21 @@ export function WorkspaceClientShell({
             onClose={() => setPanel(null)}
             draft={activeDraft}
           />
+        </Suspense>
+      )}
+
+      {openPanel === 'sync' && (
+        <Suspense
+          fallback={
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="flex items-center gap-2 rounded-lg bg-white p-4 text-xs">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                同期パネルを読み込み中...
+              </div>
+            </div>
+          }
+        >
+          <LazyDeviceSyncPanel onClose={() => setPanel(null)} />
         </Suspense>
       )}
     </div>
