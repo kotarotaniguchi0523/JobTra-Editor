@@ -40,7 +40,9 @@ export class EditorPage {
 
   async createDraft(): Promise<void> {
     const countBefore = await this.draftCount();
+    const idBefore = new URL(this.page.url()).searchParams.get('id');
     await this.newDraftButton.click();
+    await expect.poll(() => new URL(this.page.url()).searchParams.get('id')).not.toBe(idBefore);
     await expect(this.draftTitle).toHaveValue('新規エントリーシート');
     await expect.poll(() => this.draftCount()).toBe(countBefore + 1);
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useEffect } from 'react';
+import { startTransition, useEffect, useRef } from 'react';
 import { useSearchParams } from '@funstack/router';
 import {
   draftStore,
@@ -22,15 +22,19 @@ export function DraftRuntime() {
   const firstDraftId = useFirstDraftId();
   const activeDraftId = useActiveDraftId();
   const isLoading = useDraftLoading();
+  const lastObservedUrlId = useRef(currentUrlId);
 
   useEffect(() => {
     draftStore.bootstrap(currentUrlId);
   }, [currentUrlId]);
 
   useEffect(() => {
-    if (isLoading || !currentUrlId || !hasCurrentUrlDraft || currentUrlId === activeDraftId) {
+    if (isLoading || lastObservedUrlId.current === currentUrlId) {
       return;
     }
+
+    lastObservedUrlId.current = currentUrlId;
+    if (!currentUrlId || !hasCurrentUrlDraft || currentUrlId === activeDraftId) return;
 
     startTransition(() => {
       draftStore.dispatch({ type: 'select', id: currentUrlId });
