@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { StarStructureEditor } from '@widgets/structure/ui/StarStructureEditor';
-import { draftActions, useActiveDraft } from '@entities/draft/model/draftStore';
+import { draftActions, draftStore, useActiveDraft } from '@entities/draft/model/draftStore';
 import type { StarBlocks } from '@entities/draft/model/types';
 import { pathWithDraftId } from '@shared/validation/searchParams';
 
@@ -33,7 +33,7 @@ function buildStarContent(blocks: StarBlocks): string {
 /** Owns STAR block editing and its browser navigation affordance. */
 export function StructureIsland({ starGuideSlot }: StructureIslandProps) {
   const activeDraft = useActiveDraft();
-  const { updateDraft } = draftActions;
+  const { updateActiveDraft } = draftActions;
 
   const blocks: StarBlocks = activeDraft?.starBlocks || DEFAULT_STAR_BLOCKS;
   const hasUnapplied = Boolean(activeDraft && buildStarContent(blocks) !== activeDraft.content);
@@ -41,24 +41,20 @@ export function StructureIsland({ starGuideSlot }: StructureIslandProps) {
   // 各ブロックの変更
   function handleBlockChange(field: keyof StarBlocks, value: string) {
     if (!activeDraft) return;
-    const nextBlocks = { ...(activeDraft.starBlocks || DEFAULT_STAR_BLOCKS), [field]: value };
-    updateDraft({ ...activeDraft, starBlocks: nextBlocks, updatedAt: Date.now() });
+    const currentDraft =
+      draftStore.getState().drafts.find((draft) => draft.id === activeDraft.id) ?? activeDraft;
+    const nextBlocks = { ...(currentDraft.starBlocks || DEFAULT_STAR_BLOCKS), [field]: value };
+    updateActiveDraft({ starBlocks: nextBlocks });
   }
 
   // ブロックから本文を合成して反映
   function handleApplyBlocksToContent() {
     if (!activeDraft) return;
-    const current = activeDraft.starBlocks || DEFAULT_STAR_BLOCKS;
+    const currentDraft =
+      draftStore.getState().drafts.find((draft) => draft.id === activeDraft.id) ?? activeDraft;
+    const current = currentDraft.starBlocks || DEFAULT_STAR_BLOCKS;
     const generated = buildStarContent(current);
-    updateDraft(
-      {
-        ...activeDraft,
-        content: generated,
-        isBlockMode: false,
-        updatedAt: Date.now(),
-      },
-      true,
-    );
+    updateActiveDraft({ content: generated, isBlockMode: false }, true);
   }
 
   if (!activeDraft) return null;

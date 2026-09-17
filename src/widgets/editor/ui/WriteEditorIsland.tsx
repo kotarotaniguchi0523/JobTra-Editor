@@ -24,7 +24,7 @@ const LazyChiselToolbar = lazy(() =>
  */
 export function WriteEditorIsland() {
   const activeDraft = useActiveDraft();
-  const { updateDraft } = draftActions;
+  const { updateActiveDraft } = draftActions;
 
   const content = activeDraft?.content || '';
   const deferredContent = useDeferredValue(content);
@@ -43,7 +43,7 @@ export function WriteEditorIsland() {
   // 本文コミットハンドラ
   function handleContentCommit(newContent: string, _newPos: number) {
     if (!activeDraft) return;
-    updateDraft({ ...activeDraft, content: newContent, updatedAt: Date.now() });
+    updateActiveDraft({ content: newContent });
   }
 
   // 書式整理（連続改行のトリムなど）
@@ -53,21 +53,21 @@ export function WriteEditorIsland() {
       .replace(/[ \t]+$/gm, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
-    updateDraft({ ...activeDraft, content: cleaned, updatedAt: Date.now() }, true);
+    updateActiveDraft({ content: cleaned }, true);
   }
 
   // 1箇所の削りを適用
   function handleApplyOneChisel(match: RedundancyMatch) {
     if (!activeDraft) return;
     const nextContent = applySculpt(activeDraft.content, match);
-    updateDraft({ ...activeDraft, content: nextContent, updatedAt: Date.now() }, true);
+    updateActiveDraft({ content: nextContent }, true);
   }
 
   // 全ての削りを一括適用
   function handleApplyAllChisel() {
     if (!activeDraft) return;
     const { newText } = applyAllSculpts(activeDraft.content);
-    updateDraft({ ...activeDraft, content: newText, updatedAt: Date.now() }, true);
+    updateActiveDraft({ content: newText }, true);
   }
 
   if (!activeDraft) return null;

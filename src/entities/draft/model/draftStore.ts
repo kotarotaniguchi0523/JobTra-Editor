@@ -15,6 +15,7 @@ export interface DraftActions {
   selectDraft: (id: string) => void;
   createDraft: (category?: ESQuestionCategory) => Promise<string>;
   updateDraft: (updated: ESDraft, immediate?: boolean) => void;
+  updateActiveDraft: (partial: Partial<ESDraft>, immediate?: boolean) => void;
   deleteDraft: (id: string, nextActiveId: string) => Promise<void>;
   duplicateDraft: (draft: ESDraft) => Promise<string>;
   toggleStar: (draft: ESDraft) => Promise<void>;
@@ -165,6 +166,21 @@ function updateDraft(updated: ESDraft, immediate = false): void {
   }
 }
 
+function updateActiveDraft(partial: Partial<ESDraft>, immediate = false): void {
+  const activeDraft =
+    state.drafts.find((draft) => draft.id === state.activeDraftId) ?? state.drafts[0] ?? null;
+  if (!activeDraft) return;
+
+  updateDraft(
+    {
+      ...activeDraft,
+      ...partial,
+      updatedAt: Date.now(),
+    },
+    immediate,
+  );
+}
+
 async function deleteDraft(id: string, nextActiveId: string): Promise<void> {
   try {
     await storage.deleteDraft(id);
@@ -265,6 +281,7 @@ export const draftActions: DraftActions = {
   selectDraft,
   createDraft,
   updateDraft,
+  updateActiveDraft,
   deleteDraft,
   duplicateDraft,
   toggleStar,
@@ -341,24 +358,3 @@ export function useFirstDraftId(): string {
 
 export function useDraftExists(id: string): boolean {
   return useSyncExternalStore(
-    subscribe,
-    () => getDraftExistsSnapshot(id),
-    getServerDraftExistsSnapshot,
-  );
-}
-
-export function useActiveDraftId(): string {
-  return useSyncExternalStore(subscribe, getActiveDraftIdSnapshot, getServerActiveDraftIdSnapshot);
-}
-
-export function useActiveDraft(): ESDraft | null {
-  return useSyncExternalStore(subscribe, getActiveDraftSnapshot, getServerActiveDraftSnapshot);
-}
-
-export function useDraftLoading(): boolean {
-  return useSyncExternalStore(subscribe, getDraftLoadingSnapshot, getServerDraftLoadingSnapshot);
-}
-
-export function useDraftSaveStatus(): DraftSaveStatus {
-  return useSyncExternalStore(subscribe, getSaveStatusSnapshot, getServerSaveStatusSnapshot);
-}
