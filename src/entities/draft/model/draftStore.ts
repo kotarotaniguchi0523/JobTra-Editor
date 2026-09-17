@@ -358,3 +358,24 @@ export function useFirstDraftId(): string {
 
 export function useDraftExists(id: string): boolean {
   return useSyncExternalStore(
+    subscribe,
+    () => getDraftExistsSnapshot(id),
+    getServerDraftExistsSnapshot,
+  );
+}
+
+export function useActiveDraftId(): string {
+  return useSyncExternalStore(subscribe, getActiveDraftIdSnapshot, getServerActiveDraftIdSnapshot);
+}
+
+export function useActiveDraft(): ESDraft | null {
+  return useSyncExternalStore(subscribe, getActiveDraftSnapshot, getServerActiveDraftSnapshot);
+}
+
+export function useDraftLoading(): boolean {
+  return useSyncExternalStore(subscribe, getDraftLoadingSnapshot, getServerDraftLoadingSnapshot);
+}
+
+export function useDraftSaveStatus(): DraftSaveStatus {
+  return useSyncExternalStore(subscribe, getSaveStatusSnapshot, getServerSaveStatusSnapshot);
+}
