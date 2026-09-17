@@ -39,6 +39,11 @@
    - Markdown（`.md`）と、日本語組版エンジン minitype による印刷用PDFをブラウザ内で生成。
    - PDF生成APIやアプリ用データベースを必要とせず、静的ホスティングだけで利用可能。
 
+7. **QR 1回の端末間同期**
+   - 端末間の同期時だけ、短命のQRペアリング情報を使ってTrystero/WebRTCで接続。
+   - 下書き・revision DAGは各端末のIndexedDBに保持し、共通祖先からの3-way mergeと競合選択をブラウザ内で実行。
+   - アプリ独自の実行時サーバー、クラウドDB、ファイルダウンロードは不要。WebRTCの接続確立に公開シグナリング網を利用しますが、原稿データはP2P DataChannelで送ります。
+
 ---
 
 ## 🛠 技術スタック
@@ -68,7 +73,7 @@
 - **React Diagnostics**: `react-doctor` (`^0.9.14`)
   - React 19 / RSC boundary、パフォーマンス、アクセシビリティ、セキュリティの自動スキャン
 - **Test Framework**: `vitest` (`^5.0.0`)
-  - ユニットテスト・ロジックテスト（29/29 件パス）
+  - ユニット・統合テスト（87件パス）とPlaywrightのPage Objectブラウザテスト
 - **Dependency Audit**: `knip` (`6.35.1`)
   - 未使用ファイル・依存・exportをCIで検出
 - **Structural Conventions**: `konsistent` (`1.0.0-beta.4`)

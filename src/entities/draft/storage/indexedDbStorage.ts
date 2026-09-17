@@ -182,6 +182,34 @@ class IndexedDbStorage {
     }
   }
 
+  public async replaceAllDrafts(drafts: readonly ESDraft[]): Promise<void> {
+    const validatedDrafts = parseDraftCollection(drafts);
+    if (!validatedDrafts) throw new Error('Draft collection validation failed');
+
+    try {
+      const db = await this.openDb();
+      await new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const existingRequest = store.getAll();
+        existingRequest.onerror = () => reject(existingRequest.error);
+        existingRequest.onsuccess = () => {
+          const nextIds = new Set(validatedDrafts.map((draft) => draft.id));
+          for (const existing of existingRequest.result) {
+            if (!nextIds.has(existing.id)) store.delete(existing.id);
+          }
+          for (const draft of validatedDrafts) store.put(draft);
+        };
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+        transaction.onabort = () =>
+          reject(transaction.error ?? new Error('draft transaction aborted'));
+      });
+    } catch {
+      this.saveLocalStorageDrafts(validatedDrafts);
+    }
+  }
+
   public async deleteDraft(id: string): Promise<void> {
     const validId = parseDraftId(id);
     if (!validId) return;

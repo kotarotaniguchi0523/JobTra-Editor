@@ -36,7 +36,7 @@ export function SidebarFooter() {
       <div className="flex items-center justify-between border-t border-neutral-100 pt-1 text-neutral-500">
         <div className="flex items-center gap-1.5 text-xs">
           <HardDrive className="h-3.5 w-3.5 text-neutral-500" />
-          <span>IndexedDB オフライン同期</span>
+          <span>IndexedDB オフライン・端末同期</span>
         </div>
         <span
           className="inline-block h-2 w-2 rounded-full bg-emerald-500"

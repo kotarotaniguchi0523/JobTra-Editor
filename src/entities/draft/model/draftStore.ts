@@ -28,6 +28,7 @@ export interface DraftActions {
   toggleStar: (draft: ESDraft, updatedAt: number) => Promise<void>;
   createSnapshot: (draft: ESDraft, label: string, identity: SnapshotIdentity) => Promise<void>;
   restoreSnapshot: (draft: ESDraft, snapshot: DraftSnapshot, updatedAt: number) => Promise<void>;
+  applySyncedDrafts: (drafts: readonly ESDraft[]) => Promise<void>;
 }
 
 type StoreAction = DraftAction | { type: 'save-status'; status: DraftSaveStatus };
@@ -256,6 +257,34 @@ async function restoreSnapshot(
   }
 }
 
+async function applySyncedDrafts(drafts: readonly ESDraft[]): Promise<void> {
+  const syncRequestId = ++saveController.requestId;
+  if (saveController.timer) {
+    clearTimeout(saveController.timer);
+    saveController.timer = null;
+  }
+  await saveController.queue;
+  if (saveController.requestId !== syncRequestId) return;
+
+  const nextDrafts = drafts.map((draft) => ({
+    ...draft,
+    tags: [...draft.tags],
+    starBlocks: draft.starBlocks ? { ...draft.starBlocks } : undefined,
+    snapshots: draft.snapshots?.map((snapshot) => ({ ...snapshot })),
+  }));
+  const currentActiveId = state.activeDraftId;
+  await storage.replaceAllDrafts(nextDrafts);
+  if (saveController.requestId !== syncRequestId) return;
+  saveController.queue = Promise.resolve();
+  startTransition(() => dispatch({ type: 'save-status', status: 'saved' }));
+  const nextActiveDraftId = nextDrafts.some((draft) => draft.id === currentActiveId)
+    ? currentActiveId
+    : (nextDrafts[0]?.id ?? '');
+  startTransition(() =>
+    dispatch({ type: 'loaded', drafts: nextDrafts, activeDraftId: nextActiveDraftId }),
+  );
+}
+
 export const draftStore = {
   getState: () => state,
   subscribe,
@@ -273,6 +302,7 @@ export const draftActions: DraftActions = {
   toggleStar,
   createSnapshot,
   restoreSnapshot,
+  applySyncedDrafts,
 };
 
 function getDraftsSnapshot(): ESDraft[] {

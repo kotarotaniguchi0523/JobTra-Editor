@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { DeviceSyncPage } from './pages/device-sync-page';
 import { EditorPage } from './pages/editor-page';
 import { StructurePage } from './pages/structure-page';
 
@@ -59,5 +60,17 @@ test.describe('ES editor browser workflows', () => {
     await expect(
       editor.page.getByRole('main').getByText('課題を見つけて改善をやり抜く力です。'),
     ).toBeVisible();
+  });
+
+  test('opens the one-scan device sync flow and generates a short-lived QR token', async ({
+    page,
+  }) => {
+    const editor = new EditorPage(page);
+    const deviceSync = new DeviceSyncPage(page);
+
+    await editor.goto();
+    await deviceSync.open();
+    await deviceSync.createPairingQr();
+    await deviceSync.close();
   });
 });

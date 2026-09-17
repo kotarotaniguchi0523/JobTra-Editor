@@ -8,6 +8,7 @@ import {
   Loader2,
   Download,
   AlertTriangle,
+  Link2,
 } from 'lucide-react';
 import { CopyCleanButton } from '@widgets/workspace/ui/CopyCleanButton';
 import type { DraftSaveStatus } from '@entities/draft/model/draftStore';
@@ -22,6 +23,7 @@ interface WorkspaceHeaderProps {
   onOpenHandbook: () => void;
   copyContent: string | null;
   onOpenExport?: () => void;
+  onOpenSync?: () => void;
 }
 
 export function WorkspaceHeader({
@@ -34,6 +36,7 @@ export function WorkspaceHeader({
   onOpenHandbook,
   copyContent,
   onOpenExport,
+  onOpenSync,
 }: WorkspaceHeaderProps) {
   return (
     <header
@@ -154,6 +157,20 @@ export function WorkspaceHeader({
             <Download className="h-3.5 w-3.5 shrink-0 text-amber-600" />
             <span className="hidden sm:inline">エクスポート</span>
             <span className="sm:hidden">出力</span>
+          </button>
+        )}
+
+        {onOpenSync && (
+          <button
+            id="header-device-sync-btn"
+            type="button"
+            onClick={onOpenSync}
+            className="flex shrink-0 cursor-pointer items-center gap-1 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-xs font-semibold whitespace-nowrap text-neutral-800 transition-colors hover:bg-neutral-100 sm:gap-1.5 sm:px-2.5"
+            title="QRコードで別の端末と下書きを同期"
+          >
+            <Link2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+            <span className="hidden sm:inline">端末同期</span>
+            <span className="sm:hidden">同期</span>
           </button>
         )}
 

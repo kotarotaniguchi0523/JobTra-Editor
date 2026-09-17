@@ -153,10 +153,10 @@ export const AboutFeatures: React.FC = () => {
               06
             </div>
             <h3 className="text-sm font-bold text-neutral-900">
-              完全オフライン & IndexedDB 自動永続化 + タブ同期
+              完全オフライン & IndexedDB 自動永続化 + QR端末同期
             </h3>
             <p className="text-xs leading-relaxed text-neutral-600">
-              一般的なWebアプリと異なり、入力内容は1文字ごとにブラウザのIndexedDBに安全に記録されます。万が一誤ってブラウザやタブを閉じても、電波のない新幹線やカフェでも、完全にオフラインで作業を再開可能。複数タブ間のリアルタイム同期機能も標準装備しています。
+              入力内容はブラウザのIndexedDBに保存されるため、電波のない場所でも作業を続けられます。別の端末へ移すときだけQRを1回読み取り、実行時のP2P通信で下書きを同期できます。サーバーに原稿を預ける必要はありません。
             </p>
             <div className="space-y-1 rounded-lg bg-emerald-50 p-3 text-xs text-emerald-900">
               <div className="flex items-center gap-1.5 font-bold">
