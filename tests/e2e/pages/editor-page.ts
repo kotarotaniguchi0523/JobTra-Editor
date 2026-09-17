@@ -54,8 +54,42 @@ export class EditorPage {
   }
 
   async waitForSaved(): Promise<void> {
-    await expect(this.page.getByText('保存中...', { exact: true })).toBeVisible({ timeout: 3_000 });
+    const title = await this.draftTitle.inputValue();
+    const content = await this.body.inputValue();
+
+    await expect
+      .poll(() => this.hasPersistedDraft(title, content), {
+        timeout: 5_000,
+        message: 'IndexedDBに現在の下書きが保存されるまで待機します',
+      })
+      .toBe(true);
     await expect(this.page.getByTitle('IndexedDBに自動保存されています')).toBeVisible();
+  }
+
+  private async hasPersistedDraft(title: string, content: string): Promise<boolean> {
+    return this.page.evaluate(
+      async ({ expectedTitle, expectedContent }) => {
+        const db = await new Promise<IDBDatabase | null>((resolve) => {
+          const request = window.indexedDB.open('es_craft_indexed_db', 1);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => resolve(null);
+        });
+
+        if (!db || !db.objectStoreNames.contains('drafts')) return false;
+
+        const drafts = await new Promise<Array<{ title?: string; content?: string }>>((resolve) => {
+          const request = db.transaction('drafts', 'readonly').objectStore('drafts').getAll();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => resolve([]);
+        });
+        db.close();
+
+        return drafts.some(
+          (draft) => draft.title === expectedTitle && draft.content === expectedContent,
+        );
+      },
+      { expectedTitle: title, expectedContent: content },
+    );
   }
 
   async reload(): Promise<void> {
