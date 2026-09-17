@@ -10,7 +10,7 @@ test.describe('ES editor browser workflows', () => {
     await editor.goto();
 
     await expect(editor.page).toHaveTitle('就活ESクラフト - 楽しく書けるES作成エディタ');
-    await expect(editor.page.getByText('就活ESクラフト').first()).toBeVisible();
+    await expect(editor.page.locator('#app-top-header').getByText('就活ESクラフト')).toBeVisible();
     await expect.poll(() => editor.draftCount()).toBe(2);
     await expect(editor.body).toHaveValue(/学生時代に注力したことは/);
 
