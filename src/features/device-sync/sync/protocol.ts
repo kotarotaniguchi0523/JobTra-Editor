@@ -1,4 +1,3 @@
-import { reachableRevisionIds } from './revision-dag.js';
 import type {
   JsonValue,
   Revision,
@@ -8,7 +7,7 @@ import type {
   SyncSummary,
 } from './types.js';
 
-export const MAX_SYNC_MESSAGE_BYTES = 16 * 1024;
+const MAX_SYNC_MESSAGE_BYTES = 16 * 1024;
 
 export async function syncStores<T extends JsonValue>(options: {
   store: RevisionStore<T>;
@@ -126,16 +125,4 @@ function chunkRevisions<T extends JsonValue>(revisions: readonly Revision<T>[]):
   }
   if (current.length > 0) batches.push(current);
   return batches;
-}
-
-export async function allReachableRevisionIds<T extends JsonValue>(
-  store: RevisionStore<T>,
-): Promise<Set<string>> {
-  const heads = await store.getHeads();
-  const ids = new Set<string>();
-  for (const entry of heads) {
-    const reachable = await reachableRevisionIds(store, entry.heads);
-    for (const id of reachable) ids.add(id);
-  }
-  return ids;
 }

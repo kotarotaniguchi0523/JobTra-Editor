@@ -63,7 +63,7 @@ export function WorkspaceClientShell({
   const activeDraft = useActiveDraft();
   const isLoading = useDraftLoading();
   const saveStatus = useDraftSaveStatus();
-  const { selectDraft, createDraft, updateDraft, deleteDraft, duplicateDraft, toggleStar } =
+  const { selectDraft, createDraft, updateActiveDraft, deleteDraft, duplicateDraft, toggleStar } =
     draftActions;
 
   const [openPanel, setOpenPanel] = useState<WorkspacePanel>(null);
@@ -81,8 +81,7 @@ export function WorkspaceClientShell({
   const currentId = activeDraftId || activeDraft?.id || '';
 
   function handleUpdateDraft(partial: Partial<ESDraft>, immediate = false) {
-    if (!activeDraft) return;
-    updateDraft({ ...activeDraft, ...partial, updatedAt: Date.now() }, immediate);
+    updateActiveDraft(partial, immediate);
   }
 
   function handleSelectDraft(id: string) {
