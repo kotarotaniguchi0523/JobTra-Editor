@@ -2,6 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { ESDraft } from '@entities/draft/model/types';
 import { draftStore } from '@entities/draft/model/draftStore';
 import { writingTools } from '@features/webmcp/lib/writingTools';
+import {
+  parseAnalyzeWritingOutput,
+  parseCompareWritingVersionsOutput,
+  parseGetWritingContextOutput,
+} from '@features/webmcp/model/writingToolSchemas';
 
 const draft: ESDraft = {
   id: 'draft-1',
@@ -61,6 +66,7 @@ describe('WebMCP writing tools', () => {
       starBlocks: draft.starBlocks,
     });
     expect(draftStore.getState().drafts[0]).toBe(draft);
+    expect(parseGetWritingContextOutput(result)).not.toBeNull();
   });
 
   it('bounds user-authored context and reports truncation', async () => {
@@ -101,6 +107,7 @@ describe('WebMCP writing tools', () => {
         missingBlocks: ['contribution'],
       },
     });
+    expect(parseAnalyzeWritingOutput(result)).not.toBeNull();
   });
 
   it('compares the current content with an existing snapshot', async () => {
@@ -126,6 +133,7 @@ describe('WebMCP writing tools', () => {
         charsNoWhitespace: draft.snapshots?.[0].content.length,
       },
     });
+    expect(parseCompareWritingVersionsOutput(result)).not.toBeNull();
   });
 
   it('returns an actionable error when a requested snapshot is missing', async () => {

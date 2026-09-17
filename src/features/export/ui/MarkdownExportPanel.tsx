@@ -1,6 +1,7 @@
 import { useActionState, useState } from 'react';
 import type { ESDraft } from '@entities/draft/model/types';
-import { downloadFile, generateEsMarkdown } from '@features/export/lib/exportMarkdown';
+import { downloadFile } from '@features/export/lib/exportDownload';
+import { generateEsMarkdown } from '@features/export/lib/exportMarkdown';
 import { getExportFilename } from '@features/export/lib/exportFilename';
 import { MarkdownExportActions } from '@features/export/ui/MarkdownExportActions';
 import {
@@ -28,17 +29,22 @@ interface MarkdownExportPanelProps {
 export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
   const [options, setOptions] = useState<MarkdownPanelOptions>(DEFAULT_MARKDOWN_OPTIONS);
 
-  const buildMarkdown = () =>
+  const buildMarkdown = (exportedAt: string) =>
     generateEsMarkdown(draft, {
       includeStar: options.includeStar,
       includeFrontmatter: options.includeMeta,
       includeAuditSummary: options.includeAudit,
+      exportedAt,
     });
 
   const [downloadState, submitDownload, isDownloadPending] = useActionState(
     async (_previousState: MarkdownActionState): Promise<MarkdownActionState> => {
       try {
-        downloadFile(buildMarkdown(), getExportFilename(draft, 'md'), 'text/markdown');
+        downloadFile(
+          buildMarkdown(new Date().toISOString()),
+          getExportFilename(draft, 'md'),
+          'text/markdown',
+        );
         return { status: 'success' };
       } catch (error) {
         return {
@@ -52,7 +58,7 @@ export function MarkdownExportPanel({ draft }: MarkdownExportPanelProps) {
   const [copyState, submitCopy, isCopyPending] = useActionState(
     async (_previousState: MarkdownActionState): Promise<MarkdownActionState> => {
       try {
-        await navigator.clipboard.writeText(buildMarkdown());
+        await navigator.clipboard.writeText(buildMarkdown(new Date().toISOString()));
         return { status: 'success' };
       } catch (error) {
         return {

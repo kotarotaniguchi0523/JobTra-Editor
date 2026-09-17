@@ -9,8 +9,14 @@ import {
 } from '@features/writing-assistance/lib/sculptor';
 import {
   parseAnalyzeWritingInput,
+  parseAnalyzeWritingOutput,
   parseCompareWritingVersionsInput,
+  parseCompareWritingVersionsOutput,
   parseGetWritingContextInput,
+  parseGetWritingContextOutput,
+  type AnalyzeWritingOutput,
+  type CompareWritingVersionsOutput,
+  type GetWritingContextOutput,
 } from '@features/webmcp/model/writingToolSchemas';
 import { getContentDigest } from '@features/webmcp/lib/contentRevision';
 
@@ -53,6 +59,16 @@ function assertNotAborted(signal: AbortSignal): void {
   const error = new Error('文章支援ツールの実行がキャンセルされました。');
   error.name = 'AbortError';
   throw error;
+}
+
+function assertStructuredOutput<T>(
+  toolName: string,
+  parse: (value: unknown) => T | null,
+  value: unknown,
+): T {
+  const parsed = parse(value);
+  if (parsed !== null) return parsed;
+  throw new Error(`${toolName} returned an invalid structured output.`);
 }
 
 function resolveDraft(draftId: string | undefined): DraftResolution {
@@ -394,6 +410,34 @@ async function compareWritingVersions(
   };
 }
 
+async function executeGetWritingContext(
+  rawInput: unknown,
+  signal: AbortSignal,
+): Promise<GetWritingContextOutput> {
+  const result = await getWritingContext(rawInput, signal);
+  return assertStructuredOutput('get_writing_context', parseGetWritingContextOutput, result);
+}
+
+async function executeAnalyzeWriting(
+  rawInput: unknown,
+  signal: AbortSignal,
+): Promise<AnalyzeWritingOutput> {
+  const result = await analyzeWriting(rawInput, signal);
+  return assertStructuredOutput('analyze_writing', parseAnalyzeWritingOutput, result);
+}
+
+async function executeCompareWritingVersions(
+  rawInput: unknown,
+  signal: AbortSignal,
+): Promise<CompareWritingVersionsOutput> {
+  const result = await compareWritingVersions(rawInput, signal);
+  return assertStructuredOutput(
+    'compare_writing_versions',
+    parseCompareWritingVersionsOutput,
+    result,
+  );
+}
+
 const draftIdInputSchema = {
   type: 'string',
   minLength: 1,
@@ -460,7 +504,7 @@ export const writingTools: readonly WebMCP.ModelContextTool[] = [
       untrustedContentHint: true,
       consequentialHint: false,
     },
-    execute: (input, { signal }) => getWritingContext(input, signal),
+    execute: (input, { signal }) => executeGetWritingContext(input, signal),
   },
   {
     name: 'analyze_writing',
@@ -473,7 +517,7 @@ export const writingTools: readonly WebMCP.ModelContextTool[] = [
       untrustedContentHint: true,
       consequentialHint: false,
     },
-    execute: (input, { signal }) => analyzeWriting(input, signal),
+    execute: (input, { signal }) => executeAnalyzeWriting(input, signal),
   },
   {
     name: 'compare_writing_versions',
@@ -486,6 +530,6 @@ export const writingTools: readonly WebMCP.ModelContextTool[] = [
       untrustedContentHint: true,
       consequentialHint: false,
     },
-    execute: (input, { signal }) => compareWritingVersions(input, signal),
+    execute: (input, { signal }) => executeCompareWritingVersions(input, signal),
   },
 ];

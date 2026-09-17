@@ -54,9 +54,11 @@ export async function syncStores<T extends JsonValue>(options: {
       const missing = localRevisions.filter((revision) => !remoteIds.has(revision.id));
       sentRevisionIds = missing.map((revision) => revision.id);
       const batches = chunkRevisions(missing);
-      for (const batch of batches) {
-        await options.channel.send({ kind: 'revisions', revisions: batch });
-      }
+      await batches.reduce<Promise<void>>(
+        (previous, batch) =>
+          previous.then(() => options.channel.send({ kind: 'revisions', revisions: batch })),
+        Promise.resolve(),
+      );
       finishedSending = true;
       await options.channel.send({ kind: 'done' });
       maybeFinish();

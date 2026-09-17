@@ -9,14 +9,15 @@ export type PairingToken = {
   expiresAt: number;
 };
 
-export function createPairingToken(options: {
+export function buildPairingToken(options: {
   appId: string;
   strategy?: string;
   ttlMs?: number;
-  now?: number;
+  now: number;
+  roomId: string;
+  password: string;
 }): PairingToken {
   if (!options.appId) throw new Error('pairing appId is required');
-  const now = options.now ?? Date.now();
   const ttlMs = options.ttlMs ?? 60_000;
   if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0 || ttlMs > 15 * 60_000) {
     throw new Error('pairing ttlMs must be between 1ms and 15 minutes');
@@ -25,10 +26,26 @@ export function createPairingToken(options: {
     version: 1,
     appId: options.appId,
     strategy: options.strategy ?? 'nostr',
+    roomId: options.roomId,
+    password: options.password,
+    expiresAt: options.now + ttlMs,
+  };
+}
+
+export function createPairingToken(options: {
+  appId: string;
+  strategy?: string;
+  ttlMs?: number;
+  now: number;
+}): PairingToken {
+  return buildPairingToken({
+    appId: options.appId,
+    strategy: options.strategy,
+    ttlMs: options.ttlMs,
+    now: options.now,
     roomId: crypto.randomUUID(),
     password: encodeBytes(crypto.getRandomValues(new Uint8Array(32))),
-    expiresAt: now + ttlMs,
-  };
+  });
 }
 
 export function encodePairingToken(token: PairingToken): string {
@@ -36,7 +53,7 @@ export function encodePairingToken(token: PairingToken): string {
   return encodeBytes(new TextEncoder().encode(JSON.stringify(token)));
 }
 
-export function decodePairingToken(encoded: string, now = Date.now()): PairingToken {
+export function decodePairingToken(encoded: string, now: number): PairingToken {
   if (!encoded) throw new Error('pairing token is empty');
   try {
     const value = JSON.parse(new TextDecoder().decode(decodeBytes(encoded))) as JsonValue;

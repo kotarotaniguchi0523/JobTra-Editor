@@ -1,12 +1,33 @@
 import './setup.js';
 import { describe, expect, it } from 'vitest';
 import {
+  buildPairingToken,
   createPairingToken,
   decodePairingToken,
   encodePairingToken,
 } from '../../../src/features/device-sync/transport/pairing-token.js';
 
 describe('pairing token', () => {
+  it('builds a deterministic token from explicit time and entropy', () => {
+    expect(
+      buildPairingToken({
+        appId: 'jobtra',
+        strategy: 'nostr',
+        now: 1000,
+        ttlMs: 60_000,
+        roomId: 'room-1',
+        password: 'password-1',
+      }),
+    ).toEqual({
+      version: 1,
+      appId: 'jobtra',
+      strategy: 'nostr',
+      roomId: 'room-1',
+      password: 'password-1',
+      expiresAt: 61_000,
+    });
+  });
+
   it('round-trips a short-lived token without including document data', () => {
     const token = createPairingToken({
       appId: 'jobtra',
@@ -31,7 +52,9 @@ describe('pairing token', () => {
   });
 
   it('rejects unsafe TTLs before creating a token', () => {
-    expect(() => createPairingToken({ appId: 'jobtra', ttlMs: 0 })).toThrow('ttlMs');
-    expect(() => createPairingToken({ appId: 'jobtra', ttlMs: 16 * 60_000 })).toThrow('ttlMs');
+    expect(() => createPairingToken({ appId: 'jobtra', now: 1000, ttlMs: 0 })).toThrow('ttlMs');
+    expect(() => createPairingToken({ appId: 'jobtra', now: 1000, ttlMs: 16 * 60_000 })).toThrow(
+      'ttlMs',
+    );
   });
 });

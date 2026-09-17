@@ -42,6 +42,7 @@ describe('Export Features', () => {
       includeFrontmatter: true,
       includeStar: true,
       includeAuditSummary: true,
+      exportedAt: '2026-09-17T00:00:00.000Z',
     });
 
     expect(md).toContain('---');
@@ -56,6 +57,16 @@ describe('Export Features', () => {
     expect(md).toContain('### Result');
     expect(md).toContain('## 推敲メモ');
     expect(md).toContain('Exported from 就活ESクラフト');
+    expect(md).toContain('exported_at: "2026-09-17T00:00:00.000Z"');
+
+    expect(
+      generateEsMarkdown(mockDraft, {
+        includeFrontmatter: true,
+        includeStar: true,
+        includeAuditSummary: true,
+        exportedAt: '2026-09-17T00:00:00.000Z',
+      }),
+    ).toBe(md);
   });
 
   it('ブラウザ内minitypeでPDFのUint8Arrayバイナリが生成されること', async () => {
@@ -71,6 +82,7 @@ describe('Export Features', () => {
       targetCharCount: mockDraft.targetCount,
       currentCharCount: mockDraft.content.replace(/\s/g, '').length,
       content: mockDraft.content,
+      exportedAt: '2026年9月17日',
       star: mockDraft.starBlocks,
       includeStar: true,
       includeMeta: true,
@@ -95,6 +107,7 @@ describe('Export Features', () => {
       targetCharCount: mockDraft.targetCount,
       currentCharCount: mockDraft.content.replace(/\s/g, '').length,
       content: mockDraft.content,
+      exportedAt: '2026年9月17日',
       star: mockDraft.starBlocks,
       includeStar: true,
       includeMeta: true,
@@ -104,5 +117,6 @@ describe('Export Features', () => {
     expect(source).toContain('応募先企業');
     expect(source).toContain('## STAR論理構成メモ');
     expect(source).toContain('### 3. Action');
+    expect(source).toContain('**作成日**: 2026年9月17日');
   });
 });

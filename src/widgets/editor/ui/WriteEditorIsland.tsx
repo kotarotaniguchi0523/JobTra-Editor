@@ -43,7 +43,7 @@ export function WriteEditorIsland() {
   // 本文コミットハンドラ
   function handleContentCommit(newContent: string, _newPos: number) {
     if (!activeDraft) return;
-    updateActiveDraft({ content: newContent });
+    updateActiveDraft({ content: newContent }, { updatedAt: Date.now() });
   }
 
   // 書式整理（連続改行のトリムなど）
@@ -53,21 +53,21 @@ export function WriteEditorIsland() {
       .replace(/[ \t]+$/gm, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
-    updateActiveDraft({ content: cleaned }, true);
+    updateActiveDraft({ content: cleaned }, { updatedAt: Date.now(), immediate: true });
   }
 
   // 1箇所の削りを適用
   function handleApplyOneChisel(match: RedundancyMatch) {
     if (!activeDraft) return;
     const nextContent = applySculpt(activeDraft.content, match);
-    updateActiveDraft({ content: nextContent }, true);
+    updateActiveDraft({ content: nextContent }, { updatedAt: Date.now(), immediate: true });
   }
 
   // 全ての削りを一括適用
   function handleApplyAllChisel() {
     if (!activeDraft) return;
     const { newText } = applyAllSculpts(activeDraft.content);
-    updateActiveDraft({ content: newText }, true);
+    updateActiveDraft({ content: newText }, { updatedAt: Date.now(), immediate: true });
   }
 
   if (!activeDraft) return null;

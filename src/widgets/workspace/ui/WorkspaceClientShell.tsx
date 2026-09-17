@@ -81,7 +81,7 @@ export function WorkspaceClientShell({
   const currentId = activeDraftId || activeDraft?.id || '';
 
   function handleUpdateDraft(partial: Partial<ESDraft>, immediate = false) {
-    updateActiveDraft(partial, immediate);
+    updateActiveDraft(partial, { updatedAt: Date.now(), immediate });
   }
 
   function handleSelectDraft(id: string) {
@@ -106,7 +106,7 @@ export function WorkspaceClientShell({
 
   function handleToggleStar(id: string) {
     const target = drafts.find((draft) => draft.id === id);
-    if (target) void toggleStar(target);
+    if (target) void toggleStar(target, Date.now());
   }
 
   return (
