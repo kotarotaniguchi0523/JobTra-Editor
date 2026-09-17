@@ -7,6 +7,7 @@ export interface ExportPdfOptions {
   targetCharCount: number;
   currentCharCount: number;
   content: string;
+  exportedAt: string;
   star?: {
     conclusion?: string;
     situation?: string;
@@ -75,16 +76,11 @@ export function buildEsPdfMarkdown(options: ExportPdfOptions): string {
     targetCharCount,
     currentCharCount,
     content,
+    exportedAt,
     star,
     includeStar = true,
     includeMeta = true,
   } = options;
-
-  const nowStr = new Date().toLocaleDateString('ja-JP', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 
   const lines: string[] = [`# ${title || 'エントリーシート'}`, ''];
 
@@ -96,7 +92,7 @@ export function buildEsPdfMarkdown(options: ExportPdfOptions): string {
     lines.push(
       `- **文字数**: ${currentCharCount} 字 / 目標 ${targetCharCount} 字（充足率: ${Math.round((currentCharCount / (targetCharCount || 1)) * 100)}%）`,
     );
-    lines.push(`- **作成日**: ${nowStr}`);
+    lines.push(`- **作成日**: ${exportedAt}`);
     lines.push('', '---', '');
   }
 

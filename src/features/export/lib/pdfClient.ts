@@ -1,6 +1,6 @@
 import type { ESDraft } from '@entities/draft/model/types';
 import { CATEGORY_LABELS } from '@entities/draft/model/categoryLabels';
-import { downloadFile } from '@features/export/lib/exportMarkdown';
+import { downloadFile } from '@features/export/lib/exportDownload';
 import { getExportFilename } from '@features/export/lib/exportFilename';
 import { generateEsPdf } from '@features/export/lib/exportPdf';
 
@@ -23,6 +23,11 @@ export async function downloadEsPdf(
   const filename = getExportFilename(draft, 'pdf');
 
   const currentCharCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
+  const exportedAt = new Date().toLocaleDateString('ja-JP', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   try {
     const pdfBytes = await generateEsPdf({
@@ -32,6 +37,7 @@ export async function downloadEsPdf(
       targetCharCount: draft.targetCount || 400,
       currentCharCount,
       content: draft.content,
+      exportedAt,
       star: draft.starBlocks,
       includeStar,
       includeMeta,

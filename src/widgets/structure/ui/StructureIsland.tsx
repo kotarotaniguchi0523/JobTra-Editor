@@ -44,7 +44,7 @@ export function StructureIsland({ starGuideSlot }: StructureIslandProps) {
     const currentDraft =
       draftStore.getState().drafts.find((draft) => draft.id === activeDraft.id) ?? activeDraft;
     const nextBlocks = { ...(currentDraft.starBlocks || DEFAULT_STAR_BLOCKS), [field]: value };
-    updateActiveDraft({ starBlocks: nextBlocks });
+    updateActiveDraft({ starBlocks: nextBlocks }, { updatedAt: Date.now() });
   }
 
   // ブロックから本文を合成して反映
@@ -54,7 +54,10 @@ export function StructureIsland({ starGuideSlot }: StructureIslandProps) {
       draftStore.getState().drafts.find((draft) => draft.id === activeDraft.id) ?? activeDraft;
     const current = currentDraft.starBlocks || DEFAULT_STAR_BLOCKS;
     const generated = buildStarContent(current);
-    updateActiveDraft({ content: generated, isBlockMode: false }, true);
+    updateActiveDraft(
+      { content: generated, isBlockMode: false },
+      { updatedAt: Date.now(), immediate: true },
+    );
   }
 
   if (!activeDraft) return null;

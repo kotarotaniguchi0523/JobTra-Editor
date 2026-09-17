@@ -3,7 +3,14 @@ import type { DraftSnapshot, ESDraft, ESQuestionCategory } from '@entities/draft
 import { storage } from '@entities/draft/storage/indexedDbStorage';
 import { draftReducer, INITIAL_DRAFT_STATE } from '@entities/draft/model/draftReducer';
 import type { DraftAction, DraftState } from '@entities/draft/model/draftReducer';
-import { parseSnapshotLabel } from '@shared/validation/draftSchemas';
+import {
+  createSnapshotDraft,
+  mergeDraftUpdate,
+  restoreSnapshotDraft,
+  toggleDraftStar,
+  type DraftUpdateOptions,
+  type SnapshotIdentity,
+} from '@entities/draft/model/draftMutations';
 
 export type DraftSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -15,12 +22,12 @@ export interface DraftActions {
   selectDraft: (id: string) => void;
   createDraft: (category?: ESQuestionCategory) => Promise<string>;
   updateDraft: (updated: ESDraft, immediate?: boolean) => void;
-  updateActiveDraft: (partial: Partial<ESDraft>, immediate?: boolean) => void;
+  updateActiveDraft: (partial: Partial<ESDraft>, options: DraftUpdateOptions) => void;
   deleteDraft: (id: string, nextActiveId: string) => Promise<void>;
   duplicateDraft: (draft: ESDraft) => Promise<string>;
-  toggleStar: (draft: ESDraft) => Promise<void>;
-  createSnapshot: (draft: ESDraft, label: string) => Promise<void>;
-  restoreSnapshot: (draft: ESDraft, snapshot: DraftSnapshot) => Promise<void>;
+  toggleStar: (draft: ESDraft, updatedAt: number) => Promise<void>;
+  createSnapshot: (draft: ESDraft, label: string, identity: SnapshotIdentity) => Promise<void>;
+  restoreSnapshot: (draft: ESDraft, snapshot: DraftSnapshot, updatedAt: number) => Promise<void>;
 }
 
 type StoreAction = DraftAction | { type: 'save-status'; status: DraftSaveStatus };
@@ -166,19 +173,12 @@ function updateDraft(updated: ESDraft, immediate = false): void {
   }
 }
 
-function updateActiveDraft(partial: Partial<ESDraft>, immediate = false): void {
+function updateActiveDraft(partial: Partial<ESDraft>, options: DraftUpdateOptions): void {
   const activeDraft =
     state.drafts.find((draft) => draft.id === state.activeDraftId) ?? state.drafts[0] ?? null;
   if (!activeDraft) return;
 
-  updateDraft(
-    {
-      ...activeDraft,
-      ...partial,
-      updatedAt: Date.now(),
-    },
-    immediate,
-  );
+  updateDraft(mergeDraftUpdate(activeDraft, partial, options.updatedAt), options.immediate);
 }
 
 async function deleteDraft(id: string, nextActiveId: string): Promise<void> {
@@ -201,12 +201,8 @@ async function duplicateDraft(draft: ESDraft): Promise<string> {
   }
 }
 
-async function toggleStar(draft: ESDraft): Promise<void> {
-  const updated: ESDraft = {
-    ...draft,
-    starred: !draft.starred,
-    updatedAt: Date.now(),
-  };
+async function toggleStar(draft: ESDraft, updatedAt: number): Promise<void> {
+  const updated = toggleDraftStar(draft, updatedAt);
 
   dispatch({ type: 'replace', draft: updated });
   try {
@@ -219,22 +215,12 @@ async function toggleStar(draft: ESDraft): Promise<void> {
   }
 }
 
-async function createSnapshot(draft: ESDraft, label: string): Promise<void> {
-  const timestamp = Date.now();
-  const updated: ESDraft = {
-    ...draft,
-    snapshots: [
-      {
-        id: `snap_${timestamp}_${Math.random().toString(36).slice(2, 7)}`,
-        label: parseSnapshotLabel(label),
-        content: draft.content,
-        charCount: draft.content.replace(/\s+/g, '').length,
-        timestamp,
-      },
-      ...(draft.snapshots ?? []),
-    ],
-    updatedAt: timestamp,
-  };
+async function createSnapshot(
+  draft: ESDraft,
+  label: string,
+  identity: SnapshotIdentity,
+): Promise<void> {
+  const updated = createSnapshotDraft(draft, label, identity);
 
   // The snapshot is derived entirely from the current in-memory draft, so
   // show it immediately and let IndexedDB persistence settle in a transition.
@@ -249,12 +235,12 @@ async function createSnapshot(draft: ESDraft, label: string): Promise<void> {
   }
 }
 
-async function restoreSnapshot(draft: ESDraft, snapshot: DraftSnapshot): Promise<void> {
-  const updated: ESDraft = {
-    ...draft,
-    content: snapshot.content,
-    updatedAt: Date.now(),
-  };
+async function restoreSnapshot(
+  draft: ESDraft,
+  snapshot: DraftSnapshot,
+  updatedAt: number,
+): Promise<void> {
+  const updated = restoreSnapshotDraft(draft, snapshot, updatedAt);
 
   // Restore is a local optimistic mutation: the editor should reflect the
   // selected version before IndexedDB finishes. Conditional rollback keeps a

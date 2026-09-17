@@ -6,7 +6,7 @@ export async function createRevision<T extends JsonValue>(input: {
   value: T;
   parents?: readonly Revision<T>[];
   replicaId: string;
-  createdAt?: number;
+  createdAt: number;
 }): Promise<Revision<T>> {
   const parents = [...(input.parents ?? [])];
   const clock = mergeClocks(parents.map((revision) => revision.clock));
@@ -17,7 +17,7 @@ export async function createRevision<T extends JsonValue>(input: {
     value: input.value,
     clock,
     authorReplicaId: input.replicaId,
-    createdAt: input.createdAt ?? Date.now(),
+    createdAt: input.createdAt,
   };
   return { ...unsigned, id: await revisionIdOf(unsigned) };
 }
@@ -39,8 +39,10 @@ export async function findMergeBase<T extends JsonValue>(
 ): Promise<Revision<T> | undefined> {
   if (leftId === rightId) return store.getRevision(leftId);
 
-  const leftDistances = await ancestorDistances(store, leftId);
-  const rightDistances = await ancestorDistances(store, rightId);
+  const [leftDistances, rightDistances] = await Promise.all([
+    ancestorDistances(store, leftId),
+    ancestorDistances(store, rightId),
+  ]);
   const common = [...leftDistances.keys()].filter((id) => rightDistances.has(id));
   common.sort((left, right) => {
     const leftDistance =

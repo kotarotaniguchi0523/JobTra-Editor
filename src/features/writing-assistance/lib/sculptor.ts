@@ -189,11 +189,8 @@ export function detectRedundancies(text: string): RedundancyMatch[] {
   const matches: RedundancyMatch[] = [];
 
   for (const rule of REDUNDANCY_RULES) {
-    // globalフラグを持つ正規表現のlastIndexをリセット
-    rule.pattern.lastIndex = 0;
-    let match: RegExpExecArray | null;
-
-    while ((match = rule.pattern.exec(text)) !== null) {
+    // Each call receives a fresh RegExp so the shared rule table stays immutable.
+    for (const match of text.matchAll(new RegExp(rule.pattern.source, rule.pattern.flags))) {
       const original = match[0];
       const charsSaved = original.length - rule.replacement.length;
 

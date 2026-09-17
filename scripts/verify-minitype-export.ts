@@ -19,6 +19,7 @@ const options: ExportPdfOptions = {
   categoryLabel: '自己PR',
   targetCharCount: 400,
   currentCharCount: 168,
+  exportedAt: '2026年9月17日',
   content:
     '私は、利用者の声をもとに業務フローを改善できます。\n\nアルバイト先で待ち時間を分析し、案内方法を見直しました。結果として、繁忙時間帯の問い合わせを減らし、チームが接客に集中できる状態をつくりました。',
   star: {

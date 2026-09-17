@@ -42,10 +42,12 @@ export class IndexedDbRevisionStore<T extends JsonValue = JsonValue> implements 
   async getHeads(documentId?: string): Promise<RevisionHeads[]> {
     const db = await this.dbPromise;
     const heads = await db.getAll('heads');
-    return heads
-      .filter((entry) => documentId === undefined || entry.documentId === documentId)
-      .map((entry) => ({ documentId: entry.documentId, heads: [...entry.heads].sort() }))
-      .sort((left, right) => left.documentId.localeCompare(right.documentId));
+    const entries: RevisionHeads[] = [];
+    for (const entry of heads) {
+      if (documentId !== undefined && entry.documentId !== documentId) continue;
+      entries.push({ documentId: entry.documentId, heads: [...entry.heads].sort() });
+    }
+    return entries.sort((left, right) => left.documentId.localeCompare(right.documentId));
   }
 
   async putRevisions(revisions: readonly Revision<T>[]): Promise<void> {
@@ -54,17 +56,32 @@ export class IndexedDbRevisionStore<T extends JsonValue = JsonValue> implements 
     await validateRevisions(db, incoming);
     const ordered = topologicalOrder(incoming);
     const transaction = db.transaction(['revisions', 'heads'], 'readwrite');
+    const revisionStore = transaction.objectStore('revisions');
+    const headsStore = transaction.objectStore('heads');
+    const [existingRevisions, existingHeads] = await Promise.all([
+      revisionStore.getAll(),
+      headsStore.getAll(),
+    ]);
+    const existingIds = new Set(existingRevisions.map((revision) => revision.id));
+    const headsByDocument = new Map(
+      existingHeads.map((entry) => [entry.documentId, { ...entry, heads: [...entry.heads] }]),
+    );
+
     for (const revision of ordered) {
-      if ((await transaction.objectStore('revisions').get(revision.id)) !== undefined) continue;
-      await transaction.objectStore('revisions').put(revision, revision.id);
-      const current = (await transaction.objectStore('heads').get(revision.documentId)) ?? {
+      if (existingIds.has(revision.id)) continue;
+
+      revisionStore.put(revision, revision.id);
+      existingIds.add(revision.id);
+
+      const current = headsByDocument.get(revision.documentId) ?? {
         documentId: revision.documentId,
         heads: [],
       };
       current.heads = current.heads.filter((head) => !revision.parents.includes(head));
       if (!current.heads.includes(revision.id)) current.heads.push(revision.id);
       current.heads.sort();
-      await transaction.objectStore('heads').put(current, current.documentId);
+      headsByDocument.set(revision.documentId, current);
+      headsStore.put(current, current.documentId);
     }
     await transaction.done;
   }
@@ -78,20 +95,41 @@ async function validateRevisions<T extends JsonValue>(
   db: IDBPDatabase<SyncDb<T>>,
   incoming: ReadonlyMap<string, Revision<T>>,
 ): Promise<void> {
-  for (const revision of incoming.values()) {
+  const revisions = [...incoming.values()];
+  for (const revision of revisions) {
     if (revision.documentId.length === 0) throw new Error('revision documentId is required');
     if (new Set(revision.parents).size !== revision.parents.length) {
       throw new Error(`revision ${revision.id} has duplicate parents`);
     }
-    const { id: _id, ...unsigned } = revision;
-    if ((await revisionIdOf(unsigned)) !== revision.id) {
+  }
+
+  const expectedIds = await Promise.all(
+    revisions.map(async (revision) => {
+      const { id: _id, ...unsigned } = revision;
+      return revisionIdOf(unsigned);
+    }),
+  );
+  for (const [index, revision] of revisions.entries()) {
+    if (expectedIds[index] !== revision.id) {
       throw new Error(`revision ${revision.id} failed integrity check`);
     }
+  }
+
+  const externalParentIds = new Set<string>();
+  for (const revision of revisions) {
     for (const parent of revision.parents) {
-      const parentRevision = incoming.get(parent) ?? (await db.get('revisions', parent));
-      if (parentRevision === undefined) {
-        throw new Error(`missing parent ${parent}`);
-      }
+      if (!incoming.has(parent)) externalParentIds.add(parent);
+    }
+  }
+
+  const externalParents = await Promise.all(
+    [...externalParentIds].map(async (id) => [id, await db.get('revisions', id)] as const),
+  );
+  const externalParentsById = new Map(externalParents);
+  for (const revision of revisions) {
+    for (const parent of revision.parents) {
+      const parentRevision = incoming.get(parent) ?? externalParentsById.get(parent);
+      if (parentRevision === undefined) throw new Error(`missing parent ${parent}`);
       if (parentRevision.documentId !== revision.documentId) {
         throw new Error(`revision ${revision.id} has a cross-document parent`);
       }

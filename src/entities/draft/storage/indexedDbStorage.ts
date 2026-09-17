@@ -1,4 +1,11 @@
-import { ESDraft } from '@entities/draft/model/types';
+import type { ESDraft } from '@entities/draft/model/types';
+import {
+  buildDefaultDraft,
+  buildDraftId,
+  buildDuplicatedDraft,
+  cloneDraft,
+  createInitialSampleDrafts,
+} from '@entities/draft/model/draftFactories';
 import {
   parseCategory,
   parseDraft,
@@ -10,41 +17,13 @@ const DB_NAME = 'es_craft_indexed_db';
 const DB_VERSION = 1;
 const STORE_NAME = 'drafts';
 
-// Sample starting drafts so the user isn't faced with a completely blank screen
-const INITIAL_SAMPLE_DRAFTS: ESDraft[] = [
-  {
-    id: 'sample-gakuchika-1',
-    title: 'カフェアルバイトでの新人離職率改善',
-    companyName: '株式会社サンプル商事',
-    category: 'gakuchika',
-    targetCount: 400,
-    isBlockMode: false,
-    content: `学生時代に注力したことは、カフェでの新人アルバイトの定着率向上です。私が働く店舗では新人の離職率が40%と高く、業務習得の負担が原因でした。そこで私は「新人育成チェックシート」と「バディ制度」の導入を店長に提案しました。具体的には、習得項目を30個に細分化し、先輩が毎日10分間の振り返りを行う体制を整えました。最初は既存スタッフから「指導時間が増える」との懸念もありましたが、指導マニュアルを動画化して負担を軽減しました。結果として半年後の新人離職率は10%まで激減し、店舗全体の顧客満足度アンケートでも地域1位を獲得しました。この経験から、課題の本質を見極めて周囲を巻き込み、仕組み化で解決する力を培いました。`,
-    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
-    updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 1,
-    tags: ['ガクチカ', 'チーム改善', '定着率向上'],
-    starred: true,
-  },
-  {
-    id: 'sample-pr-1',
-    title: '定量的分析と粘り強さで課題をやり抜く力',
-    companyName: 'テック株式会社',
-    category: 'pr',
-    targetCount: 300,
-    isBlockMode: false,
-    content: `私の強みは「データに基づく改善提案力」と「完遂力」です。大学祭の実行委員会で広報リーダーを務めた際、来場者数前年比20%増を目標に掲げました。過去5年分のアンケートを分析したところ、若年層の認知経路の7割がSNSである一方、従来の広報予算の8割が紙チラシに偏っていることを突き止めました。そこでSNS動画発信に注力し、週3回の投稿企画を実施しました。結果、目標を上回る前年比25%増の来場を達成しました。貴社においても、現状を数値で冷静に把握し、最適な施策をやり抜くことで事業貢献いたします。`,
-    createdAt: Date.now() - 1000 * 60 * 60 * 24 * 5,
-    updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 3,
-    tags: ['自己PR', '分析力', '実行力'],
-    starred: false,
-  },
-];
-
 class IndexedDbStorage {
   private dbPromise: Promise<IDBDatabase> | null = null;
   private isIndexedDbAvailable: boolean;
+  private readonly initialDrafts: readonly ESDraft[];
 
-  constructor() {
+  constructor(initialDrafts: readonly ESDraft[]) {
+    this.initialDrafts = initialDrafts;
     this.isIndexedDbAvailable = typeof window !== 'undefined' && 'indexedDB' in window;
   }
 
@@ -85,12 +64,12 @@ class IndexedDbStorage {
     try {
       const data = localStorage.getItem(DB_NAME);
       if (data) {
-        return parseDraftCollection(JSON.parse(data)) || [...INITIAL_SAMPLE_DRAFTS];
+        return parseDraftCollection(JSON.parse(data)) || this.initialDrafts.map(cloneDraft);
       }
     } catch (e) {
       console.warn('LocalStorage read error', e);
     }
-    return [...INITIAL_SAMPLE_DRAFTS];
+    return this.initialDrafts.map(cloneDraft);
   }
 
   private saveLocalStorageDrafts(drafts: ESDraft[]): void {
@@ -139,8 +118,8 @@ class IndexedDbStorage {
   }
 
   private async seedInitialDrafts(): Promise<ESDraft[]> {
-    await Promise.all(INITIAL_SAMPLE_DRAFTS.map((draft) => this.saveDraft(draft)));
-    return [...INITIAL_SAMPLE_DRAFTS];
+    await Promise.all(this.initialDrafts.map((draft) => this.saveDraft(draft)));
+    return this.initialDrafts.map(cloneDraft);
   }
 
   public async getDraft(id: string): Promise<ESDraft | null> {
@@ -174,10 +153,7 @@ class IndexedDbStorage {
       throw new Error('Draft validation failed');
     }
 
-    const draftToSave: ESDraft = {
-      ...validatedDraft,
-      updatedAt: Date.now(),
-    };
+    const draftToSave = validatedDraft;
 
     try {
       const db = await this.openDb();
@@ -232,34 +208,25 @@ class IndexedDbStorage {
   }
 
   public async duplicateDraft(source: ESDraft): Promise<ESDraft> {
-    const newDraft: ESDraft = {
-      ...source,
-      id: 'draft_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-      title: `${source.title} (コピー)`,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
+    const timestamp = Date.now();
+    const newDraft = buildDuplicatedDraft(
+      source,
+      buildDraftId(timestamp, Math.random().toString(36).substring(2, 7)),
+      timestamp,
+    );
     await this.saveDraft(newDraft);
     return newDraft;
   }
   public async createDefaultDraft(category: string = 'gakuchika'): Promise<ESDraft> {
-    const newDraft: ESDraft = {
-      id: 'draft_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
-      title: '新規エントリーシート',
-      companyName: '',
-      category: parseCategory(category),
-      targetCount: 400,
-      isBlockMode: false,
-      content: '',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      tags: [],
-      starred: false,
-      snapshots: [],
-    };
+    const timestamp = Date.now();
+    const newDraft = buildDefaultDraft(
+      parseCategory(category),
+      buildDraftId(timestamp, Math.random().toString(36).substring(2, 7)),
+      timestamp,
+    );
     await this.saveDraft(newDraft);
     return newDraft;
   }
 }
 
-export const storage = new IndexedDbStorage();
+export const storage = new IndexedDbStorage(createInitialSampleDrafts(Date.now()));

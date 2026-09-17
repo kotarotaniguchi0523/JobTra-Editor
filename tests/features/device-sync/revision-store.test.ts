@@ -99,6 +99,29 @@ describe('revision stores', () => {
     expect(await store.getRevisions()).toEqual([root]);
   });
 
+  it('does not expose mutable memory-store references', async () => {
+    type RevisionValue = {
+      body: string;
+      metadata: { labels: string[] };
+    };
+    const store = new MemoryRevisionStore<RevisionValue>();
+    const root = await createRevision({
+      documentId: 'draft-1',
+      value: { body: 'base', metadata: { labels: ['initial'] } },
+      replicaId: 'pc',
+      createdAt: 1,
+    });
+    await store.putRevisions([root]);
+
+    const exposed = await store.getRevision(root.id);
+    if (!exposed) throw new Error('expected stored revision');
+    exposed.parents.push('mutated-parent');
+    exposed.clock.pc = 999;
+    exposed.value.metadata.labels.push('mutated-label');
+
+    expect(await store.getRevision(root.id)).toEqual(root);
+  });
+
   it('rejects a parent belonging to another document', async () => {
     const store = new MemoryRevisionStore();
     const root = await createRevision({

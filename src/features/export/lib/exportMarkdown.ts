@@ -6,15 +6,20 @@ export interface MarkdownExportOptions {
   includeStar?: boolean;
   includeAuditSummary?: boolean;
   includeFrontmatter?: boolean;
+  exportedAt: string;
 }
 
 /**
  * 下書きデータから構造化されたMarkdownテキストを生成する
  */
-export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOptions = {}): string {
-  const { includeStar = true, includeAuditSummary = true, includeFrontmatter = true } = options;
+export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOptions): string {
+  const {
+    includeStar = true,
+    includeAuditSummary = true,
+    includeFrontmatter = true,
+    exportedAt,
+  } = options;
 
-  const now = new Date().toISOString();
   const categoryLabel = (CATEGORY_LABELS && CATEGORY_LABELS[draft.category]) || draft.category;
   const company = draft.companyName || (draft as unknown as { company?: string }).company || '';
   const targetCount =
@@ -48,7 +53,7 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
     lines.push(`target_char_count: ${targetCount}`);
     lines.push(`current_char_count: ${currentCount}`);
     lines.push(`updated_at: "${new Date(draft.updatedAt).toISOString()}"`);
-    lines.push(`exported_at: "${now}"`);
+    lines.push(`exported_at: "${exportedAt}"`);
     lines.push('---');
     lines.push('');
   }
@@ -147,21 +152,4 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
   lines.push('*Exported from 就活ESクラフト*');
 
   return lines.join('\n');
-}
-
-/**
- * 文字列データを指定したファイル名でブラウザからダウンロード
- */
-export function downloadFile(content: string | Blob, filename: string, mimeType: string): void {
-  const blob =
-    content instanceof Blob ? content : new Blob([content], { type: `${mimeType};charset=utf-8;` });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

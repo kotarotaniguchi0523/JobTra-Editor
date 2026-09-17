@@ -50,6 +50,16 @@ describe('Redundancy Sculptor (彫刻ノミ機能) - AAA Blackbox Tests', () => 
       expect(result[1].original).toBe('を行うことが可能となりました');
       expect(result[1].suggested).toBe('を可能にしました');
     });
+
+    it('呼び出し間で共有ルールの正規表現状態を持ち越さないこと', () => {
+      const input = 'させていただきました。させていただきました。';
+
+      const first = detectRedundancies(input);
+      const second = detectRedundancies(input);
+
+      expect(second).toEqual(first);
+      expect(second).toHaveLength(2);
+    });
   });
 
   describe('applySculpt', () => {

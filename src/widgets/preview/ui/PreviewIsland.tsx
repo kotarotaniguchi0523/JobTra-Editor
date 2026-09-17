@@ -3,6 +3,7 @@
 import { useDeferredValue, type ReactNode } from 'react';
 import { DocumentPreview } from '@widgets/preview/ui/DocumentPreview';
 import { draftActions, useActiveDraft } from '@entities/draft/model/draftStore';
+import { buildSnapshotId } from '@entities/draft/model/draftFactories';
 import { calculateMetrics } from '@features/writing-assistance/lib/analyzer';
 import type { DraftSnapshot } from '@entities/draft/model/types';
 
@@ -20,12 +21,14 @@ export function PreviewIsland({ checklistSlot }: PreviewIslandProps) {
 
   function handleSaveSnapshot(label: string) {
     if (!activeDraft) return;
-    void createSnapshot(activeDraft, label);
+    const timestamp = Date.now();
+    const id = buildSnapshotId(timestamp, Math.random().toString(36).slice(2, 7));
+    void createSnapshot(activeDraft, label, { id, timestamp });
   }
 
   function handleRestoreSnapshot(snapshot: DraftSnapshot) {
     if (!activeDraft) return;
-    void restoreSnapshot(activeDraft, snapshot);
+    void restoreSnapshot(activeDraft, snapshot, Date.now());
   }
 
   if (!activeDraft) return null;
