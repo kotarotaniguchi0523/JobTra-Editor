@@ -1,6 +1,6 @@
 import type { ESQuestionCategory } from '@entities/draft/model/types';
 
-export const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
+const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
   gakuchika: 'ガクチカ（学生時代に力を入れたこと）',
   shibou: '志望動機',
   pr: '自己PR',
@@ -9,3 +9,7 @@ export const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
   future: '将来のキャリアビジョン',
   custom: '自由記述設問',
 };
+
+export function getCategoryLabel(category: ESQuestionCategory | null): string {
+  return category ? CATEGORY_LABELS[category] : '未分類';
+}

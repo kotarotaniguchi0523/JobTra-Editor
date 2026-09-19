@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { JapaneseMetrics } from '@features/writing-assistance/model/types';
+import type { ESQuestionCategory } from '@entities/draft/model/types';
 import { analyzeGhostContext } from '@features/writing-assistance/lib/ghostGuidance';
 import { DeferredGhostGuidance } from '@widgets/editor/ui/DeferredGhostGuidance';
 import { DeferredTextarea } from '@widgets/editor/ui/DeferredTextarea';
@@ -9,6 +10,7 @@ interface WriteEditorSurfaceProps {
   content: string;
   metrics: JapaneseMetrics;
   deferredContent: string;
+  category: ESQuestionCategory | null;
   isFocusSentenceEnabled: boolean;
   isTypewriterScrollEnabled: boolean;
   onContentCommit: (value: string, cursorPos: number) => void;
@@ -18,12 +20,13 @@ export function WriteEditorSurface({
   content,
   metrics,
   deferredContent,
+  category,
   isFocusSentenceEnabled,
   isTypewriterScrollEnabled,
   onContentCommit,
 }: WriteEditorSurfaceProps) {
   const [cursorPos, setCursorPos] = useState(0);
-  const ghostGuidance = analyzeGhostContext(deferredContent, cursorPos);
+  const ghostGuidance = analyzeGhostContext(deferredContent, cursorPos, category);
 
   function handleContentCommit(nextContent: string, nextCursorPos: number) {
     setCursorPos(nextCursorPos);
@@ -42,7 +45,7 @@ export function WriteEditorSurface({
   }
 
   function handleInsertTabSuggestion() {
-    handleInsertPhrase(ghostGuidance.tabSuggestion);
+    if (ghostGuidance) handleInsertPhrase(ghostGuidance.tabSuggestion);
   }
 
   return (
@@ -65,11 +68,13 @@ export function WriteEditorSurface({
         value={content}
         onChange={handleContentCommit}
         onCursorChange={setCursorPos}
-        onInsertTabSuggestion={handleInsertTabSuggestion}
+        onInsertTabSuggestion={ghostGuidance ? handleInsertTabSuggestion : undefined}
         isTypewriterScrollEnabled={isTypewriterScrollEnabled}
       />
 
-      <DeferredGhostGuidance guidance={ghostGuidance} onInsertSuggestion={handleInsertPhrase} />
+      {ghostGuidance && (
+        <DeferredGhostGuidance guidance={ghostGuidance} onInsertSuggestion={handleInsertPhrase} />
+      )}
     </div>
   );
 }

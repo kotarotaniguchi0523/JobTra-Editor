@@ -1,5 +1,6 @@
 import React from 'react';
 import type { JapaneseMetrics } from '@features/writing-assistance/model/types';
+import type { ESQuestionCategory } from '@entities/draft/model/types';
 import { WriteEditorSurface } from '@widgets/editor/ui/WriteEditorSurface';
 import { WriteToolbar } from '@widgets/editor/ui/WriteToolbar';
 
@@ -7,6 +8,7 @@ interface WriteWorkspaceProps {
   content: string;
   metrics: JapaneseMetrics;
   deferredContent: string;
+  category: ESQuestionCategory | null;
   onCleanFormatting: () => void;
   onContentCommit: (val: string, pos: number) => void;
 }
@@ -19,6 +21,7 @@ export function WriteWorkspace({
   content,
   metrics,
   deferredContent,
+  category,
   onCleanFormatting,
   onContentCommit,
 }: WriteWorkspaceProps) {
@@ -30,6 +33,7 @@ export function WriteWorkspace({
             content={content}
             metrics={metrics}
             deferredContent={deferredContent}
+            category={category}
             isFocusSentenceEnabled={isFocusSentenceEnabled}
             isTypewriterScrollEnabled={isTypewriterScrollEnabled}
             onContentCommit={onContentCommit}

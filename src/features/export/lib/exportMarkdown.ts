@@ -1,6 +1,7 @@
 import type { ESDraft } from '@entities/draft/model/types';
-import { CATEGORY_LABELS } from '@entities/draft/model/categoryLabels';
+import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { parseMarkdownYamlString } from './exportSchemas';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 export interface MarkdownExportOptions {
   includeStar?: boolean;
@@ -20,11 +21,11 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
     exportedAt,
   } = options;
 
-  const categoryLabel = (CATEGORY_LABELS && CATEGORY_LABELS[draft.category]) || draft.category;
+  const categoryLabel = getCategoryLabel(draft.category);
   const company = draft.companyName || (draft as unknown as { company?: string }).company || '';
   const targetCount =
-    draft.targetCount || (draft as unknown as { targetCharCount?: number }).targetCharCount || 400;
-  const currentCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
+    draft.targetCount ?? (draft as unknown as { targetCharCount?: number }).targetCharCount ?? null;
+  const currentCount = countNonWhitespaceCharacters(draft.content);
   const star =
     draft.starBlocks ||
     (
@@ -48,9 +49,9 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
     if (company) {
       lines.push(`company: "${parseMarkdownYamlString(company)}"`);
     }
-    lines.push(`category: "${draft.category}"`);
+    lines.push(`category: "${draft.category ?? ''}"`);
     lines.push(`category_label: "${categoryLabel}"`);
-    lines.push(`target_char_count: ${targetCount}`);
+    if (targetCount) lines.push(`target_char_count: ${targetCount}`);
     lines.push(`current_char_count: ${currentCount}`);
     lines.push(`updated_at: "${new Date(draft.updatedAt).toISOString()}"`);
     lines.push(`exported_at: "${exportedAt}"`);
@@ -66,7 +67,9 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
   lines.push(`- **応募先企業**: ${company || '未指定'}`);
   lines.push(`- **設問カテゴリ**: ${categoryLabel}`);
   lines.push(
-    `- **文字数**: ${currentCount} 字 / 目標 ${targetCount} 字（${Math.round((currentCount / (targetCount || 1)) * 100)}%）`,
+    targetCount
+      ? `- **文字数**: ${currentCount} 字 / 上限 ${targetCount} 字（${Math.round((currentCount / targetCount) * 100)}%）`
+      : `- **文字数**: ${currentCount} 字 / 上限未設定`,
   );
   lines.push('');
 

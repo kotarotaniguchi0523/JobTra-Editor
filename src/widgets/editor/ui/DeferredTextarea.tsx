@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
+import { getTextareaHeight } from '@widgets/editor/lib/textareaHeight';
 
 interface DeferredTextareaProps {
   id: string;
@@ -29,6 +30,15 @@ export function DeferredTextarea({
   isTypewriterScrollEnabled = true,
 }: DeferredTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const numericMinHeight = Number.parseFloat(minHeight) || 0;
+
+  // DOM計測・style書き込みはこの末端Clientに閉じ込める。本文の派生状態にはしない。
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = '0px';
+    textarea.style.height = `${getTextareaHeight(textarea.scrollHeight, numericMinHeight)}px`;
+  }, [numericMinHeight, value]);
 
   const handleScrollToCursor = (pos: number, text: string) => {
     if (!isTypewriterScrollEnabled || !textareaRef.current) return;
@@ -83,7 +93,7 @@ export function DeferredTextarea({
         placeholder={placeholder}
         aria-label="エントリーシート本文"
         rows={12}
-        className="w-full resize-y bg-transparent font-sans text-lg leading-[1.75] tracking-wide text-neutral-900 placeholder-neutral-300 selection:bg-neutral-200 focus:outline-hidden sm:text-xl"
+        className="w-full resize-none overflow-hidden bg-transparent font-sans text-lg leading-[1.75] tracking-wide text-neutral-900 placeholder-neutral-300 selection:bg-neutral-200 focus:outline-hidden sm:text-xl"
         style={{ minHeight }}
       />
     </div>

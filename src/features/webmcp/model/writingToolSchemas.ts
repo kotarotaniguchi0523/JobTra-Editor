@@ -67,8 +67,8 @@ const DraftSummarySchema = strictObject({
   id: string(),
   title: string(),
   companyName: string(),
-  category: categorySchema,
-  targetCount: finiteNumber,
+  category: nullable(categorySchema),
+  targetCount: nullable(finiteNumber),
   updatedAt: finiteNumber,
   charsNoWhitespace: finiteNumber,
 });
@@ -80,6 +80,9 @@ const StarBlocksSchema = strictObject({
   result: string(),
   contribution: string(),
 });
+
+export type ToolFailure = InferOutput<typeof ToolFailureSchema>;
+export type DraftSummary = InferOutput<typeof DraftSummarySchema>;
 
 const SelectionSchema = strictObject({
   start: finiteNumber,
@@ -184,7 +187,8 @@ const RatioBlockSchema = strictObject({
 
 const RatioBalanceSchema = strictObject({
   totalActualChars: finiteNumber,
-  targetChars: finiteNumber,
+  targetChars: nullable(finiteNumber),
+  profileLabel: string(),
   blocks: strictObject({
     conclusion: RatioBlockSchema,
     situation: RatioBlockSchema,

@@ -1,8 +1,8 @@
 import { diff3Merge } from 'node-diff3';
 import { canonicalJson } from './canonical-json.js';
-import type { JsonValue, MergeConflict, MergeResult } from './types.js';
+import type { JsonValue, MergeChoice, MergeConflict, MergeResult } from './types.js';
 
-export type MergeChoice = 'base' | 'local' | 'remote';
+export type { MergeChoice } from './types.js';
 
 const MISSING = Symbol('missing');
 type MergeInput = JsonValue | typeof MISSING;

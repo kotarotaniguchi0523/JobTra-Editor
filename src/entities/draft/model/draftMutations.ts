@@ -1,5 +1,6 @@
 import type { DraftSnapshot, ESDraft } from '@entities/draft/model/types';
 import { parseSnapshotLabel } from '@shared/validation/draftSchemas';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 export type DraftUpdateOptions = {
   updatedAt: number;
@@ -35,7 +36,7 @@ export function createSnapshotDraft(
     id: identity.id,
     label: parseSnapshotLabel(label),
     content: draft.content,
-    charCount: draft.content.replace(/\s+/g, '').length,
+    charCount: countNonWhitespaceCharacters(draft.content),
     timestamp: identity.timestamp,
   };
 

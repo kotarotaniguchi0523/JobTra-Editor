@@ -21,7 +21,7 @@ export function WorkspaceAuditPanel({
   onApplyReplacement,
 }: WorkspaceAuditPanelProps) {
   const deferredContent = useDeferredValue(draft.content);
-  const checks = auditText(deferredContent, draft.targetCount || 400);
+  const checks = auditText(deferredContent, draft.targetCount);
   const metrics = calculateMetrics(deferredContent);
 
   return (

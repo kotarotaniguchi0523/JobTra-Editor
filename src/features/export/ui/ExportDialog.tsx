@@ -48,7 +48,7 @@ export function ExportDialog({ isOpen, onClose, children }: ExportDialogProps) {
 
           {children}
 
-          <footer className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50/80 px-5 py-3 text-[11px] text-neutral-500">
+          <footer className="flex items-center justify-between border-t border-neutral-100 bg-neutral-50/80 px-5 py-3 text-xs text-neutral-500">
             <div className="flex items-center gap-1.5">
               <span>組版エンジン:</span>
               <a

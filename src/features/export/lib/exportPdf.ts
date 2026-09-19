@@ -4,7 +4,7 @@ export interface ExportPdfOptions {
   title: string;
   company?: string;
   categoryLabel: string;
-  targetCharCount: number;
+  targetCharCount?: number;
   currentCharCount: number;
   content: string;
   exportedAt: string;
@@ -90,7 +90,9 @@ export function buildEsPdfMarkdown(options: ExportPdfOptions): string {
     }
     lines.push(`- **設問カテゴリ**: ${categoryLabel}`);
     lines.push(
-      `- **文字数**: ${currentCharCount} 字 / 目標 ${targetCharCount} 字（充足率: ${Math.round((currentCharCount / (targetCharCount || 1)) * 100)}%）`,
+      targetCharCount
+        ? `- **文字数**: ${currentCharCount} 字 / 上限 ${targetCharCount} 字（充足率: ${Math.round((currentCharCount / targetCharCount) * 100)}%）`
+        : `- **文字数**: ${currentCharCount} 字 / 上限未設定`,
     );
     lines.push(`- **作成日**: ${exportedAt}`);
     lines.push('', '---', '');

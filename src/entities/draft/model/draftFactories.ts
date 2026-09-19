@@ -14,6 +14,7 @@ const SAMPLE_DRAFT_TEMPLATES: readonly SampleDraftTemplate[] = [
     companyName: '株式会社サンプル商事',
     category: 'gakuchika',
     targetCount: 400,
+    progressStatus: 'completed',
     isBlockMode: false,
     content: `学生時代に注力したことは、カフェでの新人アルバイトの定着率向上です。私が働く店舗では新人の離職率が40%と高く、業務習得の負担が原因でした。そこで私は「新人育成チェックシート」と「バディ制度」の導入を店長に提案しました。具体的には、習得項目を30個に細分化し、先輩が毎日10分間の振り返りを行う体制を整えました。最初は既存スタッフから「指導時間が増える」との懸念もありましたが、指導マニュアルを動画化して負担を軽減しました。結果として半年後の新人離職率は10%まで激減し、店舗全体の顧客満足度アンケートでも地域1位を獲得しました。この経験から、課題の本質を見極めて周囲を巻き込み、仕組み化で解決する力を培いました。`,
     createdAtOffsetMs: -2 * DAY_MS,
@@ -27,6 +28,7 @@ const SAMPLE_DRAFT_TEMPLATES: readonly SampleDraftTemplate[] = [
     companyName: 'テック株式会社',
     category: 'pr',
     targetCount: 300,
+    progressStatus: 'completed',
     isBlockMode: false,
     content: `私の強みは「データに基づく改善提案力」と「完遂力」です。大学祭の実行委員会で広報リーダーを務めた際、来場者数前年比20%増を目標に掲げました。過去5年分のアンケートを分析したところ、若年層の認知経路の7割がSNSである一方、従来の広報予算の8割が紙チラシに偏っていることを突き止めました。そこでSNS動画発信に注力し、週3回の投稿企画を実施しました。結果、目標を上回る前年比25%増の来場を達成しました。貴社においても、現状を数値で冷静に把握し、最適な施策をやり抜くことで事業貢献いたします。`,
     createdAtOffsetMs: -5 * DAY_MS,
@@ -54,17 +56,14 @@ export function buildSnapshotId(timestamp: number, entropy: string): string {
   return `snap_${timestamp}_${entropy}`;
 }
 
-export function buildDefaultDraft(
-  category: ESQuestionCategory,
-  id: string,
-  timestamp: number,
-): ESDraft {
+export function buildDefaultDraft(id: string, timestamp: number): ESDraft {
   return {
     id,
     title: '新規エントリーシート',
     companyName: '',
-    category,
-    targetCount: 400,
+    category: null,
+    targetCount: null,
+    progressStatus: null,
     isBlockMode: false,
     content: '',
     createdAt: timestamp,

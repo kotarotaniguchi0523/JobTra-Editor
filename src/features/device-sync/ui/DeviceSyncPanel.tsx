@@ -3,14 +3,13 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { draftActions, draftStore } from '@entities/draft/model/draftStore';
-import {
-  resolveDraftConflict,
-  syncDrafts,
-  type DraftSyncConflict,
-  type DraftSyncValue,
-} from '@features/device-sync/sync/draft-sync';
+import { resolveDraftConflict, syncDrafts } from '@features/device-sync/sync/draft-sync';
 import { IndexedDbRevisionStore } from '@features/device-sync/sync/indexeddb-store';
-import type { MergeChoice } from '@features/device-sync/sync/merge';
+import type {
+  DraftSyncConflict,
+  DraftSyncValue,
+  MergeChoice,
+} from '@features/device-sync/sync/types';
 import {
   createPairingToken,
   decodePairingToken,

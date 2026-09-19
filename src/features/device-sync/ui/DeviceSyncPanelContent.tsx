@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import { AlertTriangle, Check, Copy, Link2, Loader2, QrCode, X } from 'lucide-react';
-import type { DraftSyncConflict } from '@features/device-sync/sync/draft-sync';
-import type { MergeChoice } from '@features/device-sync/sync/merge';
+import type { DraftSyncConflict, MergeChoice } from '@features/device-sync/sync/types';
 
 export type SyncPanelMode = 'idle' | 'host' | 'scan' | 'syncing' | 'complete' | 'error';
 
@@ -53,7 +52,7 @@ export function DeviceSyncPanelContent(props: DeviceSyncPanelContentProps) {
               <h2 id="device-sync-title" className="text-sm font-bold text-neutral-900">
                 端末間同期
               </h2>
-              <p className="text-[11px] text-neutral-500">QR 1回・サーバー保存なし</p>
+              <p className="text-xs text-neutral-500">QR 1回・サーバー保存なし</p>
             </div>
           </div>
           <button
@@ -233,7 +232,7 @@ function ConflictView(props: DeviceSyncPanelContentProps & { conflict: DraftSync
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
         <div>
           <p className="text-xs font-semibold text-amber-900">下書き「{conflict.documentId}」</p>
-          <p className="mt-1 text-[11px] leading-relaxed text-amber-800">
+          <p className="mt-1 text-xs leading-relaxed text-amber-800">
             同じ箇所が別々に編集されました。各項目で残す側を選んでください。
           </p>
         </div>
@@ -245,9 +244,9 @@ function ConflictView(props: DeviceSyncPanelContentProps & { conflict: DraftSync
           return (
             <li
               key={`${conflict.documentId}-${item.path}-${index}`}
-              className="rounded border border-amber-200 bg-white p-2"
+              className="border-l-2 border-amber-200 py-2 pl-3"
             >
-              <div className="mb-2 text-[11px] font-medium text-neutral-700">{path}</div>
+              <div className="mb-2 text-xs font-medium text-neutral-700">{path}</div>
               <div className="flex flex-wrap gap-1.5">
                 <ChoiceButton
                   active={selected === 'local'}
@@ -291,7 +290,7 @@ function ManualTokenForm(props: DeviceSyncPanelContentProps) {
         props.onJoinManualToken();
       }}
     >
-      <label htmlFor="device-sync-token" className="block text-[11px] font-medium text-neutral-600">
+      <label htmlFor="device-sync-token" className="block text-xs font-medium text-neutral-600">
         QRが使えない場合（トークン貼り付け）
       </label>
       <div className="flex gap-2">
@@ -299,7 +298,7 @@ function ManualTokenForm(props: DeviceSyncPanelContentProps) {
           id="device-sync-token"
           value={props.manualToken}
           onChange={(event) => props.onManualTokenChange(event.target.value)}
-          className="min-w-0 flex-1 rounded-md border border-neutral-300 bg-white px-2.5 py-2 font-mono text-[11px] outline-none focus:border-neutral-700"
+          className="min-w-0 flex-1 rounded-md border border-neutral-300 bg-white px-2.5 py-2 font-mono text-xs outline-none focus:border-neutral-700"
           placeholder="同期トークン"
           autoComplete="off"
         />
@@ -318,7 +317,7 @@ function ManualTokenForm(props: DeviceSyncPanelContentProps) {
 function TokenFallback(props: DeviceSyncPanelContentProps) {
   return (
     <div className="space-y-2 text-left">
-      <div className="flex items-center justify-between text-[11px] font-medium text-neutral-600">
+      <div className="flex items-center justify-between text-xs font-medium text-neutral-600">
         <span>カメラが使えない場合のトークン</span>
         <button
           type="button"
@@ -332,10 +331,10 @@ function TokenFallback(props: DeviceSyncPanelContentProps) {
         value={props.pairingToken}
         readOnly
         rows={3}
-        className="w-full resize-none rounded-md border border-neutral-200 bg-neutral-50 p-2 font-mono text-[10px] leading-relaxed text-neutral-600"
+        className="w-full resize-none rounded-md border border-neutral-200 bg-neutral-50 p-2 font-mono text-xs leading-relaxed text-neutral-600"
         aria-label="端末同期トークン"
       />
-      <p className="text-[10px] leading-relaxed text-neutral-400">有効期限は発行から2分です。</p>
+      <p className="text-xs leading-relaxed text-neutral-400">有効期限は発行から2分です。</p>
     </div>
   );
 }
@@ -344,7 +343,7 @@ function ChoiceButton(props: { active: boolean; label: string; onClick: () => vo
   return (
     <button
       type="button"
-      className={`rounded border px-2 py-1 text-[10px] font-medium transition ${
+      className={`rounded border px-2 py-1 text-xs font-medium transition ${
         props.active
           ? 'border-neutral-900 bg-neutral-900 text-white'
           : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400'

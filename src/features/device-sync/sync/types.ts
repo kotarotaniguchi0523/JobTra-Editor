@@ -1,3 +1,5 @@
+import type { ESDraft } from '@entities/draft/model/types';
+
 type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
 
@@ -77,3 +79,27 @@ export type SyncSnapshot<T extends JsonValue = JsonValue> = {
   revisions: Revision<T>[];
   heads: RevisionHeads[];
 };
+
+export type MergeChoice = 'base' | 'local' | 'remote';
+export type DraftSyncValue = JsonValue;
+
+export type DraftSyncConflict = {
+  documentId: string;
+  baseRevisionId?: string;
+  localRevisionId: string;
+  remoteRevisionId: string;
+  headRevisionIds: string[];
+  baseValue?: DraftSyncValue;
+  localValue: DraftSyncValue;
+  remoteValue: DraftSyncValue;
+  provisionalValue: DraftSyncValue;
+  conflicts: MergeConflict[];
+};
+
+export type DraftSyncResult = {
+  summary: SyncSummary;
+  syncedDrafts: ESDraft[];
+  conflicts: DraftSyncConflict[];
+};
+
+export type DraftConflictResolution = Readonly<Record<string, MergeChoice>>;

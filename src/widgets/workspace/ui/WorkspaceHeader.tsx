@@ -11,7 +11,7 @@ import {
   Link2,
 } from 'lucide-react';
 import { CopyCleanButton } from '@widgets/workspace/ui/CopyCleanButton';
-import type { DraftSaveStatus } from '@entities/draft/model/draftStore';
+import type { DraftSaveStatus } from '@entities/draft/model/types';
 
 interface WorkspaceHeaderProps {
   brandSlot?: React.ReactNode;
@@ -41,9 +41,9 @@ export function WorkspaceHeader({
   return (
     <header
       id="app-top-header"
-      className="z-20 flex min-h-[48px] shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-2.5 py-1.5 sm:min-h-[52px] sm:px-4 sm:py-2"
+      className="z-20 flex min-h-[48px] shrink-0 items-center gap-2 border-b border-neutral-200 bg-white px-2.5 py-1.5 sm:min-h-[52px] sm:px-4 sm:py-2"
     >
-      <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 sm:gap-3">
         <button
           type="button"
           onClick={onOpenSidebar}
@@ -77,7 +77,7 @@ export function WorkspaceHeader({
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-2">
         {/* 自動保存ステータス */}
-        <div className="hidden shrink-0 items-center gap-1.5 border-r border-neutral-200 pr-2 text-xs whitespace-nowrap text-neutral-500 md:flex">
+        <div className="hidden shrink-0 items-center gap-1.5 border-r border-neutral-200 pr-2 text-xs whitespace-nowrap text-neutral-500 xl:flex">
           {saveStatus === 'saving' ? (
             <span className="flex items-center gap-1.5 text-neutral-600">
               <Loader2 className="h-3.5 w-3.5 animate-spin text-neutral-400" />
@@ -103,17 +103,19 @@ export function WorkspaceHeader({
         </div>
 
         {/* 静的リンクスロット (RSC) */}
-        {linksSlot || (
-          <a
-            id="header-lp-link"
-            href="/about"
-            className="hidden shrink-0 items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-200 sm:flex"
-            title="機能紹介・LPを見る"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-amber-600" />
-            <span>機能紹介</span>
-          </a>
-        )}
+        <div className="hidden 2xl:block">
+          {linksSlot || (
+            <a
+              id="header-lp-link"
+              href="/about"
+              className="hidden shrink-0 items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-200 sm:flex"
+              title="機能紹介・LPを見る"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+              <span>機能紹介</span>
+            </a>
+          )}
+        </div>
 
         {/* 推敲ハンドブック */}
         <button
@@ -124,8 +126,7 @@ export function WorkspaceHeader({
           title="STAR法・配分比率・推敲ガイドを開く"
         >
           <BookOpen className="h-3.5 w-3.5 shrink-0 text-neutral-600" />
-          <span className="hidden sm:inline">推敲ガイド</span>
-          <span className="sm:hidden">ガイド</span>
+          <span className="hidden xl:inline">推敲ガイド</span>
         </button>
 
         {/* 監査パネル展開トグル */}
@@ -141,8 +142,7 @@ export function WorkspaceHeader({
           title="リアルタイム日本語監査・推敲アドバイス"
         >
           <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-neutral-500" />
-          <span className="hidden sm:inline">文章監査</span>
-          <span className="sm:hidden">監査</span>
+          <span className="hidden xl:inline">文章監査</span>
         </button>
 
         {/* エクスポート（ブラウザ内minitype PDF / Markdown） */}
@@ -155,8 +155,7 @@ export function WorkspaceHeader({
             title="ブラウザ内minitypeによる日本語組版PDFやMarkdownでエクスポート"
           >
             <Download className="h-3.5 w-3.5 shrink-0 text-amber-600" />
-            <span className="hidden sm:inline">エクスポート</span>
-            <span className="sm:hidden">出力</span>
+            <span className="hidden xl:inline">エクスポート</span>
           </button>
         )}
 
@@ -169,8 +168,7 @@ export function WorkspaceHeader({
             title="QRコードで別の端末と下書きを同期"
           >
             <Link2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
-            <span className="hidden sm:inline">端末同期</span>
-            <span className="sm:hidden">同期</span>
+            <span className="hidden xl:inline">端末同期</span>
           </button>
         )}
 

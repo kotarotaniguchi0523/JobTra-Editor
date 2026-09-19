@@ -1,40 +1,17 @@
-export type ESQuestionCategory =
-  | 'gakuchika'
-  | 'shibou'
-  | 'pr'
-  | 'zasetsu'
-  | 'jiku'
-  | 'future'
-  | 'custom';
+import type { InferOutput } from 'valibot';
+import type {
+  DraftProgressStatusSchema,
+  DraftSnapshotSchema,
+  ESDraftSchema,
+  ESQuestionCategorySchema,
+  StarBlocksSchema,
+} from '@entities/draft/model/schemas';
 
-export interface StarBlocks {
-  conclusion: string;
-  situation: string;
-  action: string;
-  result: string;
-  contribution: string;
-}
+export type ESQuestionCategory = InferOutput<typeof ESQuestionCategorySchema>;
+export type DraftProgressStatus = InferOutput<typeof DraftProgressStatusSchema>;
 
-export interface DraftSnapshot {
-  id: string;
-  label: string;
-  content: string;
-  charCount: number;
-  timestamp: number;
-}
+export type DraftSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 
-export interface ESDraft {
-  id: string;
-  title: string;
-  companyName: string;
-  category: ESQuestionCategory;
-  content: string;
-  starBlocks?: StarBlocks;
-  isBlockMode: boolean;
-  targetCount: number;
-  createdAt: number;
-  updatedAt: number;
-  tags: string[];
-  starred?: boolean;
-  snapshots?: DraftSnapshot[];
-}
+export type StarBlocks = InferOutput<typeof StarBlocksSchema>;
+export type DraftSnapshot = InferOutput<typeof DraftSnapshotSchema>;
+export type ESDraft = InferOutput<typeof ESDraftSchema>;

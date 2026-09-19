@@ -7,6 +7,7 @@ export class EditorPage {
   readonly draftCountBadge: Locator;
   readonly draftTitle: Locator;
   readonly draftCategory: Locator;
+  readonly draftProgress: Locator;
   readonly body: Locator;
   readonly structureTab: Locator;
   readonly previewTab: Locator;
@@ -18,6 +19,7 @@ export class EditorPage {
     this.draftCountBadge = this.sidebar.getByText(/^\d+件$/);
     this.draftTitle = page.locator('#draft-title-input');
     this.draftCategory = page.locator('#draft-category-select');
+    this.draftProgress = page.locator('#draft-progress-status');
     this.body = page.locator('#es-body-textarea');
     this.structureTab = page.locator('#mode-tab-structure');
     this.previewTab = page.locator('#mode-tab-preview');
@@ -29,8 +31,7 @@ export class EditorPage {
   }
 
   async waitForReady(): Promise<void> {
-    await expect(this.draftTitle).toBeVisible();
-    await expect(this.body).toBeVisible();
+    await expect(this.page.locator('#app-top-header')).toBeVisible();
   }
 
   async draftCount(): Promise<number> {
@@ -41,9 +42,25 @@ export class EditorPage {
   async createDraft(): Promise<void> {
     const countBefore = await this.draftCount();
     const idBefore = new URL(this.page.url()).searchParams.get('id');
+    const buttonBounds = await this.newDraftButton.boundingBox();
+    const viewport = this.page.viewportSize();
+    const isInsideViewport =
+      buttonBounds !== null &&
+      viewport !== null &&
+      buttonBounds.x >= 0 &&
+      buttonBounds.x + buttonBounds.width <= viewport.width &&
+      buttonBounds.y >= 0 &&
+      buttonBounds.y + buttonBounds.height <= viewport.height;
+
+    if (!isInsideViewport) {
+      await this.page.getByRole('button', { name: '下書き一覧を開く' }).click();
+    }
     await this.newDraftButton.click();
     await expect.poll(() => new URL(this.page.url()).searchParams.get('id')).not.toBe(idBefore);
     await expect(this.draftTitle).toHaveValue('新規エントリーシート');
+    await expect(this.draftCategory).toHaveValue('');
+    await expect(this.draftProgress).toHaveValue('');
+    await expect(this.body).toBeVisible();
     await expect.poll(() => this.draftCount()).toBe(countBefore + 1);
   }
 
@@ -72,7 +89,7 @@ export class EditorPage {
     return this.page.evaluate(
       async ({ expectedTitle, expectedContent }) => {
         const db = await new Promise<IDBDatabase | null>((resolve) => {
-          const request = window.indexedDB.open('es_craft_indexed_db', 1);
+          const request = window.indexedDB.open('es_craft_indexed_db');
           request.onsuccess = () => resolve(request.result);
           request.onerror = () => resolve(null);
         });

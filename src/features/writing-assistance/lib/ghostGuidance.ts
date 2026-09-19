@@ -1,69 +1,35 @@
 /**
  * Ghost Guidance (思考の伴走ゴースト)
- * カーソル位置と前後の文脈（結論・状況・工夫・成果・貢献）をミリ秒で解析し、
+ * カーソル位置と前後の文脈を解析し、カテゴリ固定の構成に沿って
  * 白紙で止まらないための「直接的な問いかけ」と「Tabキー補完フレーズ」を提供する純粋ロジック。
  */
 
-type ESPhase = 'conclusion' | 'situation' | 'action' | 'result' | 'contribution';
-
-export interface GhostGuidance {
-  phase: ESPhase;
-  phaseLabel: string;
-  question: string;
-  tabSuggestion: string;
-  explanation: string;
-}
-
-const PHASE_CONFIG: Record<ESPhase, Omit<GhostGuidance, 'phase'>> = {
-  conclusion: {
-    phaseLabel: '1. 結論・強み',
-    question: '一言で表すあなたの最大の強み、または成し遂げた成果は何ですか？',
-    tabSuggestion: '私の強みは、困難な状況でも諦めずに周囲を巻き込む完遂力です。',
-    explanation:
-      '採用担当者は冒頭数秒で読み進めるかを判断します。まずズバリ結論を言い切るのが鉄則です。',
-  },
-  situation: {
-    phaseLabel: '2. 状況と課題',
-    question: '当時直面した一番の壁や困難、周囲の具体的な課題は何でしたか？',
-    tabSuggestion: '当時直面した最大の課題は、',
-    explanation:
-      '課題の難易度や制約条件（時間・人数・目標値）を具体的に書くことで、後の行動が際立ちます。',
-  },
-  action: {
-    phaseLabel: '3. 独自の工夫・行動',
-    question: '他の人とは違う、あなた自身の独自の工夫や具体的なアクションは何ですか？',
-    tabSuggestion: 'そこで私は、現状を打開するために',
-    explanation:
-      '「ただ頑張った」ではなく、なぜその方法を選んだのかの思考プロセスと具体的な施策を書きます。',
-  },
-  result: {
-    phaseLabel: '4. 結果・学び',
-    question: 'その行動によって数値や周囲はどう変化しましたか？（客観的成果と学び）',
-    tabSuggestion: 'その結果、半年後には目標を大きく上回り、',
-    explanation:
-      '数字の変化（前年比○%増など）や周囲からの信頼・評価の言葉を客観的事実として書きます。',
-  },
-  contribution: {
-    phaseLabel: '5. 入社後の貢献',
-    question: 'この経験で培った強みを、志望先でどのように活かして貢献しますか？',
-    tabSuggestion: '貴社においても、この培った完遂力を活かし、',
-    explanation:
-      '過去の自慢で終わらせず、「入社後にどう会社に利益をもたらすか」へ接続して締めくくります。',
-  },
-};
+import type { ESQuestionCategory } from '@entities/draft/model/types';
+import { getWritingProfile } from '@features/writing-assistance/lib/writingProfiles';
+import type { GhostGuidance, WritingPhase } from '@features/writing-assistance/model/types';
 
 /**
  * テキストとカーソル位置から、現在の執筆フェーズを推定する
  */
-export function analyzeGhostContext(text: string, cursorPosition: number): GhostGuidance {
+export function analyzeGhostContext(
+  text: string,
+  cursorPosition: number,
+  category: ESQuestionCategory | null,
+): GhostGuidance | null {
+  const profile = getWritingProfile(category);
+  if (!profile) return null;
+  const guidanceFor = (phase: WritingPhase): GhostGuidance => ({
+    phase,
+    phaseLabel: profile.phases[phase].label,
+    question: profile.phases[phase].question,
+    tabSuggestion: profile.phases[phase].tabSuggestion,
+    explanation: profile.phases[phase].explanation,
+  });
   const trimmed = text.trim();
 
   // 1. 完全白紙または冒頭50字未満で句点がない場合 -> 結論
   if (!trimmed || trimmed.length === 0) {
-    return {
-      phase: 'conclusion',
-      ...PHASE_CONFIG.conclusion,
-    };
+    return guidanceFor('conclusion');
   }
 
   // カーソル直前までのテキストを文脈とする
@@ -87,10 +53,7 @@ export function analyzeGhostContext(text: string, cursorPosition: number): Ghost
   );
 
   if (hasResultKeywords && !hasContributionKeywords && sentenceCount >= 4) {
-    return {
-      phase: 'contribution',
-      ...PHASE_CONFIG.contribution,
-    };
+    return guidanceFor('contribution');
   }
 
   // 3. 行動・工夫が出た後の文脈 -> 結果・成果
@@ -99,19 +62,13 @@ export function analyzeGhostContext(text: string, cursorPosition: number): Ghost
       activeContent,
     );
   if (hasActionKeywords && !hasResultKeywords && sentenceCount >= 3) {
-    return {
-      phase: 'result',
-      ...PHASE_CONFIG.result,
-    };
+    return guidanceFor('result');
   }
 
   // 4. 課題・状況が出た後の文脈 -> 独自の工夫・行動
   const hasSituationKeywords = /(当時|背景|課題|問題|困難|直面|不足|壁と)/.test(activeContent);
   if (hasSituationKeywords && !hasActionKeywords) {
-    return {
-      phase: 'action',
-      ...PHASE_CONFIG.action,
-    };
+    return guidanceFor('action');
   }
 
   // 5. 1文目を書き終えた、または「強み」「注力」を言った直後 -> 状況と課題
@@ -119,25 +76,19 @@ export function analyzeGhostContext(text: string, cursorPosition: number): Ghost
     activeContent,
   );
   if (hasConclusionKeywords || sentenceCount === 1) {
-    return {
-      phase: 'situation',
-      ...PHASE_CONFIG.situation,
-    };
+    return guidanceFor('situation');
   }
 
   // 文数によるフォールバック
   if (sentenceCount >= 5) {
-    return { phase: 'contribution', ...PHASE_CONFIG.contribution };
+    return guidanceFor('contribution');
   }
   if (sentenceCount >= 4) {
-    return { phase: 'result', ...PHASE_CONFIG.result };
+    return guidanceFor('result');
   }
   if (sentenceCount >= 2) {
-    return { phase: 'action', ...PHASE_CONFIG.action };
+    return guidanceFor('action');
   }
 
-  return {
-    phase: 'situation',
-    ...PHASE_CONFIG.situation,
-  };
+  return guidanceFor('situation');
 }

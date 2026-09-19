@@ -4,17 +4,11 @@ import {
   buildDraftId,
   buildDuplicatedDraft,
   cloneDraft,
-  createInitialSampleDrafts,
 } from '@entities/draft/model/draftFactories';
-import {
-  parseCategory,
-  parseDraft,
-  parseDraftCollection,
-  parseDraftId,
-} from '@shared/validation/draftSchemas';
+import { parseDraft, parseDraftCollection, parseDraftId } from '@shared/validation/draftSchemas';
 
 const DB_NAME = 'es_craft_indexed_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 const STORE_NAME = 'drafts';
 
 class IndexedDbStorage {
@@ -38,10 +32,19 @@ class IndexedDbStorage {
 
         request.onupgradeneeded = (event) => {
           const db = (event.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-            store.createIndex('updatedAt', 'updatedAt', { unique: false });
-            store.createIndex('category', 'category', { unique: false });
+          const store = db.objectStoreNames.contains(STORE_NAME)
+            ? (event.target as IDBOpenDBRequest).transaction?.objectStore(STORE_NAME)
+            : db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          if (store) {
+            if (!store.indexNames.contains('updatedAt')) {
+              store.createIndex('updatedAt', 'updatedAt', { unique: false });
+            }
+            if (!store.indexNames.contains('category')) {
+              store.createIndex('category', 'category', { unique: false });
+            }
+            if (!store.indexNames.contains('progressStatus')) {
+              store.createIndex('progressStatus', 'progressStatus', { unique: false });
+            }
           }
         };
 
@@ -95,11 +98,6 @@ class IndexedDbStorage {
 
         request.onsuccess = () => {
           const list = parseDraftCollection(request.result) || [];
-          if (list.length === 0) {
-            // First time: seed sample drafts
-            this.seedInitialDrafts().then(resolve).catch(reject);
-            return;
-          }
           // Sort by updatedAt descending
           list.sort((a, b) => b.updatedAt - a.updatedAt);
           resolve(list);
@@ -115,11 +113,6 @@ class IndexedDbStorage {
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       return list;
     }
-  }
-
-  private async seedInitialDrafts(): Promise<ESDraft[]> {
-    await Promise.all(this.initialDrafts.map((draft) => this.saveDraft(draft)));
-    return this.initialDrafts.map(cloneDraft);
   }
 
   public async getDraft(id: string): Promise<ESDraft | null> {
@@ -245,10 +238,9 @@ class IndexedDbStorage {
     await this.saveDraft(newDraft);
     return newDraft;
   }
-  public async createDefaultDraft(category: string = 'gakuchika'): Promise<ESDraft> {
+  public async createDefaultDraft(): Promise<ESDraft> {
     const timestamp = Date.now();
     const newDraft = buildDefaultDraft(
-      parseCategory(category),
       buildDraftId(timestamp, Math.random().toString(36).substring(2, 7)),
       timestamp,
     );
@@ -257,4 +249,5 @@ class IndexedDbStorage {
   }
 }
 
-export const storage = new IndexedDbStorage(createInitialSampleDrafts(Date.now()));
+// 初回はサンプルを保存しない。ユーザーが明示的に新規作成してから始める。
+export const storage = new IndexedDbStorage([]);

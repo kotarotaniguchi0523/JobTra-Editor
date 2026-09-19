@@ -1,6 +1,6 @@
 import React from 'react';
 import { GhostGuidanceBar } from '@widgets/editor/ui/GhostGuidanceBar';
-import type { GhostGuidance } from '@features/writing-assistance/lib/ghostGuidance';
+import type { GhostGuidance } from '@features/writing-assistance/model/types';
 
 interface DeferredGhostGuidanceProps {
   guidance: GhostGuidance;

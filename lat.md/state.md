@@ -14,17 +14,27 @@ The URL owns shareable selection state such as the active draft id; [[src/shared
 
 All loaded and stored data crosses the Valibot schemas in [[src/shared/validation/draftSchemas.ts]]. Persistence is browser-only and asynchronous, so it is never required for the static build to render.
 
+### Unconfigured draft metadata
+
+A new draft deliberately starts with `category`, `targetCount`, and `progressStatus` unset; the app never substitutes a hidden 400-character or category default.
+
+`category` and `progressStatus` are IndexedDB indexes. Category filtering is a single selection combined with text search, while progress is an independent optional tag with `未着手`、`進行中`、`一時停止`、`完了` choices.
+
 ## State ownership
 
 Each island owns only the interaction state that has an independent lifecycle: active export tab, export options, pending action state, editor cursor position, short-lived panel state, and browser API handles.
 
 Derived values such as character counts, audit results, deferred projections, and selected labels are calculated from authoritative props or store snapshots during render rather than synchronized with Effects.
 
+The character-limit policy in [[src/features/writing-assistance/lib/characterLimit.ts]] is pure: 80% of a selected upper limit is OK, the 80–90% band is the writing guide, and an unset limit produces no compliance state.
+
 ## Async interaction model
 
 Urgent typing and pointer feedback stays synchronous; navigation, persistence completion, panel replacement, and other non-urgent updates use transitions where they improve responsiveness.
 
 `useEffect` is reserved for external synchronization, such as bootstrapping the browser store and reflecting store/URL changes. Optimistic local edits are conditionally rolled back only when an asynchronous persistence operation fails.
+
+The textarea measures `scrollHeight` only in its leaf Client Component and derives its height through [[src/widgets/editor/lib/textareaHeight.ts]]. Text input is never deferred or blocked by this DOM work; analysis and draft-list filtering consume deferred projections instead.
 
 ## AI writing context
 

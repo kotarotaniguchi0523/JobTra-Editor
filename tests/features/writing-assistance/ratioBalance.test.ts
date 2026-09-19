@@ -8,16 +8,16 @@ describe('Ratio Balance (黄金比バランス計算) - AAA Blackbox Tests', () 
     const target = 400;
 
     // Act
-    const result = calculateRatioBalance(text, target);
+    const result = calculateRatioBalance(text, target, 'gakuchika');
 
     // Assert
     expect(result.totalActualChars).toBe(0);
     expect(result.targetChars).toBe(400);
     expect(result.blocks.conclusion.status).toBe('empty');
-    expect(result.blocks.conclusion.idealChars).toBe(40); // 10% of 400
-    expect(result.blocks.situation.idealChars).toBe(80); // 20% of 400
-    expect(result.blocks.action.idealChars).toBe(180); // 45% of 400
-    expect(result.blocks.resultAndContribution.idealChars).toBe(100); // 25% of 400
+    expect(result.blocks.conclusion.idealChars).toBe(100); // 25% of 400
+    expect(result.blocks.situation.idealChars).toBe(100); // 25% of 400
+    expect(result.blocks.action.idealChars).toBe(120); // 30% of 400
+    expect(result.blocks.resultAndContribution.idealChars).toBe(80); // 20% of 400
     expect(result.overallAdvice).toContain('結論から');
   });
 
@@ -28,7 +28,7 @@ describe('Ratio Balance (黄金比バランス計算) - AAA Blackbox Tests', () 
     const target = 400;
 
     // Act
-    const result = calculateRatioBalance(text, target);
+    const result = calculateRatioBalance(text, target, 'gakuchika');
 
     // Assert
     expect(result.blocks.situation.actualChars).toBeGreaterThan(50);
@@ -43,7 +43,7 @@ describe('Ratio Balance (黄金比バランス計算) - AAA Blackbox Tests', () 
     const target = 400;
 
     // Act
-    const result = calculateRatioBalance(text, target);
+    const result = calculateRatioBalance(text, target, 'gakuchika');
 
     // Assert
     expect(result.totalActualChars).toBeGreaterThan(150);

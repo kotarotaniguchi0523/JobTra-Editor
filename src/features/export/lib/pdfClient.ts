@@ -1,8 +1,9 @@
 import type { ESDraft } from '@entities/draft/model/types';
-import { CATEGORY_LABELS } from '@entities/draft/model/categoryLabels';
+import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { downloadFile } from '@features/export/lib/exportDownload';
 import { getExportFilename } from '@features/export/lib/exportFilename';
 import { generateEsPdf } from '@features/export/lib/exportPdf';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 export interface PdfExportOptions {
   includeStar?: boolean;
@@ -17,12 +18,12 @@ export async function downloadEsPdf(
   options: PdfExportOptions = {},
 ): Promise<{ success: boolean; fallbackTriggered?: boolean; error?: string }> {
   const { includeStar = true, includeMeta = true } = options;
-  const categoryLabel = CATEGORY_LABELS[draft.category] || draft.category;
+  const categoryLabel = getCategoryLabel(draft.category);
 
   const company = draft.companyName || '';
   const filename = getExportFilename(draft, 'pdf');
 
-  const currentCharCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
+  const currentCharCount = countNonWhitespaceCharacters(draft.content);
   const exportedAt = new Date().toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',
@@ -34,7 +35,7 @@ export async function downloadEsPdf(
       title: draft.title || 'エントリーシート',
       company: company || undefined,
       categoryLabel,
-      targetCharCount: draft.targetCount || 400,
+      targetCharCount: draft.targetCount ?? undefined,
       currentCharCount,
       content: draft.content,
       exportedAt,

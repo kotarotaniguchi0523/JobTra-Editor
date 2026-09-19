@@ -1,7 +1,6 @@
 import React, { useDeferredValue, useState } from 'react';
 import { Plus, Search, Star, HardDrive, Sparkles, ArrowRight } from 'lucide-react';
-import type { ESDraft } from '@entities/draft/model/types';
-import type { DraftSaveStatus } from '@entities/draft/model/draftStore';
+import type { DraftSaveStatus, ESDraft } from '@entities/draft/model/types';
 import { SidebarDraftList } from '@widgets/workspace/ui/SidebarDraftList';
 import { parseSearchQuery } from '@shared/validation/searchParams';
 
@@ -21,6 +20,7 @@ interface SidebarProps {
 
 const CATEGORY_TAG_LABELS = {
   all: 'すべて',
+  uncategorized: '未分類',
   gakuchika: 'ガクチカ',
   shibou: '志望動機',
   pr: '自己PR',
@@ -53,7 +53,9 @@ function filterDrafts(
     if (
       selection.kind === 'category' &&
       selection.value !== 'all' &&
-      draft.category !== selection.value
+      (selection.value === 'uncategorized'
+        ? draft.category !== null
+        : draft.category !== selection.value)
     ) {
       return false;
     }
