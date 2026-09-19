@@ -38,7 +38,7 @@ export function PreviewIsland({ checklistSlot }: PreviewIslandProps) {
       <DocumentPreview
         draft={activeDraft}
         charsNoWs={metrics.charsNoWhitespace}
-        currentTarget={activeDraft.targetCount || 400}
+        currentTarget={activeDraft.targetCount}
         onSaveSnapshot={handleSaveSnapshot}
         onRestoreSnapshot={handleRestoreSnapshot}
         checklistSlot={checklistSlot}

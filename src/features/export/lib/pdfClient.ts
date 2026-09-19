@@ -1,5 +1,5 @@
 import type { ESDraft } from '@entities/draft/model/types';
-import { CATEGORY_LABELS } from '@entities/draft/model/categoryLabels';
+import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { downloadFile } from '@features/export/lib/exportDownload';
 import { getExportFilename } from '@features/export/lib/exportFilename';
 import { generateEsPdf } from '@features/export/lib/exportPdf';
@@ -17,7 +17,7 @@ export async function downloadEsPdf(
   options: PdfExportOptions = {},
 ): Promise<{ success: boolean; fallbackTriggered?: boolean; error?: string }> {
   const { includeStar = true, includeMeta = true } = options;
-  const categoryLabel = CATEGORY_LABELS[draft.category] || draft.category;
+  const categoryLabel = getCategoryLabel(draft.category);
 
   const company = draft.companyName || '';
   const filename = getExportFilename(draft, 'pdf');
@@ -34,7 +34,7 @@ export async function downloadEsPdf(
       title: draft.title || 'エントリーシート',
       company: company || undefined,
       categoryLabel,
-      targetCharCount: draft.targetCount || 400,
+      targetCharCount: draft.targetCount ?? undefined,
       currentCharCount,
       content: draft.content,
       exportedAt,

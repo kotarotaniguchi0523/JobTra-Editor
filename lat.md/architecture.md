@@ -14,6 +14,8 @@ Client Components are limited to browser interaction, DOM integration, local pen
 
 The current islands are [[src/app/runtime/DraftRuntime.tsx]], [[src/widgets/editor/ui/WriteEditorIsland.tsx]], [[src/widgets/preview/ui/PreviewIsland.tsx]], [[src/widgets/structure/ui/StructureIsland.tsx]], [[src/widgets/workspace/ui/WorkspaceClientShell.tsx]], and the writing-only [[src/features/webmcp/ui/WebMcpIsland.tsx]]. Static content is passed through them by composition instead of being reimplemented inside a client subtree.
 
+Leaf DOM behavior stays below those islands: [[src/widgets/editor/ui/DeferredTextarea.tsx]] owns textarea sizing and cursor integration, and the workspace header progressively removes labels and static links before controls can collide at narrow desktop widths.
+
 ## Server-through-client composition
 
 Interactive shells receive static Server Component content through children or slots so that a browser feature does not pull an entire page into the client bundle.

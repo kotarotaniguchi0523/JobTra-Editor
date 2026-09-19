@@ -8,12 +8,12 @@ describe('Ghost Guidance (思考の伴走ゴースト) - AAA Blackbox Tests', ()
     const cursor = 0;
 
     // Act
-    const guidance = analyzeGhostContext(emptyText, cursor);
+    const guidance = analyzeGhostContext(emptyText, cursor, 'pr');
 
     // Assert
-    expect(guidance.phase).toBe('conclusion');
-    expect(guidance.question).toContain('強み');
-    expect(guidance.tabSuggestion).toContain('私の強みは');
+    expect(guidance?.phase).toBe('conclusion');
+    expect(guidance?.question).toContain('強み');
+    expect(guidance?.tabSuggestion).toContain('私の強みは');
   });
 
   it('結論の1文目を書き終えた直後は「状況と課題」の問いかけを提示すること', () => {
@@ -22,12 +22,12 @@ describe('Ghost Guidance (思考の伴走ゴースト) - AAA Blackbox Tests', ()
     const cursor = text.length;
 
     // Act
-    const guidance = analyzeGhostContext(text, cursor);
+    const guidance = analyzeGhostContext(text, cursor, 'gakuchika');
 
     // Assert
-    expect(guidance.phase).toBe('situation');
-    expect(guidance.question).toContain('課題');
-    expect(guidance.tabSuggestion).toContain('課題');
+    expect(guidance?.phase).toBe('situation');
+    expect(guidance?.question).toContain('課題');
+    expect(guidance?.tabSuggestion).toContain('当時は');
   });
 
   it('課題・困難を記述した後は「独自の工夫・行動」の問いかけを提示すること', () => {
@@ -37,12 +37,12 @@ describe('Ghost Guidance (思考の伴走ゴースト) - AAA Blackbox Tests', ()
     const cursor = text.length;
 
     // Act
-    const guidance = analyzeGhostContext(text, cursor);
+    const guidance = analyzeGhostContext(text, cursor, 'gakuchika');
 
     // Assert
-    expect(guidance.phase).toBe('action');
-    expect(guidance.question).toContain('工夫');
-    expect(guidance.tabSuggestion).toContain('そこで私は');
+    expect(guidance?.phase).toBe('action');
+    expect(guidance?.question).toContain('工夫');
+    expect(guidance?.tabSuggestion).toContain('そこで私は');
   });
 
   it('独自の工夫・行動を記述した後は「結果・成果」の問いかけを提示すること', () => {
@@ -52,12 +52,12 @@ describe('Ghost Guidance (思考の伴走ゴースト) - AAA Blackbox Tests', ()
     const cursor = text.length;
 
     // Act
-    const guidance = analyzeGhostContext(text, cursor);
+    const guidance = analyzeGhostContext(text, cursor, 'gakuchika');
 
     // Assert
-    expect(guidance.phase).toBe('result');
-    expect(guidance.question).toContain('変化');
-    expect(guidance.tabSuggestion).toContain('その結果');
+    expect(guidance?.phase).toBe('result');
+    expect(guidance?.question).toContain('学び');
+    expect(guidance?.tabSuggestion).toContain('その結果');
   });
 
   it('成果を記述した後は「入社後の貢献」の問いかけを提示すること', () => {
@@ -67,11 +67,20 @@ describe('Ghost Guidance (思考の伴走ゴースト) - AAA Blackbox Tests', ()
     const cursor = text.length;
 
     // Act
-    const guidance = analyzeGhostContext(text, cursor);
+    const guidance = analyzeGhostContext(text, cursor, 'gakuchika');
 
     // Assert
-    expect(guidance.phase).toBe('contribution');
-    expect(guidance.question).toContain('貢献');
-    expect(guidance.tabSuggestion).toContain('貴社におい');
+    expect(guidance?.phase).toBe('contribution');
+    expect(guidance?.question).toContain('活かし');
+    expect(guidance?.tabSuggestion).toContain('この経験');
+  });
+
+  it('カテゴリ未選択ではTab補完を出さないこと', () => {
+    expect(analyzeGhostContext('', 0, null)).toBeNull();
+  });
+
+  it('カテゴリを変えると白紙時のTab補完も切り替わること', () => {
+    expect(analyzeGhostContext('', 0, 'gakuchika')?.tabSuggestion).toContain('学生時代');
+    expect(analyzeGhostContext('', 0, 'shibou')?.tabSuggestion).toContain('貴社を志望');
   });
 });

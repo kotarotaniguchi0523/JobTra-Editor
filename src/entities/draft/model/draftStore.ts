@@ -1,5 +1,5 @@
 import { startTransition, useSyncExternalStore } from 'react';
-import type { DraftSnapshot, ESDraft, ESQuestionCategory } from '@entities/draft/model/types';
+import type { DraftSnapshot, ESDraft } from '@entities/draft/model/types';
 import { storage } from '@entities/draft/storage/indexedDbStorage';
 import { draftReducer, INITIAL_DRAFT_STATE } from '@entities/draft/model/draftReducer';
 import type { DraftAction, DraftState } from '@entities/draft/model/draftReducer';
@@ -20,7 +20,7 @@ interface DraftStoreState extends DraftState {
 
 export interface DraftActions {
   selectDraft: (id: string) => void;
-  createDraft: (category?: ESQuestionCategory) => Promise<string>;
+  createDraft: () => Promise<string>;
   updateDraft: (updated: ESDraft, immediate?: boolean) => void;
   updateActiveDraft: (partial: Partial<ESDraft>, options: DraftUpdateOptions) => void;
   deleteDraft: (id: string, nextActiveId: string) => Promise<void>;
@@ -153,9 +153,9 @@ function selectDraft(id: string): void {
   dispatch({ type: 'select', id });
 }
 
-async function createDraft(category: ESQuestionCategory = 'gakuchika'): Promise<string> {
+async function createDraft(): Promise<string> {
   try {
-    const newDraft = await storage.createDefaultDraft(category);
+    const newDraft = await storage.createDefaultDraft();
     startTransition(() => dispatch({ type: 'add', draft: newDraft }));
     return newDraft.id;
   } catch (error) {

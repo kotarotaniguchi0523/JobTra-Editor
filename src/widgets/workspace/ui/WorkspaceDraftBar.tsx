@@ -1,7 +1,8 @@
 import React from 'react';
-import { Tag, Target, FileEdit, Layers, Eye } from 'lucide-react';
+import { Tag, Target, FileEdit, Layers, Eye, CircleGauge } from 'lucide-react';
 import { ESDraft, ESQuestionCategory } from '@entities/draft/model/types';
-import { parseCategory } from '@shared/validation/draftSchemas';
+import { parseOptionalCategory, parseProgressStatus } from '@shared/validation/draftSchemas';
+import { PROGRESS_STATUS_LABELS } from '@entities/draft/model/progressStatus';
 import { pathWithDraftId } from '@shared/validation/searchParams';
 
 interface WorkspaceDraftBarProps {
@@ -21,7 +22,7 @@ const CATEGORY_SELECT_LABELS: Record<ESQuestionCategory, string> = {
   custom: '自由記述',
 };
 
-const TARGET_PRESETS = [200, 300, 400, 500, 600, 800];
+const TARGET_PRESETS = Array.from({ length: 13 }, (_, index) => 200 + index * 50);
 
 export function WorkspaceDraftBar({
   activeDraft,
@@ -54,11 +55,12 @@ export function WorkspaceDraftBar({
           </label>
           <select
             id="draft-category-select"
-            value={activeDraft.category}
-            onChange={(e) => onUpdateDraft({ category: parseCategory(e.target.value) })}
+            value={activeDraft.category ?? ''}
+            onChange={(e) => onUpdateDraft({ category: parseOptionalCategory(e.target.value) })}
             aria-label="設問カテゴリ"
             className="w-full cursor-pointer bg-transparent text-sm text-neutral-800 focus:outline-hidden"
           >
+            <option value="">カテゴリを選択</option>
             {Object.entries(CATEGORY_SELECT_LABELS).map(([cat, label]) => (
               <option key={cat} value={cat}>
                 {label}
@@ -68,12 +70,12 @@ export function WorkspaceDraftBar({
         </div>
       </div>
 
-      {/* 目標字数 ＆ SPAページ切り替えナビゲーション */}
-      <div className="flex flex-col gap-2 border-t border-neutral-100 pt-1.5 sm:flex-row sm:items-center sm:justify-between">
+      {/* 上限字数・進捗 ＆ SPAページ切り替えナビゲーション */}
+      <div className="flex flex-col gap-2 border-t border-neutral-100 pt-1.5 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex scrollbar-none items-center gap-1.5 overflow-x-auto py-0.5">
           <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-neutral-600">
             <Target className="h-3.5 w-3.5 text-neutral-500" />
-            目標字数:
+            上限字数:
           </span>
           <div className="flex shrink-0 items-center gap-1">
             {TARGET_PRESETS.map((t) => (
@@ -82,7 +84,7 @@ export function WorkspaceDraftBar({
                 type="button"
                 onClick={() => onUpdateDraft({ targetCount: t })}
                 className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-xs font-medium transition-colors ${
-                  (activeDraft.targetCount || 400) === t
+                  activeDraft.targetCount === t
                     ? 'border-neutral-900 bg-neutral-900 text-white'
                     : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
                 }`}
@@ -90,7 +92,40 @@ export function WorkspaceDraftBar({
                 {t}字
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => onUpdateDraft({ targetCount: null })}
+              className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-xs font-medium transition-colors ${
+                activeDraft.targetCount === null
+                  ? 'border-neutral-900 bg-neutral-900 text-white'
+                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
+              }`}
+            >
+              未設定
+            </button>
           </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1.5">
+          <CircleGauge className="h-3.5 w-3.5 text-neutral-500" />
+          <label htmlFor="draft-progress-status" className="sr-only">
+            進捗
+          </label>
+          <select
+            id="draft-progress-status"
+            value={activeDraft.progressStatus ?? ''}
+            onChange={(event) =>
+              onUpdateDraft({ progressStatus: parseProgressStatus(event.target.value) })
+            }
+            className="cursor-pointer bg-transparent text-xs text-neutral-700 focus:outline-hidden"
+          >
+            <option value="">進捗を選択</option>
+            {Object.entries(PROGRESS_STATUS_LABELS).map(([status, label]) => (
+              <option key={status} value={status}>
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* SPA ルートタブ（Funstack Router によりSPA遷移） */}

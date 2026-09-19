@@ -39,9 +39,11 @@ export const RatioBalanceMeter: React.FC<RatioBalanceMeterProps> = ({ balance })
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5 font-semibold text-neutral-800">
           <BarChart3 className="h-3.5 w-3.5 text-neutral-500" />
-          <span>黄金比バランス診断（理想 10:20:45:25）</span>
+          <span>{balance.profileLabel}の構成バランス</span>
         </div>
-        <span className="text-xs text-neutral-500">目標 {balance.targetChars}字 基準</span>
+        <span className="text-xs text-neutral-500">
+          {balance.targetChars ? `上限 ${balance.targetChars}字 基準` : '上限未設定'}
+        </span>
       </div>
 
       {/* Grid of Blocks */}

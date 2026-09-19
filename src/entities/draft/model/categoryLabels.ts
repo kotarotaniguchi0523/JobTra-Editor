@@ -9,3 +9,7 @@ export const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
   future: '将来のキャリアビジョン',
   custom: '自由記述設問',
 };
+
+export function getCategoryLabel(category: ESQuestionCategory | null): string {
+  return category ? CATEGORY_LABELS[category] : '未分類';
+}

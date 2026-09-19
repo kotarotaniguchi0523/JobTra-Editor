@@ -31,7 +31,8 @@ export function ExportDocumentSummary({ draft }: ExportDocumentSummaryProps) {
       <div className="flex justify-between">
         <span className="text-neutral-500">文字数:</span>
         <span className="font-mono text-neutral-800">
-          {currentCharCount} 字 / 目標 {draft.targetCount || 400} 字
+          {currentCharCount} 字
+          {draft.targetCount ? ` / 上限 ${draft.targetCount} 字` : ' / 上限未設定'}
         </span>
       </div>
     </section>

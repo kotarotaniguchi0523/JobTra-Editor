@@ -1,6 +1,7 @@
 import React from 'react';
 import { Trash2, Copy, Star } from 'lucide-react';
 import { ESDraft } from '@entities/draft/model/types';
+import { getProgressStatusLabel } from '@entities/draft/model/progressStatus';
 
 interface SidebarDraftItemProps {
   draft: ESDraft;
@@ -77,8 +78,14 @@ export function SidebarDraftItem({
         <div className="flex items-center gap-1.5 font-mono">
           <span>{draft.content.replace(/\s/g, '').length}字</span>
           <span>/</span>
-          <span>{draft.targetCount || 400}字</span>
+          <span>{draft.targetCount ? `${draft.targetCount}字以内` : '上限未設定'}</span>
         </div>
+
+        {draft.progressStatus && (
+          <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-600">
+            {getProgressStatusLabel(draft.progressStatus)}
+          </span>
+        )}
 
         <div className="flex items-center gap-1 opacity-70 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
           <button

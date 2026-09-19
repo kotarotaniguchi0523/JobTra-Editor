@@ -21,6 +21,7 @@ interface SidebarProps {
 
 const CATEGORY_TAG_LABELS = {
   all: 'すべて',
+  uncategorized: '未分類',
   gakuchika: 'ガクチカ',
   shibou: '志望動機',
   pr: '自己PR',
@@ -53,7 +54,9 @@ function filterDrafts(
     if (
       selection.kind === 'category' &&
       selection.value !== 'all' &&
-      draft.category !== selection.value
+      (selection.value === 'uncategorized'
+        ? draft.category !== null
+        : draft.category !== selection.value)
     ) {
       return false;
     }

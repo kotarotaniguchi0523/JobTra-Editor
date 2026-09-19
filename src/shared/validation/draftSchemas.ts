@@ -7,6 +7,7 @@ import {
   maxValue,
   minLength,
   minValue,
+  nullable,
   number,
   nonEmpty,
   object,
@@ -18,7 +19,7 @@ import {
   string,
   trim,
 } from 'valibot';
-import type { ESDraft, ESQuestionCategory } from '@entities/draft/model/types';
+import type { DraftProgressStatus, ESDraft, ESQuestionCategory } from '@entities/draft/model/types';
 
 const MAX_ID_LENGTH = 128;
 const MAX_TEXT_LENGTH = 20_000;
@@ -39,10 +40,16 @@ const CategorySchema = picklist([
   'future',
   'custom',
 ] as const);
+const OptionalCategorySchema = nullable(CategorySchema);
+const ProgressStatusSchema = nullable(
+  picklist(['not_started', 'in_progress', 'paused', 'completed'] as const),
+);
 
 const TextSchema = pipe(string(), maxLength(MAX_TEXT_LENGTH));
 const TimestampSchema = pipe(number(), finite(), integer(), minValue(0));
-const TargetCountSchema = pipe(number(), finite(), integer(), minValue(1), maxValue(10_000));
+const TargetCountSchema = nullable(
+  pipe(number(), finite(), integer(), minValue(1), maxValue(10_000)),
+);
 
 const StarBlocksSchema = object({
   conclusion: TextSchema,
@@ -64,11 +71,12 @@ const ESDraftSchema = object({
   id: DraftIdSchema,
   title: TextSchema,
   companyName: TextSchema,
-  category: CategorySchema,
+  category: OptionalCategorySchema,
   content: TextSchema,
   starBlocks: optional(StarBlocksSchema),
   isBlockMode: boolean(),
   targetCount: TargetCountSchema,
+  progressStatus: optional(ProgressStatusSchema, null),
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
   tags: array(pipe(string(), maxLength(100))),
@@ -100,6 +108,18 @@ export function parseCategory(
 ): ESQuestionCategory {
   const result = safeParse(CategorySchema, value);
   return result.success ? result.output : fallback;
+}
+
+export function parseOptionalCategory(value: unknown): ESQuestionCategory | null {
+  if (value === '' || value === null || value === undefined) return null;
+  const result = safeParse(CategorySchema, value);
+  return result.success ? result.output : null;
+}
+
+export function parseProgressStatus(value: unknown): DraftProgressStatus | null {
+  if (value === '' || value === null || value === undefined) return null;
+  const result = safeParse(ProgressStatusSchema, value);
+  return result.success ? result.output : null;
 }
 
 export function parseSnapshotLabel(value: unknown, fallback = '無題のスナップショット'): string {

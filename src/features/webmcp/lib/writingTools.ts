@@ -40,7 +40,7 @@ type DraftSummary = {
   title: string;
   companyName: string;
   category: ESDraft['category'];
-  targetCount: number;
+  targetCount: number | null;
   updatedAt: number;
   charsNoWhitespace: number;
 };
@@ -341,7 +341,9 @@ async function analyzeWriting(rawInput: unknown, signal: AbortSignal): Promise<W
   const { draft } = resolved;
   const metrics = calculateMetrics(draft.content);
   const auditChecks = auditText(draft.content, draft.targetCount);
-  const ratioBalance = calculateRatioBalance(draft.content, draft.targetCount);
+  const ratioBalance = draft.category
+    ? calculateRatioBalance(draft.content, draft.targetCount, draft.category)
+    : null;
   const redundancyMatches: RedundancyMatch[] = detectRedundancies(draft.content);
   const starStructure = summarizeStarStructure(draft.starBlocks);
 
@@ -353,7 +355,7 @@ async function analyzeWriting(rawInput: unknown, signal: AbortSignal): Promise<W
     contentDigest: getContentDigest(draft.content),
     metrics,
     auditChecks,
-    ratioBalance,
+    ratioBalance: ratioBalance ?? calculateRatioBalance(draft.content, null, 'custom'),
     redundancyMatches,
     starStructure,
   };

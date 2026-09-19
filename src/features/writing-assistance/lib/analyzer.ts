@@ -1,4 +1,5 @@
 import type { AuditCheck, JapaneseMetrics } from '@features/writing-assistance/model/types';
+import { evaluateCharacterLimit } from '@features/writing-assistance/lib/characterLimit';
 
 export function calculateMetrics(text: string): JapaneseMetrics {
   const totalChars = text.length;
@@ -40,7 +41,7 @@ export function calculateMetrics(text: string): JapaneseMetrics {
   };
 }
 
-export function auditText(text: string, targetCount: number): AuditCheck[] {
+export function auditText(text: string, targetCount: number | null): AuditCheck[] {
   const checks: AuditCheck[] = [];
   const charsNoWs = text.replace(/\s/g, '').length;
 
@@ -48,39 +49,29 @@ export function auditText(text: string, targetCount: number): AuditCheck[] {
     return checks;
   }
 
-  // 1. 目標文字数の達成度判定
-  if (targetCount > 0) {
-    const ratio = charsNoWs / targetCount;
-    if (ratio > 1.0) {
-      const over = charsNoWs - targetCount;
+  // 1. 上限字数の達成度判定
+  const characterLimit = evaluateCharacterLimit(charsNoWs, targetCount);
+  if (characterLimit.status !== 'unconfigured') {
+    if (characterLimit.status === 'over') {
       checks.push({
-        id: 'target-over',
-        title: `文字数オーバー (+${over}文字)`,
+        id: 'character-limit-over',
+        title: `文字数オーバー (+${characterLimit.over}文字)`,
         status: 'warning',
-        message: `目標の${targetCount}文字を${over}文字超過しています。余分な接続詞や冗長な修飾語を削りましょう。`,
+        message: `上限${targetCount}文字を${characterLimit.over}文字超過しています。余分な接続詞や冗長な修飾語を削りましょう。`,
       });
-    } else if (ratio >= 0.9 && ratio <= 1.0) {
+    } else if (characterLimit.status === 'ok') {
       checks.push({
-        id: 'target-perfect',
-        title: `適正文字数域（${Math.round(ratio * 100)}%達成）`,
+        id: 'character-limit-ok',
+        title: `文字数OK（${characterLimit.percentage}%）`,
         status: 'pass',
-        message: `指定文字数の9割〜10割に収まっており、採用担当者に最も好印象を与える充実度です。`,
-      });
-    } else if (ratio >= 0.8) {
-      const remain = targetCount - charsNoWs;
-      checks.push({
-        id: 'target-near',
-        title: `目標まであと${remain}文字`,
-        status: 'info',
-        message: `80%を超えています。具体的な工夫や数値、入社後の意気込みをもう1文加えるとベストです。`,
+        message: `上限${targetCount}字の8割以上に収まっています。${charsNoWs <= characterLimit.preferredMaximum ? '目安の範囲内です。' : '十分な分量です。'}`,
       });
     } else {
-      const remain = targetCount - charsNoWs;
       checks.push({
-        id: 'target-under',
-        title: `文字数不足 (残り${remain}文字)`,
+        id: 'character-limit-under',
+        title: `文字数不足 (あと${characterLimit.remaining}文字)`,
         status: 'info',
-        message: `指定文字数の8割未満（現在${Math.round(ratio * 100)}%）です。空欄が目立つと熱意不足と捉えられがちです。`,
+        message: `上限${targetCount}字の8割未満（現在${characterLimit.percentage}%）です。まず${characterLimit.minimum}字を目安に具体例を補いましょう。`,
       });
     }
   }

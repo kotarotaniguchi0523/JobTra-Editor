@@ -67,8 +67,8 @@ const DraftSummarySchema = strictObject({
   id: string(),
   title: string(),
   companyName: string(),
-  category: categorySchema,
-  targetCount: finiteNumber,
+  category: nullable(categorySchema),
+  targetCount: nullable(finiteNumber),
   updatedAt: finiteNumber,
   charsNoWhitespace: finiteNumber,
 });
@@ -184,7 +184,8 @@ const RatioBlockSchema = strictObject({
 
 const RatioBalanceSchema = strictObject({
   totalActualChars: finiteNumber,
-  targetChars: finiteNumber,
+  targetChars: nullable(finiteNumber),
+  profileLabel: string(),
   blocks: strictObject({
     conclusion: RatioBlockSchema,
     situation: RatioBlockSchema,

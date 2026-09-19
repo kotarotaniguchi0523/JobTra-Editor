@@ -1,5 +1,6 @@
 import React from 'react';
 import type { ESDraft } from '@entities/draft/model/types';
+import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { SidebarDraftItem } from '@widgets/workspace/ui/SidebarDraftItem';
 
 interface SidebarDraftListProps {
@@ -46,23 +47,4 @@ export function SidebarDraftList({
       )}
     </div>
   );
-}
-
-function getCategoryLabel(category: ESDraft['category']): string {
-  switch (category) {
-    case 'gakuchika':
-      return 'ガクチカ';
-    case 'shibou':
-      return '志望動機';
-    case 'pr':
-      return '自己PR';
-    case 'zasetsu':
-      return '困難・挫折';
-    case 'jiku':
-      return '就活軸';
-    case 'future':
-      return '入社後';
-    case 'custom':
-      return '自由記述';
-  }
 }

@@ -36,9 +36,11 @@ describe('draft factories', () => {
   });
 
   it('builds a default draft without reading a clock', () => {
-    expect(buildDefaultDraft('pr', 'draft-2', 100)).toMatchObject({
+    expect(buildDefaultDraft('draft-2', 100)).toMatchObject({
       id: 'draft-2',
-      category: 'pr',
+      category: null,
+      targetCount: null,
+      progressStatus: null,
       createdAt: 100,
       updatedAt: 100,
       content: '',

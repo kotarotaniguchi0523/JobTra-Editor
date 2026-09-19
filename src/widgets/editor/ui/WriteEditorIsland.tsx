@@ -33,7 +33,9 @@ export function WriteEditorIsland() {
   const metrics = calculateMetrics(deferredContent);
 
   // 黄金比バランス計算
-  const ratioBalance = calculateRatioBalance(deferredContent, activeDraft?.targetCount || 400);
+  const ratioBalance = activeDraft?.category
+    ? calculateRatioBalance(deferredContent, activeDraft.targetCount, activeDraft.category)
+    : null;
 
   // 冗長表現削り候補
   const redundancyMatches = detectRedundancies(deferredContent);
@@ -75,7 +77,7 @@ export function WriteEditorIsland() {
   return (
     <div className="mx-auto max-w-4xl space-y-3">
       {/* 1. 漢字・ひらがな黄金比率メーター */}
-      <RatioBalanceMeter balance={ratioBalance} />
+      {ratioBalance && <RatioBalanceMeter balance={ratioBalance} />}
 
       {/* 2. 削りツールバー（候補があるときだけ遅延読み込みで表示） */}
       {redundancyMatches.length > 0 && (
@@ -94,6 +96,7 @@ export function WriteEditorIsland() {
         content={content}
         metrics={metrics}
         deferredContent={deferredContent}
+        category={activeDraft.category}
         onCleanFormatting={handleCleanFormatting}
         onContentCommit={handleContentCommit}
       />

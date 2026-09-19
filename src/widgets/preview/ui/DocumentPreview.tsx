@@ -13,7 +13,7 @@ const LazyExportModal = lazy(() =>
 interface DocumentPreviewProps {
   draft: ESDraft;
   charsNoWs: number;
-  currentTarget: number;
+  currentTarget: number | null;
   onSaveSnapshot: (label: string) => void;
   onRestoreSnapshot: (snap: DraftSnapshot) => void;
   checklistSlot?: React.ReactNode;
@@ -53,7 +53,7 @@ export function DocumentPreview({
               <span>エクスポート (PDF/MD)</span>
             </button>
             <span className="rounded bg-neutral-100 px-2.5 py-1 font-mono text-xs font-medium text-neutral-600 sm:text-sm">
-              {charsNoWs} 文字 / 目標 {currentTarget} 文字
+              {charsNoWs} 文字{currentTarget ? ` / 上限 ${currentTarget} 文字` : ''}
             </span>
           </div>
         </div>

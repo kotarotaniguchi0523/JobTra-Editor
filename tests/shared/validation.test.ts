@@ -54,6 +54,24 @@ describe('Valibot validation boundaries', () => {
         updatedAt: 1,
         tags: [],
       }),
-    ).toMatchObject({ id: 'draft_123', category: 'gakuchika' });
+    ).toMatchObject({ id: 'draft_123', category: 'gakuchika', progressStatus: null });
+  });
+
+  it('カテゴリ・上限・進捗の未選択を永続化データとして許可すること', () => {
+    expect(
+      parseDraft({
+        id: 'draft_unconfigured',
+        title: 'タイトル',
+        companyName: '',
+        category: null,
+        content: '',
+        isBlockMode: false,
+        targetCount: null,
+        progressStatus: null,
+        createdAt: 1,
+        updatedAt: 1,
+        tags: [],
+      }),
+    ).toMatchObject({ category: null, targetCount: null, progressStatus: null });
   });
 });
