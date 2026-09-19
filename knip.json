@@ -15,5 +15,5 @@
     "scripts/**/*.ts",
     "tests/**/*.ts"
   ],
-  "include": ["files", "dependencies", "binaries", "unresolved", "exports", "types"]
+  "include": ["files", "dependencies", "binaries", "unlisted", "unresolved", "exports", "types"]
 }

@@ -102,14 +102,6 @@ export function parseDraftCollection(value: unknown): ESDraft[] | null {
   return result.success ? result.output : null;
 }
 
-export function parseCategory(
-  value: unknown,
-  fallback: ESQuestionCategory = 'gakuchika',
-): ESQuestionCategory {
-  const result = safeParse(CategorySchema, value);
-  return result.success ? result.output : fallback;
-}
-
 export function parseOptionalCategory(value: unknown): ESQuestionCategory | null {
   if (value === '' || value === null || value === undefined) return null;
   const result = safeParse(CategorySchema, value);

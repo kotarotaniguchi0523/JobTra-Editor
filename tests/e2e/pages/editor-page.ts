@@ -42,7 +42,17 @@ export class EditorPage {
   async createDraft(): Promise<void> {
     const countBefore = await this.draftCount();
     const idBefore = new URL(this.page.url()).searchParams.get('id');
-    if (!(await this.newDraftButton.isVisible())) {
+    const buttonBounds = await this.newDraftButton.boundingBox();
+    const viewport = this.page.viewportSize();
+    const isInsideViewport =
+      buttonBounds !== null &&
+      viewport !== null &&
+      buttonBounds.x >= 0 &&
+      buttonBounds.x + buttonBounds.width <= viewport.width &&
+      buttonBounds.y >= 0 &&
+      buttonBounds.y + buttonBounds.height <= viewport.height;
+
+    if (!isInsideViewport) {
       await this.page.getByRole('button', { name: '下書き一覧を開く' }).click();
     }
     await this.newDraftButton.click();

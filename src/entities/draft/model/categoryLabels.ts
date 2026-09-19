@@ -1,6 +1,6 @@
 import type { ESQuestionCategory } from '@entities/draft/model/types';
 
-export const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
+const CATEGORY_LABELS: Record<ESQuestionCategory, string> = {
   gakuchika: 'ガクチカ（学生時代に力を入れたこと）',
   shibou: '志望動機',
   pr: '自己PR',
