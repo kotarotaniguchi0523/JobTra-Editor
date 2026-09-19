@@ -1,5 +1,5 @@
 import React from 'react';
-import { RatioBalanceResult } from '@features/writing-assistance/lib/ratioBalance';
+import type { RatioBalanceResult } from '@features/writing-assistance/model/types';
 import { BarChart3, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 interface RatioBalanceMeterProps {

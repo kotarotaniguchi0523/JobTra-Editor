@@ -1,9 +1,10 @@
 import type { AuditCheck, JapaneseMetrics } from '@features/writing-assistance/model/types';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 import { evaluateCharacterLimit } from '@features/writing-assistance/lib/characterLimit';
 
 export function calculateMetrics(text: string): JapaneseMetrics {
   const totalChars = text.length;
-  const charsNoWhitespace = text.replace(/\s/g, '').length;
+  const charsNoWhitespace = countNonWhitespaceCharacters(text);
   const linesCount = text ? text.split('\n').length : 0;
 
   // Split into sentences using Japanese punctuation (。！？!?)
@@ -43,7 +44,7 @@ export function calculateMetrics(text: string): JapaneseMetrics {
 
 export function auditText(text: string, targetCount: number | null): AuditCheck[] {
   const checks: AuditCheck[] = [];
-  const charsNoWs = text.replace(/\s/g, '').length;
+  const charsNoWs = countNonWhitespaceCharacters(text);
 
   if (!text.trim()) {
     return checks;

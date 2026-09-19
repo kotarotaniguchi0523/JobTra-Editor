@@ -2,11 +2,16 @@ import type { ESDraft } from '@entities/draft/model/types';
 import { cloneDraft } from '@entities/draft/model/draftFactories';
 import { parseDraft } from '@shared/validation/draftSchemas';
 import { canonicalJson } from './canonical-json.js';
-import { mergeJson, resolveMergeConflicts, type MergeChoice } from './merge.js';
+import { mergeJson, resolveMergeConflicts } from './merge.js';
 import { syncStores } from './protocol.js';
 import { createRevision, findMergeBase } from './revision-dag.js';
 import type {
+  DraftConflictResolution,
+  DraftSyncConflict,
+  DraftSyncResult,
+  DraftSyncValue,
   JsonValue,
+  MergeChoice,
   MergeConflict,
   Revision,
   RevisionStore,
@@ -22,28 +27,12 @@ type DeletedDraft = {
   deletedAt: number;
 };
 
-export type DraftSyncValue = JsonValue;
-
-export type DraftSyncConflict = {
-  documentId: string;
-  baseRevisionId?: string;
-  localRevisionId: string;
-  remoteRevisionId: string;
-  headRevisionIds: string[];
-  baseValue?: DraftSyncValue;
-  localValue: DraftSyncValue;
-  remoteValue: DraftSyncValue;
-  provisionalValue: DraftSyncValue;
-  conflicts: MergeConflict[];
-};
-
-export type DraftSyncResult = {
-  summary: SyncSummary;
-  syncedDrafts: ESDraft[];
-  conflicts: DraftSyncConflict[];
-};
-
-export type DraftConflictResolution = Readonly<Record<string, MergeChoice>>;
+export type {
+  DraftConflictResolution,
+  DraftSyncConflict,
+  DraftSyncResult,
+  DraftSyncValue,
+} from './types.js';
 
 export async function syncDrafts(options: {
   drafts: readonly ESDraft[];

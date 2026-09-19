@@ -1,16 +1,5 @@
 import type { ESQuestionCategory } from '@entities/draft/model/types';
-
-export type WritingPhase = 'conclusion' | 'situation' | 'action' | 'result' | 'contribution';
-
-export type WritingProfile = {
-  label: string;
-  ratioLabels: readonly [string, string, string, string];
-  ratios: readonly [number, number, number, number];
-  phases: Record<
-    WritingPhase,
-    { label: string; question: string; tabSuggestion: string; explanation: string }
-  >;
-};
+import type { WritingProfile } from '@features/writing-assistance/model/types';
 
 const profile = (
   label: string,

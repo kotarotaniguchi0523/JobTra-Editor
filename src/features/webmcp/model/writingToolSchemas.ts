@@ -81,6 +81,9 @@ const StarBlocksSchema = strictObject({
   contribution: string(),
 });
 
+export type ToolFailure = InferOutput<typeof ToolFailureSchema>;
+export type DraftSummary = InferOutput<typeof DraftSummarySchema>;
+
 const SelectionSchema = strictObject({
   start: finiteNumber,
   end: finiteNumber,

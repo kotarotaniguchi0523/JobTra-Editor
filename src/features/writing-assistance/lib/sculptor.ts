@@ -5,21 +5,13 @@
  * 外部AIゼロ・完全クライアント完結。
  */
 
+import type { RedundancyMatch } from '@features/writing-assistance/model/types';
+
 interface RedundancyRule {
   id: string;
   pattern: RegExp;
   replacement: string;
   category: 'politeness' | 'weak_verb' | 'filler' | 'passive';
-  label: string;
-}
-
-export interface RedundancyMatch {
-  id: string;
-  startIndex: number;
-  endIndex: number;
-  original: string;
-  suggested: string;
-  charsSaved: number;
   label: string;
 }
 

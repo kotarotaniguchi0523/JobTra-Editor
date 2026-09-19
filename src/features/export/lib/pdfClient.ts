@@ -3,6 +3,7 @@ import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { downloadFile } from '@features/export/lib/exportDownload';
 import { getExportFilename } from '@features/export/lib/exportFilename';
 import { generateEsPdf } from '@features/export/lib/exportPdf';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 export interface PdfExportOptions {
   includeStar?: boolean;
@@ -22,7 +23,7 @@ export async function downloadEsPdf(
   const company = draft.companyName || '';
   const filename = getExportFilename(draft, 'pdf');
 
-  const currentCharCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
+  const currentCharCount = countNonWhitespaceCharacters(draft.content);
   const exportedAt = new Date().toLocaleDateString('ja-JP', {
     year: 'numeric',
     month: 'long',

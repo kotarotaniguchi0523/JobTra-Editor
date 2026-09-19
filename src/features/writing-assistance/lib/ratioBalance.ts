@@ -5,29 +5,8 @@
 
 import type { ESQuestionCategory } from '@entities/draft/model/types';
 import { getWritingProfile } from '@features/writing-assistance/lib/writingProfiles';
-
-interface BlockTarget {
-  name: string;
-  idealRatio: number; // 例: 0.1 (10%)
-  idealChars: number; // 例: 40文字 (400字の場合)
-  actualChars: number;
-  actualRatio: number;
-  status: 'perfect' | 'short' | 'long' | 'empty';
-  feedback: string;
-}
-
-export interface RatioBalanceResult {
-  totalActualChars: number;
-  targetChars: number | null;
-  profileLabel: string;
-  blocks: {
-    conclusion: BlockTarget;
-    situation: BlockTarget;
-    action: BlockTarget;
-    resultAndContribution: BlockTarget;
-  };
-  overallAdvice: string;
-}
+import type { BlockTarget, RatioBalanceResult } from '@features/writing-assistance/model/types';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 /**
  * 本文の文数やキーワードから各パートの文字数を大まかに推計し、
@@ -38,7 +17,7 @@ export function calculateRatioBalance(
   targetCount: number | null,
   category: ESQuestionCategory,
 ): RatioBalanceResult {
-  const charsNoWs = text.replace(/\s+/g, '').length;
+  const charsNoWs = countNonWhitespaceCharacters(text);
   const profile = getWritingProfile(category);
   if (!profile) throw new Error('A writing profile is required for ratio balance.');
   const target = targetCount ? Math.max(100, targetCount) : null;

@@ -1,5 +1,5 @@
 import { startTransition, useSyncExternalStore } from 'react';
-import type { DraftSnapshot, ESDraft } from '@entities/draft/model/types';
+import type { DraftSaveStatus, DraftSnapshot, ESDraft } from '@entities/draft/model/types';
 import { storage } from '@entities/draft/storage/indexedDbStorage';
 import { draftReducer, INITIAL_DRAFT_STATE } from '@entities/draft/model/draftReducer';
 import type { DraftAction, DraftState } from '@entities/draft/model/draftReducer';
@@ -12,7 +12,7 @@ import {
   type SnapshotIdentity,
 } from '@entities/draft/model/draftMutations';
 
-export type DraftSaveStatus = 'idle' | 'saving' | 'saved' | 'error';
+export type { DraftSaveStatus } from '@entities/draft/model/types';
 
 interface DraftStoreState extends DraftState {
   saveStatus: DraftSaveStatus;

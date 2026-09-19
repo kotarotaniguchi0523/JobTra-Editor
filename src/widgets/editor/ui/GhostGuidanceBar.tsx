@@ -1,6 +1,6 @@
 import React from 'react';
 import { Compass, CornerDownLeft } from 'lucide-react';
-import { GhostGuidance } from '@features/writing-assistance/lib/ghostGuidance';
+import type { GhostGuidance } from '@features/writing-assistance/model/types';
 
 interface GhostGuidanceBarProps {
   guidance: GhostGuidance;

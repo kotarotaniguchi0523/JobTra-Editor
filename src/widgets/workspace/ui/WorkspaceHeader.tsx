@@ -11,7 +11,7 @@ import {
   Link2,
 } from 'lucide-react';
 import { CopyCleanButton } from '@widgets/workspace/ui/CopyCleanButton';
-import type { DraftSaveStatus } from '@entities/draft/model/draftStore';
+import type { DraftSaveStatus } from '@entities/draft/model/types';
 
 interface WorkspaceHeaderProps {
   brandSlot?: React.ReactNode;

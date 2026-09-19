@@ -1,7 +1,6 @@
 import React, { useDeferredValue, useState } from 'react';
 import { Plus, Search, Star, HardDrive, Sparkles, ArrowRight } from 'lucide-react';
-import type { ESDraft } from '@entities/draft/model/types';
-import type { DraftSaveStatus } from '@entities/draft/model/draftStore';
+import type { DraftSaveStatus, ESDraft } from '@entities/draft/model/types';
 import { SidebarDraftList } from '@widgets/workspace/ui/SidebarDraftList';
 import { parseSearchQuery } from '@shared/validation/searchParams';
 

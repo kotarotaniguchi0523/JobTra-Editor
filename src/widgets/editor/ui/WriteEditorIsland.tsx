@@ -10,8 +10,8 @@ import {
   detectRedundancies,
   applySculpt,
   applyAllSculpts,
-  type RedundancyMatch,
 } from '@features/writing-assistance/lib/sculptor';
+import type { RedundancyMatch } from '@features/writing-assistance/model/types';
 
 // 削りツールバーは必要な時だけ遅延読み込み
 const LazyChiselToolbar = lazy(() =>

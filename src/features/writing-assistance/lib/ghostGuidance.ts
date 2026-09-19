@@ -5,18 +5,8 @@
  */
 
 import type { ESQuestionCategory } from '@entities/draft/model/types';
-import {
-  getWritingProfile,
-  type WritingPhase,
-} from '@features/writing-assistance/lib/writingProfiles';
-
-export interface GhostGuidance {
-  phase: WritingPhase;
-  phaseLabel: string;
-  question: string;
-  tabSuggestion: string;
-  explanation: string;
-}
+import { getWritingProfile } from '@features/writing-assistance/lib/writingProfiles';
+import type { GhostGuidance, WritingPhase } from '@features/writing-assistance/model/types';
 
 /**
  * テキストとカーソル位置から、現在の執筆フェーズを推定する

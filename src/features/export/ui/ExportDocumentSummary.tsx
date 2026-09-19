@@ -1,11 +1,12 @@
 import type { ESDraft } from '@entities/draft/model/types';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 interface ExportDocumentSummaryProps {
   draft: ESDraft;
 }
 
 function countNonWhitespace(text: string): number {
-  return text.replace(/\s/g, '').length;
+  return countNonWhitespaceCharacters(text);
 }
 
 export function ExportDocumentSummary({ draft }: ExportDocumentSummaryProps) {

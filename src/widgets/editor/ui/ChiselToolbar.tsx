@@ -1,6 +1,6 @@
 import React from 'react';
 import { Scissors, Check, ArrowRight } from 'lucide-react';
-import { RedundancyMatch } from '@features/writing-assistance/lib/sculptor';
+import type { RedundancyMatch } from '@features/writing-assistance/model/types';
 
 interface ChiselToolbarProps {
   matches: RedundancyMatch[];

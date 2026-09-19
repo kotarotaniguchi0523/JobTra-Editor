@@ -3,10 +3,8 @@ import type { ESDraft, DraftSnapshot, StarBlocks } from '@entities/draft/model/t
 import { draftStore } from '@entities/draft/model/draftStore';
 import { auditText, calculateMetrics } from '@features/writing-assistance/lib/analyzer';
 import { calculateRatioBalance } from '@features/writing-assistance/lib/ratioBalance';
-import {
-  detectRedundancies,
-  type RedundancyMatch,
-} from '@features/writing-assistance/lib/sculptor';
+import { detectRedundancies } from '@features/writing-assistance/lib/sculptor';
+import type { RedundancyMatch } from '@features/writing-assistance/model/types';
 import {
   parseAnalyzeWritingInput,
   parseAnalyzeWritingOutput,
@@ -16,34 +14,18 @@ import {
   parseGetWritingContextOutput,
   type AnalyzeWritingOutput,
   type CompareWritingVersionsOutput,
+  type DraftSummary,
   type GetWritingContextOutput,
+  type ToolFailure,
 } from '@features/webmcp/model/writingToolSchemas';
 import { getContentDigest } from '@features/webmcp/lib/contentRevision';
 
 const MAX_TOOL_CONTENT_LENGTH = 8_000;
 const MAX_SELECTION_CONTEXT_LENGTH = 400;
 
-type ToolFailure = {
-  ok: false;
-  error: {
-    code: string;
-    message: string;
-  };
-};
-
 type ToolSuccess<T extends object> = { ok: true } & T;
 
 type WritingToolResult = ToolFailure | ToolSuccess<Record<string, unknown>>;
-
-type DraftSummary = {
-  id: string;
-  title: string;
-  companyName: string;
-  category: ESDraft['category'];
-  targetCount: number | null;
-  updatedAt: number;
-  charsNoWhitespace: number;
-};
 
 type DraftResolution = { draft: ESDraft } | ToolFailure;
 

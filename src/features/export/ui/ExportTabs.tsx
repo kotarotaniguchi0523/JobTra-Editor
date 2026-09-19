@@ -27,7 +27,7 @@ export function ExportTabs({ activeTab, onTabChange }: ExportTabsProps) {
       >
         <FileText className="h-4 w-4 text-amber-600" />
         <span>PDF 出力（ブラウザ内minitype組版）</span>
-        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+        <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-800">
           公式推奨
         </span>
       </button>

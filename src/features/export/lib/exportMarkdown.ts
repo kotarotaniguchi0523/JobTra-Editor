@@ -1,6 +1,7 @@
 import type { ESDraft } from '@entities/draft/model/types';
 import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { parseMarkdownYamlString } from './exportSchemas';
+import { countNonWhitespaceCharacters } from '@shared/lib/text';
 
 export interface MarkdownExportOptions {
   includeStar?: boolean;
@@ -24,7 +25,7 @@ export function generateEsMarkdown(draft: ESDraft, options: MarkdownExportOption
   const company = draft.companyName || (draft as unknown as { company?: string }).company || '';
   const targetCount =
     draft.targetCount ?? (draft as unknown as { targetCharCount?: number }).targetCharCount ?? null;
-  const currentCount = draft.content ? draft.content.replace(/\s/g, '').length : 0;
+  const currentCount = countNonWhitespaceCharacters(draft.content);
   const star =
     draft.starBlocks ||
     (
