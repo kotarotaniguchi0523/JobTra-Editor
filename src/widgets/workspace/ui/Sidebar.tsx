@@ -12,6 +12,7 @@ interface SidebarProps {
   onDeleteDraft: (id: string) => void;
   onDuplicateDraft: (id: string) => void;
   onToggleStar: (id: string) => void;
+  isLoading: boolean;
   saveStatus: DraftSaveStatus;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
@@ -77,6 +78,7 @@ export function Sidebar({
   onDeleteDraft,
   onDuplicateDraft,
   onToggleStar,
+  isLoading,
   saveStatus,
   isMobileOpen,
   onCloseMobile,
@@ -111,6 +113,7 @@ export function Sidebar({
 
       <aside
         id="app-sidebar"
+        aria-busy={isLoading}
         className={`fixed top-0 bottom-0 left-0 z-50 flex w-72 flex-col border-r border-neutral-200 bg-neutral-50/95 transition-transform duration-200 ease-in-out lg:static lg:w-80 lg:translate-x-0 ${
           isMobileOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
         }`}
