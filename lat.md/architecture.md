@@ -44,4 +44,4 @@ React components use PascalCase filenames, processing modules and schemas use ca
 
 The production artifact is static and does not depend on API routes, route handlers, Server Actions, Server Functions, or request-time dynamic fetches.
 
-Browser persistence and browser export are deliberately isolated from build-time RSC code. Optional SQLite-related packages must never become a runtime data source or a client bundle dependency.
+Browser persistence and browser export are deliberately isolated from build-time RSC code. The draft persistence island may load Dexie Cloud only when a public build-time URL is configured; the server tree never owns the database or credentials. Optional SQLite-related packages must never become a runtime data source or a client bundle dependency.

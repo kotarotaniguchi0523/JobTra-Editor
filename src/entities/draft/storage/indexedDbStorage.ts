@@ -6,109 +6,77 @@ import {
   cloneDraft,
 } from '@entities/draft/model/draftFactories';
 import { parseDraft, parseDraftCollection, parseDraftId } from '@shared/validation/draftSchemas';
+import { observeDraftDatabase, openDraftDatabase } from './dexieDraftDatabase';
 
-const DB_NAME = 'es_craft_indexed_db';
-const DB_VERSION = 2;
-const STORE_NAME = 'drafts';
+type DraftStorageObserver = (drafts: ESDraft[]) => void;
+const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
 
 class IndexedDbStorage {
-  private dbPromise: Promise<IDBDatabase> | null = null;
-  private isIndexedDbAvailable: boolean;
+  private dbPromise: ReturnType<typeof openDraftDatabase> | null = null;
+  private readonly isIndexedDbAvailable: boolean;
   private readonly initialDrafts: readonly ESDraft[];
 
   constructor(initialDrafts: readonly ESDraft[]) {
     this.initialDrafts = initialDrafts;
-    this.isIndexedDbAvailable = typeof window !== 'undefined' && 'indexedDB' in window;
+    this.isIndexedDbAvailable = typeof indexedDB !== 'undefined';
   }
 
-  private async openDb(): Promise<IDBDatabase> {
+  private async openDb() {
     if (!this.isIndexedDbAvailable) {
       throw new Error('IndexedDB is not available');
     }
 
-    if (!this.dbPromise) {
-      this.dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
-        const request = window.indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onupgradeneeded = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          const store = db.objectStoreNames.contains(STORE_NAME)
-            ? (event.target as IDBOpenDBRequest).transaction?.objectStore(STORE_NAME)
-            : db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-          if (store) {
-            if (!store.indexNames.contains('updatedAt')) {
-              store.createIndex('updatedAt', 'updatedAt', { unique: false });
-            }
-            if (!store.indexNames.contains('category')) {
-              store.createIndex('category', 'category', { unique: false });
-            }
-            if (!store.indexNames.contains('progressStatus')) {
-              store.createIndex('progressStatus', 'progressStatus', { unique: false });
-            }
-          }
-        };
-
-        request.onsuccess = () => {
-          const db = request.result;
-          resolve(db);
-        };
-
-        request.onerror = () => {
-          reject(request.error);
-        };
-      });
-    }
-
+    this.dbPromise ??= openDraftDatabase();
     return this.dbPromise;
   }
 
-  // Fallback to localStorage if IndexedDB is blocked or throws
+  // Fallback to localStorage if IndexedDB is blocked or throws.
   private getLocalStorageDrafts(): ESDraft[] {
     try {
-      const data = localStorage.getItem(DB_NAME);
+      if (typeof localStorage === 'undefined') return this.initialDrafts.map(cloneDraft);
+      const data = localStorage.getItem(DRAFT_DATABASE_NAME);
       if (data) {
         return parseDraftCollection(JSON.parse(data)) || this.initialDrafts.map(cloneDraft);
       }
-    } catch (e) {
-      console.warn('LocalStorage read error', e);
+    } catch (error) {
+      console.warn('LocalStorage read error', error);
     }
     return this.initialDrafts.map(cloneDraft);
   }
 
   private saveLocalStorageDrafts(drafts: ESDraft[]): void {
     try {
+      if (typeof localStorage === 'undefined') return;
       const validated = parseDraftCollection(drafts);
       if (!validated) {
         console.warn('LocalStorage draft validation failed');
         return;
       }
-      localStorage.setItem(DB_NAME, JSON.stringify(validated));
-    } catch (e) {
-      console.warn('LocalStorage save error', e);
+      localStorage.setItem(DRAFT_DATABASE_NAME, JSON.stringify(validated));
+    } catch (error) {
+      console.warn('LocalStorage save error', error);
     }
+  }
+
+  public subscribe(observer: DraftStorageObserver): () => void {
+    if (!this.isIndexedDbAvailable) return () => undefined;
+
+    return observeDraftDatabase((drafts) => {
+      const validated = parseDraftCollection(drafts);
+      if (!validated) return;
+      validated.sort((a, b) => b.updatedAt - a.updatedAt);
+      observer(validated);
+    });
   }
 
   public async getAllDrafts(): Promise<ESDraft[]> {
     try {
       const db = await this.openDb();
-      return new Promise<ESDraft[]>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.getAll();
-
-        request.onsuccess = () => {
-          const list = parseDraftCollection(request.result) || [];
-          // Sort by updatedAt descending
-          list.sort((a, b) => b.updatedAt - a.updatedAt);
-          resolve(list);
-        };
-
-        request.onerror = () => {
-          reject(request.error);
-        };
-      });
-    } catch (err) {
-      console.warn('IndexedDB unavailable or failed, falling back to LocalStorage', err);
+      const list = parseDraftCollection(await db.drafts.toArray()) || [];
+      list.sort((a, b) => b.updatedAt - a.updatedAt);
+      return list;
+    } catch (error) {
+      console.warn('IndexedDB unavailable or failed, falling back to LocalStorage', error);
       const list = this.getLocalStorageDrafts();
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       return list;
@@ -121,56 +89,25 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      return new Promise<ESDraft | null>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(validId);
-
-        request.onsuccess = () => {
-          resolve(parseDraft(request.result));
-        };
-
-        request.onerror = () => {
-          reject(request.error);
-        };
-      });
+      return parseDraft(await db.drafts.get(validId));
     } catch {
       const drafts = this.getLocalStorageDrafts();
-      return drafts.find((d) => d.id === validId) || null;
+      return drafts.find((draft) => draft.id === validId) || null;
     }
   }
 
   public async saveDraft(draft: ESDraft): Promise<void> {
     const validatedDraft = parseDraft(draft);
-    if (!validatedDraft) {
-      throw new Error('Draft validation failed');
-    }
-
-    const draftToSave = validatedDraft;
+    if (!validatedDraft) throw new Error('Draft validation failed');
 
     try {
       const db = await this.openDb();
-      return new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put(draftToSave);
-
-        request.onsuccess = () => {
-          resolve();
-        };
-
-        request.onerror = () => {
-          reject(request.error);
-        };
-      });
+      await db.drafts.put(validatedDraft);
     } catch {
       const drafts = this.getLocalStorageDrafts();
-      const index = drafts.findIndex((d) => d.id === draftToSave.id);
-      if (index >= 0) {
-        drafts[index] = draftToSave;
-      } else {
-        drafts.unshift(draftToSave);
-      }
+      const index = drafts.findIndex((entry) => entry.id === validatedDraft.id);
+      if (index >= 0) drafts[index] = validatedDraft;
+      else drafts.unshift(validatedDraft);
       this.saveLocalStorageDrafts(drafts);
     }
   }
@@ -181,22 +118,15 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      await new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const existingRequest = store.getAll();
-        existingRequest.onerror = () => reject(existingRequest.error);
-        existingRequest.onsuccess = () => {
-          const nextIds = new Set(validatedDrafts.map((draft) => draft.id));
-          for (const existing of existingRequest.result) {
-            if (!nextIds.has(existing.id)) store.delete(existing.id);
-          }
-          for (const draft of validatedDrafts) store.put(draft);
-        };
-        transaction.oncomplete = () => resolve();
-        transaction.onerror = () => reject(transaction.error);
-        transaction.onabort = () =>
-          reject(transaction.error ?? new Error('draft transaction aborted'));
+      await db.transaction('rw', db.drafts, async () => {
+        const existingDrafts = await db.drafts.toArray();
+        const nextIds = new Set(validatedDrafts.map((draft) => draft.id));
+        const idsToDelete: string[] = [];
+        for (const draft of existingDrafts) {
+          if (!nextIds.has(draft.id)) idsToDelete.push(draft.id);
+        }
+        await db.drafts.bulkDelete(idsToDelete);
+        await db.drafts.bulkPut(validatedDrafts);
       });
     } catch {
       this.saveLocalStorageDrafts(validatedDrafts);
@@ -209,21 +139,9 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      return new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(validId);
-
-        request.onsuccess = () => {
-          resolve();
-        };
-
-        request.onerror = () => {
-          reject(request.error);
-        };
-      });
+      await db.drafts.delete(validId);
     } catch {
-      const drafts = this.getLocalStorageDrafts().filter((d) => d.id !== validId);
+      const drafts = this.getLocalStorageDrafts().filter((draft) => draft.id !== validId);
       this.saveLocalStorageDrafts(drafts);
     }
   }
@@ -238,6 +156,7 @@ class IndexedDbStorage {
     await this.saveDraft(newDraft);
     return newDraft;
   }
+
   public async createDefaultDraft(): Promise<ESDraft> {
     const timestamp = Date.now();
     const newDraft = buildDefaultDraft(

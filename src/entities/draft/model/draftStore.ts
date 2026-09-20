@@ -1,5 +1,6 @@
 import { startTransition, useSyncExternalStore } from 'react';
 import type { DraftSaveStatus, DraftSnapshot, ESDraft } from '@entities/draft/model/types';
+import { areDraftCollectionsEqual } from '@entities/draft/model/draftEquality';
 import { storage } from '@entities/draft/storage/indexedDbStorage';
 import { draftReducer, INITIAL_DRAFT_STATE } from '@entities/draft/model/draftReducer';
 import type { DraftAction, DraftState } from '@entities/draft/model/draftReducer';
@@ -35,6 +36,7 @@ type StoreAction = DraftAction | { type: 'save-status'; status: DraftSaveStatus 
 
 interface SaveController {
   timer: ReturnType<typeof setTimeout> | null;
+  pendingWrites: number;
   requestId: number;
   queue: Promise<void>;
 }
@@ -50,12 +52,24 @@ let state: DraftStoreState = {
 const listeners = new Set<() => void>();
 const saveController: SaveController = {
   timer: null,
+  pendingWrites: 0,
   requestId: 0,
   queue: Promise.resolve(),
 };
 
 let hasBootstrapped = false;
 let bootstrapPromise: Promise<void> | null = null;
+let unsubscribeStorage: (() => void) | null = null;
+let pendingStorageOperations = 0;
+
+async function runStorageOperation<T>(operation: () => Promise<T>): Promise<T> {
+  pendingStorageOperations += 1;
+  try {
+    return await operation();
+  } finally {
+    pendingStorageOperations -= 1;
+  }
+}
 
 function reduce(state: DraftStoreState, action: StoreAction): DraftStoreState {
   if (action.type === 'save-status') {
@@ -80,7 +94,12 @@ function subscribe(listener: () => void): () => void {
 }
 
 function enqueueSave(draft: ESDraft, requestId: number): Promise<void> {
-  const write = saveController.queue.then(() => storage.saveDraft(draft));
+  saveController.pendingWrites += 1;
+  const write = saveController.queue
+    .then(() => runStorageOperation(() => storage.saveDraft(draft)))
+    .finally(() => {
+      saveController.pendingWrites -= 1;
+    });
   saveController.queue = write.catch(() => undefined);
 
   void write.then(
@@ -124,6 +143,30 @@ function scheduleDraftSave(draft: ESDraft): void {
   }, DEBOUNCE_MS);
 }
 
+function subscribeToStorageChanges(): void {
+  if (unsubscribeStorage) return;
+
+  unsubscribeStorage = storage.subscribe((drafts) => {
+    // Ignore writes initiated by this store. Their reducers already contain
+    // the optimistic result, and accepting the live query before the reducer
+    // runs would duplicate create/delete operations.
+    if (
+      state.isLoading ||
+      saveController.timer !== null ||
+      saveController.pendingWrites > 0 ||
+      pendingStorageOperations > 0 ||
+      areDraftCollectionsEqual(state.drafts, drafts)
+    ) {
+      return;
+    }
+
+    const activeDraftId = drafts.some((draft) => draft.id === state.activeDraftId)
+      ? state.activeDraftId
+      : (drafts[0]?.id ?? '');
+    startTransition(() => dispatch({ type: 'loaded', drafts, activeDraftId }));
+  });
+}
+
 function bootstrap(currentUrlId?: string): void {
   if (hasBootstrapped || bootstrapPromise) return;
   hasBootstrapped = true;
@@ -139,6 +182,7 @@ function bootstrap(currentUrlId?: string): void {
       startTransition(() => {
         dispatch({ type: 'loaded', drafts, activeDraftId });
       });
+      subscribeToStorageChanges();
     })
     .catch((error: unknown) => {
       console.error('Failed to load drafts from IndexedDB:', error);
@@ -155,7 +199,7 @@ function selectDraft(id: string): void {
 
 async function createDraft(): Promise<string> {
   try {
-    const newDraft = await storage.createDefaultDraft();
+    const newDraft = await runStorageOperation(() => storage.createDefaultDraft());
     startTransition(() => dispatch({ type: 'add', draft: newDraft }));
     return newDraft.id;
   } catch (error) {
@@ -184,7 +228,7 @@ function updateActiveDraft(partial: Partial<ESDraft>, options: DraftUpdateOption
 
 async function deleteDraft(id: string, nextActiveId: string): Promise<void> {
   try {
-    await storage.deleteDraft(id);
+    await runStorageOperation(() => storage.deleteDraft(id));
     startTransition(() => dispatch({ type: 'remove', id, nextActiveId }));
   } catch (error) {
     console.error('Failed to delete draft:', error);
@@ -193,7 +237,7 @@ async function deleteDraft(id: string, nextActiveId: string): Promise<void> {
 
 async function duplicateDraft(draft: ESDraft): Promise<string> {
   try {
-    const duplicated = await storage.duplicateDraft(draft);
+    const duplicated = await runStorageOperation(() => storage.duplicateDraft(draft));
     startTransition(() => dispatch({ type: 'add', draft: duplicated }));
     return duplicated.id;
   } catch (error) {
@@ -273,7 +317,7 @@ async function applySyncedDrafts(drafts: readonly ESDraft[]): Promise<void> {
     snapshots: draft.snapshots?.map((snapshot) => ({ ...snapshot })),
   }));
   const currentActiveId = state.activeDraftId;
-  await storage.replaceAllDrafts(nextDrafts);
+  await runStorageOperation(() => storage.replaceAllDrafts(nextDrafts));
   if (saveController.requestId !== syncRequestId) return;
   saveController.queue = Promise.resolve();
   startTransition(() => dispatch({ type: 'save-status', status: 'saved' }));
