@@ -24,14 +24,14 @@ const FONT_URLS = [
   {
     fontKey: 'SourceHanSerifJP-Regular' as const,
     url: new URL(
-      '../../node_modules/@minitype/minitype/fonts/SourceHanSerifJP-Regular.otf',
+      '../../../../node_modules/@minitype/minitype/fonts/SourceHanSerifJP-Regular.otf',
       import.meta.url,
     ),
   },
   {
     fontKey: 'SourceHanSerifJP-Bold' as const,
     url: new URL(
-      '../../node_modules/@minitype/minitype/fonts/SourceHanSerifJP-Bold.otf',
+      '../../../../node_modules/@minitype/minitype/fonts/SourceHanSerifJP-Bold.otf',
       import.meta.url,
     ),
   },

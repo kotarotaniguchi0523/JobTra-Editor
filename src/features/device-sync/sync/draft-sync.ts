@@ -1,7 +1,7 @@
 import type { ESDraft } from '@entities/draft/model/types';
 import { cloneDraft } from '@entities/draft/model/draftFactories';
 import { parseDraft } from '@shared/validation/draftSchemas';
-import { canonicalJson } from './canonical-json.js';
+import { areCanonicalJsonEqual } from './canonical-json.js';
 import { mergeJson, resolveMergeConflicts } from './merge.js';
 import { syncStores } from './protocol.js';
 import { createRevision, findMergeBase } from './revision-dag.js';
@@ -379,7 +379,7 @@ function isDeleted(value: DraftSyncValue): value is DeletedDraft {
 }
 
 function sameJson(left: DraftSyncValue, right: DraftSyncValue): boolean {
-  return canonicalJson(left) === canonicalJson(right);
+  return areCanonicalJsonEqual(left, right);
 }
 
 function sameLogicalDraft(left: DraftSyncValue, right: DraftSyncValue): boolean {
@@ -387,10 +387,7 @@ function sameLogicalDraft(left: DraftSyncValue, right: DraftSyncValue): boolean 
   const leftDraft = parseDraft(left);
   const rightDraft = parseDraft(right);
   if (leftDraft === null || rightDraft === null) return sameJson(left, right);
-  return (
-    canonicalJson(stripDraftTimestamps(leftDraft)) ===
-    canonicalJson(stripDraftTimestamps(rightDraft))
-  );
+  return areCanonicalJsonEqual(stripDraftTimestamps(leftDraft), stripDraftTimestamps(rightDraft));
 }
 
 function newerValue(left: DraftSyncValue, right: DraftSyncValue): DraftSyncValue {

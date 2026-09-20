@@ -69,5 +69,10 @@ export default defineConfig(() => {
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
+    build: {
+      // The browser minitype/PDF engine is intentionally loaded only by the
+      // export island; its generated lazy chunk is large by design.
+      chunkSizeWarningLimit: 10_000,
+    },
   };
 });

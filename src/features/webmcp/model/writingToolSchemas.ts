@@ -8,13 +8,23 @@ import {
   optional,
   picklist,
   pipe,
-  safeParse,
   string,
   strictObject,
   union,
   type InferOutput,
 } from 'valibot';
-import { DraftIdSchema } from '@shared/validation/draftSchemas';
+import {
+  DraftIdSchema,
+  ESQuestionCategorySchema,
+  StarBlocksSchema,
+} from '@entities/draft/model/schemas';
+import {
+  AuditCheckSchema,
+  JapaneseMetricsSchema,
+  RatioBalanceSchema,
+  RedundancyMatchSchema,
+} from '@features/writing-assistance/model/schemas';
+import { parseSchema } from '@shared/validation/parse';
 
 const WritingScopeSchema = picklist(['current', 'selection', 'star', 'snapshot'] as const);
 
@@ -38,15 +48,7 @@ export type AnalyzeWritingInput = InferOutput<typeof AnalyzeWritingInputSchema>;
 export type CompareWritingVersionsInput = InferOutput<typeof CompareWritingVersionsInputSchema>;
 
 const finiteNumber = pipe(number(), finite());
-const categorySchema = picklist([
-  'gakuchika',
-  'shibou',
-  'pr',
-  'zasetsu',
-  'jiku',
-  'future',
-  'custom',
-] as const);
+const categorySchema = ESQuestionCategorySchema;
 const starFieldSchema = picklist([
   'conclusion',
   'situation',
@@ -71,14 +73,6 @@ const DraftSummarySchema = strictObject({
   targetCount: nullable(finiteNumber),
   updatedAt: finiteNumber,
   charsNoWhitespace: finiteNumber,
-});
-
-const StarBlocksSchema = strictObject({
-  conclusion: string(),
-  situation: string(),
-  action: string(),
-  result: string(),
-  contribution: string(),
 });
 
 export type ToolFailure = InferOutput<typeof ToolFailureSchema>;
@@ -148,66 +142,6 @@ const GetWritingContextOutputSchema = union([
   SnapshotWritingContextOutputSchema,
 ]);
 
-const JapaneseMetricsSchema = strictObject({
-  totalChars: finiteNumber,
-  charsNoWhitespace: finiteNumber,
-  linesCount: finiteNumber,
-  sentenceCount: finiteNumber,
-  avgSentenceLength: finiteNumber,
-  kanjiCount: finiteNumber,
-  hiraganaCount: finiteNumber,
-  katakanaCount: finiteNumber,
-  kanjiRatio: finiteNumber,
-  longestSentenceLength: finiteNumber,
-});
-
-const AuditCheckSchema = strictObject({
-  id: string(),
-  title: string(),
-  status: picklist(['pass', 'warning', 'info'] as const),
-  message: string(),
-  detail: optional(string()),
-  replacement: optional(
-    strictObject({
-      original: string(),
-      suggested: string(),
-    }),
-  ),
-});
-
-const RatioBlockSchema = strictObject({
-  name: string(),
-  idealRatio: finiteNumber,
-  idealChars: finiteNumber,
-  actualChars: finiteNumber,
-  actualRatio: finiteNumber,
-  status: picklist(['perfect', 'short', 'long', 'empty'] as const),
-  feedback: string(),
-});
-
-const RatioBalanceSchema = strictObject({
-  totalActualChars: finiteNumber,
-  targetChars: nullable(finiteNumber),
-  profileLabel: string(),
-  blocks: strictObject({
-    conclusion: RatioBlockSchema,
-    situation: RatioBlockSchema,
-    action: RatioBlockSchema,
-    resultAndContribution: RatioBlockSchema,
-  }),
-  overallAdvice: string(),
-});
-
-const RedundancyMatchSchema = strictObject({
-  id: string(),
-  startIndex: finiteNumber,
-  endIndex: finiteNumber,
-  original: string(),
-  suggested: string(),
-  charsSaved: finiteNumber,
-  label: string(),
-});
-
 const StarStructureSchema = strictObject({
   available: boolean(),
   completedBlocks: array(starFieldSchema),
@@ -272,20 +206,17 @@ export type AnalyzeWritingOutput = InferOutput<typeof AnalyzeWritingOutputSchema
 export type CompareWritingVersionsOutput = InferOutput<typeof CompareWritingVersionsOutputSchema>;
 
 export function parseGetWritingContextInput(value: unknown): GetWritingContextInput | null {
-  const result = safeParse(GetWritingContextInputSchema, value);
-  return result.success ? result.output : null;
+  return parseSchema(GetWritingContextInputSchema, value);
 }
 
 export function parseAnalyzeWritingInput(value: unknown): AnalyzeWritingInput | null {
-  const result = safeParse(AnalyzeWritingInputSchema, value);
-  return result.success ? result.output : null;
+  return parseSchema(AnalyzeWritingInputSchema, value);
 }
 
 export function parseCompareWritingVersionsInput(
   value: unknown,
 ): CompareWritingVersionsInput | null {
-  const result = safeParse(CompareWritingVersionsInputSchema, value);
-  return result.success ? result.output : null;
+  return parseSchema(CompareWritingVersionsInputSchema, value);
 }
 
 /**
@@ -294,18 +225,15 @@ export function parseCompareWritingVersionsInput(
  * execute boundary while remaining compatible with the current browser type.
  */
 export function parseGetWritingContextOutput(value: unknown): GetWritingContextOutput | null {
-  const result = safeParse(GetWritingContextOutputSchema, value);
-  return result.success ? result.output : null;
+  return parseSchema(GetWritingContextOutputSchema, value);
 }
 
 export function parseAnalyzeWritingOutput(value: unknown): AnalyzeWritingOutput | null {
-  const result = safeParse(AnalyzeWritingOutputSchema, value);
-  return result.success ? result.output : null;
+  return parseSchema(AnalyzeWritingOutputSchema, value);
 }
 
 export function parseCompareWritingVersionsOutput(
   value: unknown,
 ): CompareWritingVersionsOutput | null {
-  const result = safeParse(CompareWritingVersionsOutputSchema, value);
-  return result.success ? result.output : null;
+  return parseSchema(CompareWritingVersionsOutputSchema, value);
 }

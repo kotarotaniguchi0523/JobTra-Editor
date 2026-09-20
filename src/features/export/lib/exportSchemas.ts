@@ -1,4 +1,5 @@
-import { maxLength, pipe, safeParse, string, transform, trim } from 'valibot';
+import { maxLength, pipe, string, transform, trim } from 'valibot';
+import { parseSchema, parseSchemaOr } from '@shared/validation/parse';
 
 const ExportFilenamePartSchema = pipe(
   string(),
@@ -19,11 +20,10 @@ const MarkdownYamlStringSchema = pipe(
 );
 
 export function parseExportFilenamePart(value: unknown, fallback: string): string {
-  const result = safeParse(ExportFilenamePartSchema, value);
-  return result.success && result.output ? result.output : fallback;
+  const parsed = parseSchema(ExportFilenamePartSchema, value);
+  return parsed || fallback;
 }
 
 export function parseMarkdownYamlString(value: unknown, fallback = ''): string {
-  const result = safeParse(MarkdownYamlStringSchema, value);
-  return result.success ? result.output : fallback;
+  return parseSchemaOr(MarkdownYamlStringSchema, value, fallback);
 }

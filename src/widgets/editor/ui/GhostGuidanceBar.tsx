@@ -1,13 +1,8 @@
 import React from 'react';
 import { Compass, CornerDownLeft } from 'lucide-react';
-import type { GhostGuidance } from '@features/writing-assistance/model/types';
+import type { GhostGuidanceProps } from '@widgets/editor/ui/types';
 
-interface GhostGuidanceBarProps {
-  guidance: GhostGuidance;
-  onInsertSuggestion: (phrase: string) => void;
-}
-
-export const GhostGuidanceBar: React.FC<GhostGuidanceBarProps> = ({
+export const GhostGuidanceBar: React.FC<GhostGuidanceProps> = ({
   guidance,
   onInsertSuggestion,
 }) => {
