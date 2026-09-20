@@ -44,6 +44,11 @@
    - 下書き・revision DAGは各端末のIndexedDBに保持し、共通祖先からの3-way mergeと競合選択をブラウザ内で実行。
    - アプリ独自の実行時サーバー、クラウドDB、ファイルダウンロードは不要。WebRTCの接続確立に公開シグナリング網を利用しますが、原稿データはP2P DataChannelで送ります。
 
+8. **任意の Dexie Cloud 同期**
+   - `VITE_DEXIE_CLOUD_SYNC_URL` を設定した静的デプロイでは、既存の `es_craft_indexed_db` を Dexie Cloud と同期できます。
+   - アプリ用の API サーバーは不要ですが、Dexie Cloud の管理サービスとブラウザからの実行時通信は必要です。未設定時は従来の完全ローカル動作を維持します。
+   - 同期テーブルは既存のドラフト ID をそのまま使い、認証は Dexie Cloud のブラウザ側ログイン（OTP/OAuth）に委ねます。秘密鍵やカスタムトークン取得処理は静的バンドルに含めません。
+
 ---
 
 ## 🛠 技術スタック
@@ -100,6 +105,16 @@
 ```bash
 npm ci
 ```
+
+### Dexie Cloud を有効にする場合
+
+Dexie Cloud の管理画面または `npx dexie-cloud create` で DB を用意し、公開 DB URL をビルド時環境変数に指定します。
+
+```bash
+VITE_DEXIE_CLOUD_SYNC_URL=https://<your-db>.dexie.cloud npm run build
+```
+
+URL が空の場合はクラウド同期を行いません。サービスワーカーは使用せず、アプリが開いている間は WebSocket、オフライン中は IndexedDB のキューで同期します。アプリ用サーバー秘密情報を `VITE_` 変数に入れないでください。
 
 ### 開発サーバー起動
 

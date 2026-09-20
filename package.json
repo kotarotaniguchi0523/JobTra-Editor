@@ -26,6 +26,8 @@
     "@minitype/minitype": "0.1.6",
     "@tailwindcss/vite": "^4.1.14",
     "@zxing/browser": "0.2.1",
+    "dexie": "4.4.6",
+    "dexie-cloud-addon": "4.4.15",
     "idb": "8.0.2",
     "lucide-react": "^0.546.0",
     "node-diff3": "3.2.1",

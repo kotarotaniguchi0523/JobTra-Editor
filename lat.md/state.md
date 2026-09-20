@@ -10,7 +10,9 @@ The URL owns shareable selection state such as the active draft id; [[src/shared
 
 ## Persistence boundary
 
-[[src/entities/draft/storage/indexedDbStorage.ts]] is the only persistence adapter for drafts and falls back to localStorage when IndexedDB is unavailable.
+[[src/entities/draft/storage/indexedDbStorage.ts]] is the only persistence adapter for drafts and falls back to localStorage when IndexedDB is unavailable. The adapter uses [[src/entities/draft/storage/dexieDraftDatabase.ts]] so an optional public Dexie Cloud URL can synchronize the same IndexedDB records without changing the local state owner.
+
+Dexie Cloud is opt-in at build time through `VITE_DEXIE_CLOUD_SYNC_URL`. Without that URL the app stays local-only; with it, the managed Dexie Cloud service handles authenticated incremental sync while the static app remains free of an application API server. `nameSuffix: false` preserves the existing database name and allows migration of records already stored by the raw IndexedDB adapter.
 
 All loaded and stored data crosses the Valibot schemas in [[src/shared/validation/draftSchemas.ts]]. Persistence is browser-only and asynchronous, so it is never required for the static build to render.
 
