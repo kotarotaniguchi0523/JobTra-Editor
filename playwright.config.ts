@@ -25,6 +25,8 @@ export default defineConfig({
     },
   ],
   webServer: {
+    // Exercise the same static output that is deployed. The build entry exits
+    // after writing all files, so preview readiness is deterministic in CI.
     command: `pnpm run build && pnpm run preview --host 127.0.0.1 --port 4173`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
