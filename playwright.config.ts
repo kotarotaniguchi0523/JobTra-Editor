@@ -25,7 +25,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm run build && pnpm run preview --host 127.0.0.1 --port 4173`,
+    // Static output is validated by its own CI job. Use the RSC dev server
+    // for browser flows so readiness does not depend on the build lifecycle.
+    command: `pnpm run dev --host 127.0.0.1 --port 4173`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
