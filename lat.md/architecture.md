@@ -6,13 +6,13 @@ The application is a build-time React Server Components tree with browser-only i
 
 Static pages, navigation, guidance, labels, and layout composition belong to Server Components and are rendered by FUNSTACK Static during the build.
 
-The root boundary is [[src/app/Root.tsx]], and route composition starts at [[src/pages/page.tsx]]. The build entry [[src/app/build.ts]] is a release/build concern, not a runtime server or a CI build job.
+The root boundary is [[src/app/Root.tsx]], and workspace route composition starts at [[src/pages/(workspace)/page.tsx]]. The build entry [[src/app/build.ts]] is a release/build concern, not a runtime server or a CI build job.
 
 ## Client islands
 
 Client Components are limited to browser interaction, DOM integration, local pending UI, and access to browser persistence APIs.
 
-The current islands are [[src/app/runtime/DraftRuntime.tsx]], [[src/widgets/editor/ui/WriteEditorIsland.tsx]], [[src/widgets/preview/ui/PreviewIsland.tsx]], [[src/widgets/structure/ui/StructureIsland.tsx]], [[src/widgets/workspace/ui/WorkspaceClientShell.tsx]], and the writing-only [[src/features/webmcp/ui/WebMcpIsland.tsx]]. Static content is passed through them by composition instead of being reimplemented inside a client subtree.
+The current islands are [[src/app/runtime/DraftRuntime.tsx]], [[src/widgets/editor/ui/WriteEditorIsland.tsx]], [[src/widgets/preview/ui/PreviewIsland.tsx]], [[src/widgets/structure/ui/StructureIsland.tsx]], the workspace leaves under [[src/widgets/workspace/ui/WorkspaceInteractionProvider.tsx]], and the writing-only [[src/features/webmcp/ui/WebMcpIsland.tsx]]. Static content is passed through them by composition instead of being reimplemented inside a client subtree.
 
 Leaf DOM behavior stays below those islands: [[src/widgets/editor/ui/DeferredTextarea.tsx]] owns textarea sizing and cursor integration, and the workspace header progressively removes labels and static links before controls can collide at narrow desktop widths.
 
@@ -20,7 +20,15 @@ Leaf DOM behavior stays below those islands: [[src/widgets/editor/ui/DeferredTex
 
 Interactive shells receive static Server Component content through children or slots so that a browser feature does not pull an entire page into the client bundle.
 
-Workspace, preview, structure, audit, and handbook static content remains in the corresponding `rsc/` components under `src/widgets`, including [[src/widgets/workspace/rsc/WorkspaceLayout.tsx]]. Interaction wrappers are kept in adjacent `ui/` files and own only their browser behavior.
+Workspace, preview, structure, audit, and handbook static content remains in the corresponding `rsc/` components under `src/widgets`, including [[src/widgets/workspace/rsc/WorkspaceLayout.tsx]], [[src/widgets/workspace/rsc/WorkspaceFrame.tsx]], and [[src/widgets/workspace/rsc/WorkspaceHeaderFrame.tsx]]. The workspace layout supplies these Server Component frames with client leaves such as [[src/widgets/workspace/ui/WorkspaceSidebarIsland.tsx]] and [[src/widgets/workspace/ui/WorkspaceContentIsland.tsx]]; route-provided RSC slots remain server-owned.
+
+The browser-only draft bootstrap is scoped to [[src/pages/(workspace)/layout.tsx]], so marketing and guide routes use only the static root layout. Optional handbook, audit, export, and device-sync panels are mounted on demand by [[src/widgets/workspace/ui/WorkspaceAuxiliaryPanels.tsx]] rather than prefetching hidden deferred payloads on every workspace page.
+
+## RSC boundary regression
+
+The boundary regression test verifies that static workspace geometry stays server-owned and that DraftRuntime is not mounted by the root layout.
+
+The test is maintained at [[tests/architecture/rscBoundary.test.ts]] so a future refactor cannot silently restore the former client-owned shell.
 
 ## Feature-slice layout
 
