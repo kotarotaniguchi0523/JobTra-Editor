@@ -1,5 +1,5 @@
 import React from 'react';
-import { HardDrive, Sparkles, BookOpen, ArrowRight } from 'lucide-react';
+import { HardDrive, Sparkles, BookOpen, ArrowRight, Cloud } from 'lucide-react';
 
 /**
  * SidebarFooter - React Server Component (RSC)
@@ -29,6 +29,18 @@ export function SidebarFooter() {
         <div className="flex items-center gap-1.5">
           <BookOpen className="h-3.5 w-3.5 text-neutral-600" />
           <span>推敲ハンドブック</span>
+        </div>
+        <ArrowRight className="h-3 w-3 text-neutral-400" />
+      </a>
+
+      <a
+        href="/guide/dexie-cloud"
+        className="flex items-center justify-between rounded-md border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-700 shadow-2xs transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+        title="個人Dexie Cloudの作成と別端末同期の設定手順"
+      >
+        <div className="flex items-center gap-1.5">
+          <Cloud className="h-3.5 w-3.5 text-sky-600" />
+          <span>クラウド同期ガイド</span>
         </div>
         <ArrowRight className="h-3 w-3 text-neutral-400" />
       </a>

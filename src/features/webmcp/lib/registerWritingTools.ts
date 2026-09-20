@@ -1,5 +1,6 @@
 import type { WebMCP } from 'webmcp-types';
 import { writingTools } from '@features/webmcp/lib/writingTools';
+import { tutorialTools } from '@features/webmcp/lib/tutorialTools';
 
 function isModelContext(value: unknown): value is WebMCP.ModelContext {
   return (
@@ -29,7 +30,9 @@ export async function registerWritingTools(signal: AbortSignal): Promise<boolean
   const modelContext = getModelContext();
   if (!modelContext || signal.aborted) return false;
 
-  await Promise.all(writingTools.map((tool) => modelContext.registerTool(tool, { signal })));
+  await Promise.all(
+    [...writingTools, ...tutorialTools].map((tool) => modelContext.registerTool(tool, { signal })),
+  );
 
   return !signal.aborted;
 }
