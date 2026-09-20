@@ -2,13 +2,7 @@ import type { ESDraft } from '@entities/draft/model/types';
 import { getCategoryLabel } from '@entities/draft/model/categoryLabels';
 import { parseMarkdownYamlString } from './exportSchemas';
 import { countNonWhitespaceCharacters } from '@shared/lib/text';
-
-export interface MarkdownExportOptions {
-  includeStar?: boolean;
-  includeAuditSummary?: boolean;
-  includeFrontmatter?: boolean;
-  exportedAt: string;
-}
+import type { MarkdownExportOptions } from '@features/export/model/types';
 
 /**
  * 下書きデータから構造化されたMarkdownテキストを生成する

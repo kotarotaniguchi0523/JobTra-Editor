@@ -1,5 +1,6 @@
 import { diff3Merge } from 'node-diff3';
-import { canonicalJson } from './canonical-json.js';
+import { areCanonicalJsonEqual } from './canonical-json.js';
+import { cloneJsonValue, isJsonRecord } from './json.js';
 import type { JsonValue, MergeChoice, MergeConflict, MergeResult } from './types.js';
 
 export type { MergeChoice } from './types.js';
@@ -23,7 +24,7 @@ export function resolveMergeConflicts<T extends JsonValue>(
   conflicts: readonly MergeConflict[],
   choices: Readonly<Record<string, MergeChoice>>,
 ): T {
-  let resolved: JsonValue = cloneJson(provisional);
+  let resolved: JsonValue = cloneJsonValue(provisional);
   for (const conflict of conflicts) {
     const choice = choices[conflict.path] ?? 'local';
     const selected = conflict[choice];
@@ -31,7 +32,7 @@ export function resolveMergeConflicts<T extends JsonValue>(
       if (selected === undefined) {
         throw new Error('root conflict cannot resolve to a missing value');
       }
-      resolved = cloneJson(selected);
+      resolved = cloneJsonValue(selected);
       continue;
     }
     resolved = setJsonPath(resolved, conflict.path, selected);
@@ -70,7 +71,7 @@ function mergeValue(
     return lines.join('\n');
   }
 
-  if (isObject(base) && isObject(local) && isObject(remote)) {
+  if (isMergeObject(base) && isMergeObject(local) && isMergeObject(remote)) {
     const keys = new Set([...Object.keys(base), ...Object.keys(local), ...Object.keys(remote)]);
     const output: Record<string, JsonValue> = {};
     for (const key of [...keys].sort()) {
@@ -96,31 +97,21 @@ function mergeValue(
   return local;
 }
 
-function isObject(value: MergeInput): value is Record<string, JsonValue> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
+function isMergeObject(value: MergeInput): value is Record<string, JsonValue> {
+  return value !== MISSING && isJsonRecord(value);
 }
 
 function readObjectValue(value: MergeInput, key: string): MergeInput {
-  return isObject(value) && key in value ? (value[key] as JsonValue) : MISSING;
+  return isMergeObject(value) && key in value ? (value[key] as JsonValue) : MISSING;
 }
 
 function sameJson(left: MergeInput, right: MergeInput): boolean {
   if (left === MISSING || right === MISSING) return left === right;
-  return canonicalJson(left) === canonicalJson(right);
+  return areCanonicalJsonEqual(left, right);
 }
 
 function toJsonValue(value: MergeInput): JsonValue | undefined {
   return value === MISSING ? undefined : value;
-}
-
-function cloneJson(value: JsonValue): JsonValue {
-  if (Array.isArray(value)) return value.map(cloneJson);
-  if (value !== null && typeof value === 'object') {
-    const clone: { [key: string]: JsonValue } = {};
-    for (const [key, nested] of Object.entries(value)) clone[key] = cloneJson(nested);
-    return clone;
-  }
-  return value;
 }
 
 function setJsonPath(
@@ -134,7 +125,7 @@ function setJsonPath(
     throw new Error(`cannot resolve nested conflict at ${path}`);
   }
 
-  const root = cloneJson(value) as { [key: string]: JsonValue };
+  const root = cloneJsonValue(value) as { [key: string]: JsonValue };
   let cursor: { [key: string]: JsonValue } = root;
   for (const segment of segments.slice(0, -1)) {
     const nested = cursor[segment];
@@ -145,6 +136,6 @@ function setJsonPath(
   }
   const leaf = segments[segments.length - 1];
   if (replacement === undefined) delete cursor[leaf];
-  else cursor[leaf] = cloneJson(replacement);
+  else cursor[leaf] = cloneJsonValue(replacement);
   return root;
 }

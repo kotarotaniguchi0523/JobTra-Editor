@@ -4,11 +4,7 @@ import { downloadFile } from '@features/export/lib/exportDownload';
 import { getExportFilename } from '@features/export/lib/exportFilename';
 import { generateEsPdf } from '@features/export/lib/exportPdf';
 import { countNonWhitespaceCharacters } from '@shared/lib/text';
-
-export interface PdfExportOptions {
-  includeStar?: boolean;
-  includeMeta?: boolean;
-}
+import type { PdfExportOptions } from '@features/export/model/types';
 
 /**
  * サーバーを経由せず、ブラウザ内で就活ESのPDFを生成してダウンロードする。

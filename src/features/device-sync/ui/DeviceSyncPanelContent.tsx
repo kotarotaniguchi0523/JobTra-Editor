@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { AlertTriangle, Check, Copy, Link2, Loader2, QrCode, X } from 'lucide-react';
 import type { DraftSyncConflict, MergeChoice } from '@features/device-sync/sync/types';
+import { conflictChoiceKey } from '@features/device-sync/ui/conflictChoice';
 
 export type SyncPanelMode = 'idle' | 'host' | 'scan' | 'syncing' | 'complete' | 'error';
 
@@ -240,7 +241,7 @@ function ConflictView(props: DeviceSyncPanelContentProps & { conflict: DraftSync
       <ul className="space-y-2">
         {conflict.conflicts.map((item, index) => {
           const path = item.path || '(ドキュメント全体)';
-          const selected = props.choices[choiceKey(conflict, item.path)] ?? 'local';
+          const selected = props.choices[conflictChoiceKey(conflict, item.path)] ?? 'local';
           return (
             <li
               key={`${conflict.documentId}-${item.path}-${index}`}
@@ -353,8 +354,4 @@ function ChoiceButton(props: { active: boolean; label: string; onClick: () => vo
       {props.label}
     </button>
   );
-}
-
-function choiceKey(conflict: DraftSyncConflict, path: string): string {
-  return `${conflict.documentId}:${path}`;
 }

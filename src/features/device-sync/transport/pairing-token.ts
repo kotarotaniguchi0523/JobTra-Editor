@@ -1,4 +1,5 @@
 import type { JsonValue } from '../sync/types.js';
+import { isJsonRecord } from '../sync/json.js';
 
 export type PairingToken = {
   version: 1;
@@ -57,7 +58,7 @@ export function decodePairingToken(encoded: string, now: number): PairingToken {
   if (!encoded) throw new Error('pairing token is empty');
   try {
     const value = JSON.parse(new TextDecoder().decode(decodeBytes(encoded))) as JsonValue;
-    if (!isObject(value)) throw new Error('pairing token must be an object');
+    if (!isJsonRecord(value)) throw new Error('pairing token must be an object');
     const token = value as unknown as PairingToken;
     validateShape(token);
     if (token.expiresAt <= now) throw new Error('pairing token has expired');
@@ -79,10 +80,6 @@ function validateShape(token: PairingToken): void {
   ) {
     throw new Error('pairing token shape is invalid');
   }
-}
-
-function isObject(value: JsonValue): value is { [key: string]: JsonValue } {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
 function encodeBytes(bytes: Uint8Array): string {

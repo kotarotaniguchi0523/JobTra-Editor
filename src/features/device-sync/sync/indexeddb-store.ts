@@ -1,5 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import { revisionIdOf } from './canonical-json.js';
+import { topologicalOrder } from './topological-order.js';
 import type { JsonValue, Revision, RevisionHeads, RevisionStore } from './types.js';
 
 type SyncDb<T extends JsonValue> = {
@@ -135,23 +136,4 @@ async function validateRevisions<T extends JsonValue>(
       }
     }
   }
-}
-
-function topologicalOrder<T extends JsonValue>(
-  incoming: ReadonlyMap<string, Revision<T>>,
-): Revision<T>[] {
-  const pending = new Map(incoming);
-  const ordered: Revision<T>[] = [];
-  while (pending.size > 0) {
-    const ready = [...pending.values()].filter((revision) =>
-      revision.parents.every((parent) => !pending.has(parent)),
-    );
-    if (ready.length === 0) throw new Error('revision graph contains a cycle');
-    ready.sort((left, right) => left.id.localeCompare(right.id));
-    for (const revision of ready) {
-      pending.delete(revision.id);
-      ordered.push(revision);
-    }
-  }
-  return ordered;
 }

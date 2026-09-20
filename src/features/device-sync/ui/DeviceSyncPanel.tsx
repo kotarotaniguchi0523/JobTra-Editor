@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { draftActions, draftStore } from '@entities/draft/model/draftStore';
 import { resolveDraftConflict, syncDrafts } from '@features/device-sync/sync/draft-sync';
@@ -22,7 +22,11 @@ import {
   DeviceSyncPanelContent,
   type SyncPanelMode,
 } from '@features/device-sync/ui/DeviceSyncPanelContent';
-import { QrScanner } from '@features/device-sync/ui/QrScanner';
+import { conflictChoiceKey } from '@features/device-sync/ui/conflictChoice';
+
+const LazyQrScanner = lazy(() =>
+  import('@features/device-sync/ui/QrScanner').then((module) => ({ default: module.QrScanner })),
+);
 
 const SYNC_APP_ID = 'jobtra-editor-device-sync-v1';
 const PAIRING_TTL_MS = 2 * 60 * 1_000;
@@ -166,7 +170,7 @@ export function DeviceSyncPanel(props: { onClose: () => void }) {
     if (store === null) return;
     const resolution: Record<string, MergeChoice> = {};
     for (const item of conflict.conflicts) {
-      resolution[item.path] = choices[choiceKey(conflict, item.path)] ?? 'local';
+      resolution[item.path] = choices[conflictChoiceKey(conflict, item.path)] ?? 'local';
     }
     try {
       const resolved = await resolveDraftConflict({
@@ -241,29 +245,29 @@ export function DeviceSyncPanel(props: { onClose: () => void }) {
       });
     },
     onChooseConflict: (conflict: DraftSyncConflict, path: string, choice: MergeChoice) =>
-      setChoices((current) => ({ ...current, [choiceKey(conflict, path)]: choice })),
+      setChoices((current) => ({ ...current, [conflictChoiceKey(conflict, path)]: choice })),
     scannerSlot:
       mode === 'scan' ? (
-        <QrScanner
-          onToken={(value) => {
-            joinWithEncodedToken(value).catch((error: unknown) => {
+        <Suspense
+          fallback={<div className="aspect-square animate-pulse rounded-lg bg-neutral-100" />}
+        >
+          <LazyQrScanner
+            onToken={(value) => {
+              joinWithEncodedToken(value).catch((error: unknown) => {
+                setErrorMessage(toErrorMessage(error));
+                setMode('error');
+              });
+            }}
+            onError={(error) => {
               setErrorMessage(toErrorMessage(error));
               setMode('error');
-            });
-          }}
-          onError={(error) => {
-            setErrorMessage(toErrorMessage(error));
-            setMode('error');
-          }}
-        />
+            }}
+          />
+        </Suspense>
       ) : undefined,
   };
 
   return <DeviceSyncPanelContent {...contentProps} />;
-}
-
-function choiceKey(conflict: DraftSyncConflict, path: string): string {
-  return `${conflict.documentId}:${path}`;
 }
 
 function toErrorMessage(error: unknown): string {

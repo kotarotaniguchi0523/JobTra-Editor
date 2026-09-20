@@ -6,13 +6,13 @@ import {
   pipe,
   record,
   regex,
-  safeParse,
   string,
   transform,
   trim,
   type InferOutput,
 } from 'valibot';
 import { DraftIdSchema, parseDraftId } from '@shared/validation/draftSchemas';
+import { parseSchemaOr } from '@shared/validation/parse';
 
 const SearchQuerySchema = pipe(
   string(),
@@ -32,8 +32,7 @@ const SearchParamsSchema = record(SearchParamKeySchema, SearchParamValueSchema);
 const WorkspaceSearchParamsSchema = object({ id: optional(DraftIdSchema) });
 
 export function parseSearchQuery(value: unknown): string {
-  const result = safeParse(SearchQuerySchema, value);
-  return result.success ? result.output : '';
+  return parseSchemaOr(SearchQuerySchema, value, '');
 }
 
 function toSearchParamRecord(input: URLSearchParams | string): Record<string, string> {
@@ -44,15 +43,13 @@ function toSearchParamRecord(input: URLSearchParams | string): Record<string, st
 function parseSearchParams(
   input: URLSearchParams | string,
 ): InferOutput<typeof SearchParamsSchema> {
-  const result = safeParse(SearchParamsSchema, toSearchParamRecord(input));
-  return result.success ? result.output : {};
+  return parseSchemaOr(SearchParamsSchema, toSearchParamRecord(input), {});
 }
 
 export function parseWorkspaceSearchParams(
   input: URLSearchParams | string,
 ): InferOutput<typeof WorkspaceSearchParamsSchema> {
-  const result = safeParse(WorkspaceSearchParamsSchema, parseSearchParams(input));
-  return result.success ? result.output : {};
+  return parseSchemaOr(WorkspaceSearchParamsSchema, parseSearchParams(input), {});
 }
 
 export function withDraftId(input: URLSearchParams | string, id: unknown): URLSearchParams {

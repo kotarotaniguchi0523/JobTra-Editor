@@ -19,6 +19,7 @@ import {
   type ToolFailure,
 } from '@features/webmcp/model/writingToolSchemas';
 import { getContentDigest } from '@features/webmcp/lib/contentRevision';
+import { summarizeBoundedContent } from '@features/webmcp/lib/contentSummary';
 
 const MAX_TOOL_CONTENT_LENGTH = 8_000;
 const MAX_SELECTION_CONTEXT_LENGTH = 400;
@@ -51,6 +52,17 @@ function assertStructuredOutput<T>(
   const parsed = parse(value);
   if (parsed !== null) return parsed;
   throw new Error(`${toolName} returned an invalid structured output.`);
+}
+
+async function executeStructuredTool<T>(options: {
+  toolName: string;
+  rawInput: unknown;
+  signal: AbortSignal;
+  execute: (rawInput: unknown, signal: AbortSignal) => Promise<unknown>;
+  parse: (value: unknown) => T | null;
+}): Promise<T> {
+  const result = await options.execute(options.rawInput, options.signal);
+  return assertStructuredOutput(options.toolName, options.parse, result);
 }
 
 function resolveDraft(draftId: string | undefined): DraftResolution {
@@ -165,16 +177,16 @@ function findSnapshot(draft: ESDraft, snapshotId: string): DraftSnapshot | null 
 }
 
 function summarizeSnapshot(snapshot: DraftSnapshot) {
-  const content = truncateToolContent(snapshot.content);
+  const content = summarizeBoundedContent(snapshot.content, MAX_TOOL_CONTENT_LENGTH);
 
   return {
     id: snapshot.id,
     label: snapshot.label,
     timestamp: snapshot.timestamp,
-    charsNoWhitespace: calculateMetrics(snapshot.content).charsNoWhitespace,
-    contentDigest: getContentDigest(snapshot.content),
-    content: content.text,
-    contentTruncated: content.truncated,
+    charsNoWhitespace: content.charsNoWhitespace,
+    contentDigest: content.contentDigest,
+    content: content.content,
+    contentTruncated: content.contentTruncated,
   };
 }
 
@@ -365,9 +377,8 @@ async function compareWritingVersions(
     );
   }
 
-  const currentContent = truncateToolContent(draft.content);
-  const snapshotContent = truncateToolContent(snapshot.content);
-  const currentMetrics = calculateMetrics(draft.content);
+  const currentContent = summarizeBoundedContent(draft.content, MAX_TOOL_CONTENT_LENGTH);
+  const snapshotContent = summarizeBoundedContent(snapshot.content, MAX_TOOL_CONTENT_LENGTH);
   const comparison = summarizeTextDifference(snapshot.content, draft.content);
 
   assertNotAborted(signal);
@@ -376,19 +387,19 @@ async function compareWritingVersions(
     ok: true,
     draft: summarizeDraft(draft),
     current: {
-      contentDigest: getContentDigest(draft.content),
-      charsNoWhitespace: currentMetrics.charsNoWhitespace,
-      content: currentContent.text,
-      contentTruncated: currentContent.truncated,
+      contentDigest: currentContent.contentDigest,
+      charsNoWhitespace: currentContent.charsNoWhitespace,
+      content: currentContent.content,
+      contentTruncated: currentContent.contentTruncated,
     },
     snapshot: {
       id: snapshot.id,
       label: snapshot.label,
       timestamp: snapshot.timestamp,
-      charsNoWhitespace: calculateMetrics(snapshot.content).charsNoWhitespace,
-      contentDigest: getContentDigest(snapshot.content),
-      content: snapshotContent.text,
-      contentTruncated: snapshotContent.truncated,
+      charsNoWhitespace: snapshotContent.charsNoWhitespace,
+      contentDigest: snapshotContent.contentDigest,
+      content: snapshotContent.content,
+      contentTruncated: snapshotContent.contentTruncated,
     },
     comparison,
   };
@@ -398,28 +409,39 @@ async function executeGetWritingContext(
   rawInput: unknown,
   signal: AbortSignal,
 ): Promise<GetWritingContextOutput> {
-  const result = await getWritingContext(rawInput, signal);
-  return assertStructuredOutput('get_writing_context', parseGetWritingContextOutput, result);
+  return executeStructuredTool({
+    toolName: 'get_writing_context',
+    rawInput,
+    signal,
+    execute: getWritingContext,
+    parse: parseGetWritingContextOutput,
+  });
 }
 
 async function executeAnalyzeWriting(
   rawInput: unknown,
   signal: AbortSignal,
 ): Promise<AnalyzeWritingOutput> {
-  const result = await analyzeWriting(rawInput, signal);
-  return assertStructuredOutput('analyze_writing', parseAnalyzeWritingOutput, result);
+  return executeStructuredTool({
+    toolName: 'analyze_writing',
+    rawInput,
+    signal,
+    execute: analyzeWriting,
+    parse: parseAnalyzeWritingOutput,
+  });
 }
 
 async function executeCompareWritingVersions(
   rawInput: unknown,
   signal: AbortSignal,
 ): Promise<CompareWritingVersionsOutput> {
-  const result = await compareWritingVersions(rawInput, signal);
-  return assertStructuredOutput(
-    'compare_writing_versions',
-    parseCompareWritingVersionsOutput,
-    result,
-  );
+  return executeStructuredTool({
+    toolName: 'compare_writing_versions',
+    rawInput,
+    signal,
+    execute: compareWritingVersions,
+    parse: parseCompareWritingVersionsOutput,
+  });
 }
 
 const draftIdInputSchema = {

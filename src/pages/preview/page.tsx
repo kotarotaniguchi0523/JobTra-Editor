@@ -8,15 +8,7 @@ import { SubmissionChecklist } from '@widgets/preview/rsc/SubmissionChecklist';
 import { HeaderBrand, HeaderStaticLinks } from '@widgets/workspace/rsc/HeaderBrand';
 import { PreviewIsland } from '@widgets/preview/ui/PreviewIsland';
 import { WorkspaceLayout } from '@widgets/workspace/rsc/WorkspaceLayout';
-
-function LoadingSpinner() {
-  return (
-    <div className="space-y-2 p-8 text-center text-xs text-neutral-400">
-      <div className="mx-auto h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-neutral-900" />
-      <p>ガイドを読み込み中...</p>
-    </div>
-  );
-}
+import { HandbookLoadingFallback } from '@widgets/handbook/rsc/HandbookLoadingFallback';
 
 /**
  * Preview Page (/preview) for Funstack Static File-System Routing
@@ -36,7 +28,7 @@ export default function PreviewPage() {
         </Suspense>
       }
       handbookSlot={
-        <Suspense fallback={<LoadingSpinner />}>
+        <Suspense fallback={<HandbookLoadingFallback />}>
           {defer(<ESHandbook />, { name: 'ESHandbook' })}
         </Suspense>
       }

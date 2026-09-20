@@ -5,12 +5,8 @@ interface ExportDocumentSummaryProps {
   draft: ESDraft;
 }
 
-function countNonWhitespace(text: string): number {
-  return countNonWhitespaceCharacters(text);
-}
-
 export function ExportDocumentSummary({ draft }: ExportDocumentSummaryProps) {
-  const currentCharCount = countNonWhitespace(draft.content || '');
+  const currentCharCount = countNonWhitespaceCharacters(draft.content || '');
 
   return (
     <section

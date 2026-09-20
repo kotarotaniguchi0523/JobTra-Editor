@@ -26,6 +26,8 @@ Workspace, preview, structure, audit, and handbook static content remains in the
 
 Source files are grouped by ownership: domain entities live in `entities`, user capabilities in `features`, composed screen parts in `widgets`, route composition in `pages`, application wiring in `app`, and cross-feature primitives in `shared`.
 
+Shared types and pure helpers follow the same ownership rule: domain and protocol types stay in the owning entity or feature `model/` slice, UI props stay with their widget, and `shared/` contains only behavior that has no feature-specific meaning. Runtime types are derived from the Valibot schema that owns their boundary instead of being duplicated in consumers.
+
 React components use PascalCase filenames, processing modules and schemas use camelCase filenames, feature directories use kebab-case, and framework-reserved `page.tsx` is the only deliberate component-name exception. Tests mirror the same ownership tree under [[tests/shared/validation.test.ts]].
 
 `konsistent.json` makes these boundaries executable: a widget or feature cannot place a React component directly at its slice root, and route `page.tsx`/`layout.tsx` names remain explicit framework exceptions.

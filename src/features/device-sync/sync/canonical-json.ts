@@ -1,12 +1,17 @@
 import type { JsonValue } from './types.js';
+import { isJsonRecord } from './json.js';
 
-export function canonicalJson(value: JsonValue): string {
+function canonicalJson(value: JsonValue): string {
   return JSON.stringify(sortJson(value));
+}
+
+export function areCanonicalJsonEqual(left: JsonValue, right: JsonValue): boolean {
+  return canonicalJson(left) === canonicalJson(right);
 }
 
 function sortJson(value: JsonValue): JsonValue {
   if (Array.isArray(value)) return value.map(sortJson);
-  if (value !== null && typeof value === 'object') {
+  if (isJsonRecord(value)) {
     return Object.fromEntries(
       Object.entries(value)
         .sort(([left], [right]) => left.localeCompare(right))
