@@ -32,6 +32,7 @@ export class EditorPage {
 
   async waitForReady(): Promise<void> {
     await expect(this.page.locator('#app-top-header')).toBeVisible();
+    await expect(this.sidebar).toHaveAttribute('aria-busy', 'false');
   }
 
   async draftCount(): Promise<number> {
