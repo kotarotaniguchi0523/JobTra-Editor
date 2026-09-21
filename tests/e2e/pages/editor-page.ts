@@ -203,6 +203,12 @@ function isExpectedTransportWarning(issue: string): boolean {
     return true;
   }
 
+  // Firefox reports this deprecated feature-detection probe from the bundled
+  // dependency; it is not an application or hydration warning.
+  if (issue.includes('InstallTrigger is deprecated and will be removed in the future.')) {
+    return true;
+  }
+
   // FUNSTACK emits this preload for the static RSC payload. WebKit reports it
   // as unused when a test keeps the page open, even though hydration succeeds.
   return (
