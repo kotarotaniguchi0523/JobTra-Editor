@@ -82,6 +82,8 @@ export function WorkspaceDraftBar({
               <button
                 key={t}
                 type="button"
+                data-target-count-option="true"
+                aria-pressed={activeDraft.targetCount === t}
                 onClick={() => onUpdateDraft({ targetCount: t })}
                 className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-xs font-medium transition-colors ${
                   activeDraft.targetCount === t
@@ -94,12 +96,10 @@ export function WorkspaceDraftBar({
             ))}
             <button
               type="button"
+              aria-label="文字数上限を未設定にする"
+              aria-pressed={false}
               onClick={() => onUpdateDraft({ targetCount: null })}
-              className={`cursor-pointer rounded border px-2 py-0.5 font-mono text-xs font-medium transition-colors ${
-                activeDraft.targetCount === null
-                  ? 'border-neutral-900 bg-neutral-900 text-white'
-                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100'
-              }`}
+              className="cursor-pointer rounded border border-neutral-200 bg-white px-2 py-0.5 font-mono text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
             >
               未設定
             </button>

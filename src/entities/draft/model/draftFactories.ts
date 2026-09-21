@@ -74,6 +74,35 @@ export function buildDefaultDraft(id: string, timestamp: number): ESDraft {
   };
 }
 
+/**
+ * Clears metadata written by versions that created a blank draft as
+ * ガクチカ/400字. Only an untouched blank draft is eligible, so an existing
+ * draft with user content or edits keeps its intentionally selected metadata.
+ */
+export function normalizeLegacyDefaultDraft(draft: ESDraft): ESDraft {
+  const isUntouchedBlankDraft =
+    draft.title === '新規エントリーシート' &&
+    draft.companyName === '' &&
+    draft.content === '' &&
+    draft.category !== null &&
+    draft.targetCount !== null &&
+    draft.isBlockMode === false &&
+    draft.tags.length === 0 &&
+    !draft.starred &&
+    (!draft.starBlocks || Object.values(draft.starBlocks).every((value) => value === '')) &&
+    (!draft.snapshots || draft.snapshots.length === 0) &&
+    draft.createdAt === draft.updatedAt;
+
+  if (!isUntouchedBlankDraft) return draft;
+
+  return {
+    ...draft,
+    category: null,
+    targetCount: null,
+    progressStatus: null,
+  };
+}
+
 export function cloneDraft(draft: ESDraft): ESDraft {
   return {
     ...draft,

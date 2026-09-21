@@ -1,10 +1,11 @@
 import Dexie, { liveQuery, type Table, type Subscription } from 'dexie';
 import dexieCloudAddon from 'dexie-cloud-addon';
 import type { ESDraft } from '@entities/draft/model/types';
+import { normalizeLegacyDefaultDraft } from '@entities/draft/model/draftFactories';
 import { getDexieCloudDatabaseUrl } from './dexieCloudConfig';
 
 const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
-const DRAFT_DATABASE_VERSION = 2;
+const DRAFT_DATABASE_VERSION = 3;
 const DRAFT_STORE_NAME = 'drafts';
 
 const DRAFT_STORE_SCHEMA = 'id, updatedAt, category, progressStatus';
@@ -17,12 +18,28 @@ type DraftDatabaseObserver = (drafts: ESDraft[]) => void;
 
 function createDraftDatabase(): DraftDatabase {
   const db = new Dexie(DRAFT_DATABASE_NAME, { addons: [dexieCloudAddon] }) as DraftDatabase;
-  db.version(DRAFT_DATABASE_VERSION).stores({
+  db.version(DRAFT_DATABASE_VERSION - 1).stores({
     // The table is synced without '@' so existing application-generated IDs
     // remain valid. Dexie Cloud marks every declared application table for
     // sync; '@' is reserved for its generated ID prefix policy.
     [DRAFT_STORE_NAME]: DRAFT_STORE_SCHEMA,
   });
+
+  // Version 2 could already contain the old blank-draft defaults. Normalize
+  // only untouched drafts during the upgrade; user-authored content is kept.
+  db.version(DRAFT_DATABASE_VERSION)
+    .stores({
+      [DRAFT_STORE_NAME]: DRAFT_STORE_SCHEMA,
+    })
+    .upgrade((transaction) =>
+      transaction
+        .table(DRAFT_STORE_NAME)
+        .toCollection()
+        .modify((draft: ESDraft) => {
+          const normalized = normalizeLegacyDefaultDraft(draft);
+          if (normalized !== draft) Object.assign(draft, normalized);
+        }),
+    );
 
   const databaseUrl = getDexieCloudDatabaseUrl();
   if (databaseUrl && typeof window !== 'undefined') {

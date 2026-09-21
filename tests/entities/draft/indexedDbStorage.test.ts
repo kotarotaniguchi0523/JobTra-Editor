@@ -7,6 +7,11 @@ import { normalizeDexieCloudDatabaseUrl } from '@entities/draft/storage/dexieClo
 
 const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
 const migratedDraft = buildDefaultDraft('legacy-draft', 1_000);
+const legacyConfiguredDraft = {
+  ...buildDefaultDraft('legacy-configured-draft', 1_100),
+  category: 'gakuchika' as const,
+  targetCount: 400,
+};
 
 function deleteDatabase(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -25,6 +30,7 @@ function createLegacyDatabase(): Promise<void> {
       store.createIndex('updatedAt', 'updatedAt');
       store.createIndex('category', 'category');
       store.createIndex('progressStatus', 'progressStatus');
+      store.put(legacyConfiguredDraft);
     };
     request.onsuccess = () => {
       const transaction = request.result.transaction('drafts', 'readwrite');
@@ -54,6 +60,41 @@ describe('IndexedDB draft storage', () => {
     const draft = await storage.getDraft(migratedDraft.id);
 
     expect(draft).toEqual(migratedDraft);
+  });
+
+  it('normalizes legacy blank drafts without changing authored drafts', async () => {
+    const draft = await storage.getDraft(legacyConfiguredDraft.id);
+
+    expect(draft).toMatchObject({ category: null, targetCount: null, progressStatus: null });
+    expect(await draftDatabase.drafts.get(legacyConfiguredDraft.id)).toMatchObject({
+      category: null,
+      targetCount: null,
+      progressStatus: null,
+    });
+  });
+
+  it('creates drafts with no category or character limit selected', async () => {
+    const draft = await storage.createDefaultDraft();
+
+    expect(draft).toMatchObject({ category: null, targetCount: null, progressStatus: null });
+    await storage.deleteDraft(draft.id);
+  });
+
+  it('keeps metadata selected by a user immediately after creation', async () => {
+    const draft = await storage.createDefaultDraft();
+    const configuredDraft = {
+      ...draft,
+      category: 'gakuchika' as const,
+      targetCount: 400,
+    };
+
+    await storage.saveDraft(configuredDraft);
+
+    expect(await storage.getDraft(draft.id)).toMatchObject({
+      category: 'gakuchika',
+      targetCount: 400,
+    });
+    await storage.deleteDraft(draft.id);
   });
 
   it('persists writes and publishes live database changes', async () => {

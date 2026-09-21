@@ -4,12 +4,15 @@ import {
   buildDraftId,
   buildDuplicatedDraft,
   cloneDraft,
+  normalizeLegacyDefaultDraft,
 } from '@entities/draft/model/draftFactories';
 import { parseDraft, parseDraftCollection, parseDraftId } from '@shared/validation/draftSchemas';
 import { observeDraftDatabase, openDraftDatabase } from './dexieDraftDatabase';
 
 type DraftStorageObserver = (drafts: ESDraft[]) => void;
 const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
+const LOCAL_STORAGE_MIGRATION_VERSION = '3';
+const LOCAL_STORAGE_MIGRATION_KEY = `${DRAFT_DATABASE_NAME}:migration`;
 
 class IndexedDbStorage {
   private dbPromise: ReturnType<typeof openDraftDatabase> | null = null;
@@ -35,9 +38,25 @@ class IndexedDbStorage {
     try {
       if (typeof localStorage === 'undefined') return this.initialDrafts.map(cloneDraft);
       const data = localStorage.getItem(DRAFT_DATABASE_NAME);
-      if (data) {
-        return parseDraftCollection(JSON.parse(data)) || this.initialDrafts.map(cloneDraft);
+      if (!data) {
+        localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
+        return this.initialDrafts.map(cloneDraft);
       }
+
+      const drafts = parseDraftCollection(JSON.parse(data));
+      if (!drafts) {
+        localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
+        return this.initialDrafts.map(cloneDraft);
+      }
+
+      if (localStorage.getItem(LOCAL_STORAGE_MIGRATION_KEY) !== LOCAL_STORAGE_MIGRATION_VERSION) {
+        const normalized = drafts.map(normalizeLegacyDefaultDraft);
+        this.saveLocalStorageDrafts(normalized);
+        localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
+        return normalized;
+      }
+
+      return drafts;
     } catch (error) {
       console.warn('LocalStorage read error', error);
     }
@@ -62,7 +81,7 @@ class IndexedDbStorage {
     if (!this.isIndexedDbAvailable) return () => undefined;
 
     return observeDraftDatabase((drafts) => {
-      const validated = parseDraftCollection(drafts);
+      const validated = parseDraftCollection(drafts)?.map(normalizeLegacyDefaultDraft);
       if (!validated) return;
       validated.sort((a, b) => b.updatedAt - a.updatedAt);
       observer(validated);
