@@ -5,7 +5,10 @@ import {
   buildDuplicatedDraft,
   buildSnapshotId,
   createInitialSampleDrafts,
+  isUntouchedLegacySampleDraft,
+  migrateLegacyDrafts,
   normalizeLegacyDefaultDraft,
+  removeUntouchedLegacySampleDrafts,
 } from '@entities/draft/model/draftFactories';
 import type { ESDraft } from '@entities/draft/model/types';
 
@@ -64,6 +67,15 @@ describe('draft factories', () => {
     expect(
       normalizeLegacyDefaultDraft({ ...legacyDraft, content: 'ユーザーが入力した本文' }),
     ).toMatchObject({ category: 'gakuchika', targetCount: 400 });
+  });
+
+  it('removes only untouched seeded samples during migration', () => {
+    const sample = createInitialSampleDrafts(1_000_000)[0];
+
+    expect(isUntouchedLegacySampleDraft(sample)).toBe(true);
+    expect(migrateLegacyDrafts([sample])).toEqual([]);
+    expect(removeUntouchedLegacySampleDrafts([sample])).toEqual([]);
+    expect(migrateLegacyDrafts([{ ...sample, title: '編集したサンプル' }])).toHaveLength(1);
   });
 
   it('deeply clones nested draft data when duplicating', () => {

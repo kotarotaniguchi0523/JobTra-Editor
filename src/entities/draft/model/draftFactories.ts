@@ -103,6 +103,49 @@ export function normalizeLegacyDefaultDraft(draft: ESDraft): ESDraft {
   };
 }
 
+/**
+ * Identifies only the untouched sample records seeded by the pre-v3 app.
+ * Matching the complete sample payload preserves a sample after any user edit.
+ */
+export function isUntouchedLegacySampleDraft(draft: ESDraft): boolean {
+  const template = SAMPLE_DRAFT_TEMPLATES.find((candidate) => candidate.id === draft.id);
+  if (!template) return false;
+
+  const hasSameTags =
+    draft.tags.length === template.tags.length &&
+    draft.tags.every((tag, index) => tag === template.tags[index]);
+
+  return (
+    draft.title === template.title &&
+    draft.companyName === template.companyName &&
+    draft.category === template.category &&
+    draft.targetCount === template.targetCount &&
+    draft.progressStatus === template.progressStatus &&
+    draft.isBlockMode === template.isBlockMode &&
+    draft.content === template.content &&
+    hasSameTags &&
+    draft.starred === template.starred &&
+    !draft.starBlocks &&
+    (!draft.snapshots || draft.snapshots.length === 0)
+  );
+}
+
+/** Applies the one-time cleanup used by both IndexedDB and localStorage migrations. */
+export function migrateLegacyDrafts(drafts: readonly ESDraft[]): ESDraft[] {
+  return removeUntouchedLegacySampleDrafts(drafts).map(normalizeLegacyDefaultDraft);
+}
+
+/**
+ * Hides only untouched pre-v3 sample records on normal reads.
+ *
+ * Normal reads must not call `normalizeLegacyDefaultDraft`: a newly created
+ * draft can legitimately still have equal `createdAt`/`updatedAt` timestamps
+ * when the user selects its first category and character limit immediately.
+ */
+export function removeUntouchedLegacySampleDrafts(drafts: readonly ESDraft[]): ESDraft[] {
+  return drafts.filter((draft) => !isUntouchedLegacySampleDraft(draft));
+}
+
 export function cloneDraft(draft: ESDraft): ESDraft {
   return {
     ...draft,
