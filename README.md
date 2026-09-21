@@ -186,7 +186,7 @@ AI 向けの原文は [`public/ai/jobtra-tutorial.ja.md`](public/ai/jobtra-tutor
 
 ### 前提条件
 
-- Node.js `^22.22.2` / `^24.15.0` / `>=26.0.0`
+- Node.js `^24.15.0` / `>=26.0.0`
 - npm `12.0.2`
 
 ### インストール
