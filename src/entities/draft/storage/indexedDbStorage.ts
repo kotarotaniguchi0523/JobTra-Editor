@@ -64,7 +64,7 @@ class IndexedDbStorage {
     if (!this.isIndexedDbAvailable) return () => undefined;
 
     return observeDraftDatabase((drafts) => {
-      const validated = parseDraftCollection(drafts);
+      const validated = parseDraftCollection(drafts)?.map(normalizeLegacyDefaultDraft);
       if (!validated) return;
       validated.sort((a, b) => b.updatedAt - a.updatedAt);
       observer(validated);
