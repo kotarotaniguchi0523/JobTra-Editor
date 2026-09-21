@@ -4,6 +4,7 @@ import {
   buildDraftId,
   buildDuplicatedDraft,
   cloneDraft,
+  normalizeLegacyDefaultDraft,
 } from '@entities/draft/model/draftFactories';
 import { parseDraft, parseDraftCollection, parseDraftId } from '@shared/validation/draftSchemas';
 import { observeDraftDatabase, openDraftDatabase } from './dexieDraftDatabase';
@@ -36,7 +37,8 @@ class IndexedDbStorage {
       if (typeof localStorage === 'undefined') return this.initialDrafts.map(cloneDraft);
       const data = localStorage.getItem(DRAFT_DATABASE_NAME);
       if (data) {
-        return parseDraftCollection(JSON.parse(data)) || this.initialDrafts.map(cloneDraft);
+        const drafts = parseDraftCollection(JSON.parse(data));
+        return drafts?.map(normalizeLegacyDefaultDraft) || this.initialDrafts.map(cloneDraft);
       }
     } catch (error) {
       console.warn('LocalStorage read error', error);
@@ -72,7 +74,9 @@ class IndexedDbStorage {
   public async getAllDrafts(): Promise<ESDraft[]> {
     try {
       const db = await this.openDb();
-      const list = parseDraftCollection(await db.drafts.toArray()) || [];
+      const list = (parseDraftCollection(await db.drafts.toArray()) || []).map(
+        normalizeLegacyDefaultDraft,
+      );
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       return list;
     } catch (error) {
@@ -89,7 +93,8 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      return parseDraft(await db.drafts.get(validId));
+      const draft = parseDraft(await db.drafts.get(validId));
+      return draft ? normalizeLegacyDefaultDraft(draft) : null;
     } catch {
       const drafts = this.getLocalStorageDrafts();
       return drafts.find((draft) => draft.id === validId) || null;

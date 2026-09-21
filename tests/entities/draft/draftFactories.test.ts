@@ -5,6 +5,7 @@ import {
   buildDuplicatedDraft,
   buildSnapshotId,
   createInitialSampleDrafts,
+  normalizeLegacyDefaultDraft,
 } from '@entities/draft/model/draftFactories';
 import type { ESDraft } from '@entities/draft/model/types';
 
@@ -45,6 +46,24 @@ describe('draft factories', () => {
       updatedAt: 100,
       content: '',
     });
+  });
+
+  it('clears category and target count only on untouched legacy defaults', () => {
+    const legacyDraft: ESDraft = {
+      ...buildDefaultDraft('legacy-default', 100),
+      category: 'gakuchika',
+      targetCount: 400,
+    };
+
+    expect(normalizeLegacyDefaultDraft(legacyDraft)).toMatchObject({
+      category: null,
+      targetCount: null,
+      progressStatus: null,
+    });
+
+    expect(
+      normalizeLegacyDefaultDraft({ ...legacyDraft, content: 'ユーザーが入力した本文' }),
+    ).toMatchObject({ category: 'gakuchika', targetCount: 400 });
   });
 
   it('deeply clones nested draft data when duplicating', () => {

@@ -8,6 +8,8 @@ export class EditorPage {
   readonly draftTitle: Locator;
   readonly draftCategory: Locator;
   readonly draftProgress: Locator;
+  readonly targetCountOptions: Locator;
+  readonly clearTargetCountButton: Locator;
   readonly body: Locator;
   readonly searchInput: Locator;
   readonly focusSentenceButton: Locator;
@@ -24,6 +26,10 @@ export class EditorPage {
     this.draftTitle = page.locator('#draft-title-input');
     this.draftCategory = page.locator('#draft-category-select');
     this.draftProgress = page.locator('#draft-progress-status');
+    this.targetCountOptions = page.locator('button[data-target-count-option]');
+    this.clearTargetCountButton = page.getByRole('button', {
+      name: '文字数上限を未設定にする',
+    });
     this.body = page.locator('#es-body-textarea');
     this.searchInput = page.locator('#sidebar-search-input');
     this.focusSentenceButton = page.getByTitle('いまカーソルがある一文のみをハイライト');
@@ -76,6 +82,10 @@ export class EditorPage {
     await expect(this.draftTitle).toHaveValue('新規エントリーシート');
     await expect(this.draftCategory).toHaveValue('');
     await expect(this.draftProgress).toHaveValue('');
+    await expect(this.clearTargetCountButton).toHaveAttribute('aria-pressed', 'false');
+    await expect(
+      this.page.locator('button[data-target-count-option][aria-pressed="true"]'),
+    ).toHaveCount(0);
     await expect(this.body).toBeVisible();
     await expect.poll(() => this.draftCount()).toBe(countBefore + 1);
   }
