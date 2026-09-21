@@ -1,5 +1,3 @@
-import type { BrowserFontData } from '@minitype/minitype';
-
 export interface ExportPdfOptions {
   title: string;
   company?: string;
@@ -18,51 +16,6 @@ export interface ExportPdfOptions {
   };
   includeStar?: boolean;
   includeMeta?: boolean;
-}
-
-const FONT_URLS = [
-  {
-    fontKey: 'SourceHanSerifJP-Regular' as const,
-    url: new URL(
-      '../../../../node_modules/@minitype/minitype/fonts/SourceHanSerifJP-Regular.otf',
-      import.meta.url,
-    ),
-  },
-  {
-    fontKey: 'SourceHanSerifJP-Bold' as const,
-    url: new URL(
-      '../../../../node_modules/@minitype/minitype/fonts/SourceHanSerifJP-Bold.otf',
-      import.meta.url,
-    ),
-  },
-] satisfies ReadonlyArray<{
-  fontKey: BrowserFontData['fontKey'];
-  url: URL;
-}>;
-
-let browserFontsPromise: Promise<BrowserFontData[]> | undefined;
-
-async function loadBrowserFonts(): Promise<BrowserFontData[]> {
-  if (!browserFontsPromise) {
-    browserFontsPromise = Promise.all(
-      FONT_URLS.map(async ({ fontKey, url }) => {
-        const response = await fetch(url);
-        if (!response.ok) {
-          throw new Error(`PDFフォントの読み込みに失敗しました (${response.status})`);
-        }
-
-        return {
-          fontKey,
-          data: await response.arrayBuffer(),
-        };
-      }),
-    ).catch((error: unknown) => {
-      browserFontsPromise = undefined;
-      throw error;
-    });
-  }
-
-  return browserFontsPromise;
 }
 
 /**
@@ -151,7 +104,7 @@ export function buildEsPdfMarkdown(options: ExportPdfOptions): string {
 export async function generateEsPdf(options: ExportPdfOptions): Promise<Uint8Array> {
   const [{ minitype, mdString }, fonts] = await Promise.all([
     import('@minitype/minitype'),
-    loadBrowserFonts(),
+    import('./browserFonts').then(({ loadBrowserFonts }) => loadBrowserFonts()),
   ]);
   const { blocks } = mdString(buildEsPdfMarkdown(options));
   const document = minitype(

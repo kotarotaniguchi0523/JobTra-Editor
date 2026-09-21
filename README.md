@@ -51,12 +51,98 @@
 
 ---
 
+## 📘 利用チュートリアル
+
+### 1. 初回利用
+
+1. 「新規作成」で下書きを作ります。
+2. タイトル、企業名・設問テーマを入力します。
+3. 必要に応じて設問カテゴリ、上限字数、進捗を選びます。初期状態は未選択です。
+4. 本文を書き始めると、文字数、構成バランス、文章上の注意点が更新されます。
+5. 入力内容はブラウザの IndexedDB に自動保存されます。
+
+### 2. 下書きの検索と整理
+
+- サイドバーの検索欄で、タイトル・企業名・本文を横断検索できます。
+- カテゴリフィルターは単一選択で、「すべて」「未分類」「ガクチカ」「志望動機」「自己PR」「困難・挫折」「就活の軸」「入社後」「自由記述」を切り替えられます。
+- 「重要」フィルターではスターを付けた下書きだけを表示します。
+- 下書きの作成、選択、複製、スター付け、削除に対応しています。
+
+### 3. 執筆支援
+
+- **ゴーストガイダンス**: 文脈に応じた接続詞や次の一文の候補を表示します。
+- **フォーカス・センテンス**: カーソルのある一文だけを強調し、その文の文字数を表示します。
+- **タイプライター視線固定**: 入力中の行を画面中央付近に保ちます。
+- **書式整理**: 行末空白や連続改行を整理します。
+- **削りツール**: 冗長表現を候補として示し、個別または一括で削除できます。
+- **文字数・監査**: 上限字数、一文の長さ、曖昧表現、過剰敬語、冗長表現を確認できます。
+
+### 4. 問題構成と STAR 構成
+
+「STAR構成」タブでは、次の5項目に分けて内容を整理できます。
+
+- 結論
+- 状況・課題
+- 行動
+- 成果
+- 貢献・再現性
+
+構成比率メーターで行動・成果に十分な文字数を使えているか確認し、「本文エディタへ反映して執筆へ」で本文へ反映します。カテゴリを変更すると、そのカテゴリに対応した構成指標へ切り替わります。
+
+### 5. プレビュー、レビュー、履歴
+
+- 「プレビュー」で提出前の見た目を確認します。
+- 提出前チェックリストで、設問への回答、主体性、具体性、誤字、敬語、論理の流れを確認します。
+- 推敲ハンドブックで STAR 法、文字数配分、書面マナー、採点基準を確認できます。
+- スナップショットを保存すると、過去の推敲段階を比較・復元できます。
+
+### 6. エクスポートと提出
+
+プレビューまたはヘッダーの「エクスポート」から、Markdown または PDF を生成できます。
+
+- **Markdown**: YAML メタデータ、本文、STAR 構成メモ、推敲メモを含めて `.md` として出力できます。
+- **PDF**: 日本語組版をブラウザ内で実行し、企業名・文字数・作成日・STAR メモの有無を選べます。
+- **提出用にコピー**: 行末空白と不要な改行を整理してクリップボードへコピーします。
+
+本文はエクスポート時にアプリ用サーバーへ送信されません。
+
+### 7. QR コード端末同期
+
+1. 「端末同期」を開き、送信側で「QRを発行する」を押します。
+2. 受信側で「QRを読み取る」を押します。
+3. カメラが使えない場合は、一時トークンを手入力します。
+4. 同期中は両方の画面を開いたままにします。
+5. 競合が発生した場合は、項目ごとにこの端末・相手の端末のどちらを残すか選択します。
+
+QR は短時間で失効する一時鍵で、本文は同期リレーへ保存されません。接続時だけ WebRTC DataChannel で端末間転送します。
+
+### 8. 個人 Dexie Cloud 同期
+
+個人 Dexie Cloud を使う場合は、[Dexie Cloud 設定ガイド](/guide/dexie-cloud)を開いてください。自分のデータベース URL と公開 Origin を設定し、PC とスマートフォンで同じ URL・認証を使用します。URL を設定しない場合はローカル IndexedDB のみで動作します。
+
+### 9. AI / WebMCP チュートリアル
+
+対応ブラウザの AI は WebMCP からチュートリアルを取得できます。
+
+- `get_jobtra_tutorial`: 初回利用、執筆、レビュー、同期の説明
+- `get_jobtra_cloud_setup_guide`: 個人 Dexie Cloud の設定説明
+- `apply_tutorial_example`: ユーザー確認後に例文を入力
+- `get_writing_context`: 本文、選択範囲、STAR 構成を取得
+- `analyze_writing`: 文字数、監査、構成比、冗長表現を分析
+- `compare_writing_versions`: 現在の本文と履歴を比較
+
+AI は例文を入力した後に `analyze_writing` を呼び出し、結果を説明できます。本文の上書きや履歴変更は、ユーザーの明示的な確認なしには実行しません。
+
+AI 向けの原文は [`public/ai/jobtra-tutorial.ja.md`](public/ai/jobtra-tutorial.ja.md) として静的配信されます。通常の React バンドルや画面のナビゲーションには含めず、WebMCP が必要なときだけ取得します。
+
+---
+
 ## 🛠 技術スタック
 
 ### フロントエンド & アーキテクチャ
 
 - **Core Framework**: React 19 (`19.3.0`) / React DOM 19
-- **React Compiler**: `babel-plugin-react-compiler` (`^1.0.0`) を Vite の本番ビルドで適用
+- **React Compiler**: Vite 8 の Rust 製 `oxc-transform-react` (`0.145.0`) をビルド時に適用
   - 手動の `memo` / `useMemo` / `useCallback` に頼らず、コンパイラが再利用最適化を担当
 - **Build Tool**: Vite 8 (`^8.2.2`)
 - **Static & Routing**: [`@funstack/static`](https://uhyo.github.io/funstack-static/) (`^1.3.2`), [`@funstack/router`](https://github.com/uhyo/funstack-static) (`^1.4.0`)
@@ -75,12 +161,14 @@
 
 - **Formatter**: `oxfmt` (`^0.68.0`)
   - Rust製の高速フォーマッター（Tailwind クラス順序自動ソート対応）
-- **React Diagnostics**: `react-doctor` (`^0.9.14`)
+- **React Diagnostics**: `react-doctor` (`0.9.14`)
   - React 19 / RSC boundary、パフォーマンス、アクセシビリティ、セキュリティの自動スキャン
 - **Test Framework**: `vitest` (`^5.0.0`)
-  - ユニット・統合テスト（87件パス）とPlaywrightのPage Objectブラウザテスト
-- **Dependency Audit**: `knip` (`6.35.1`)
-  - 未使用ファイル・依存・exportをCIで検出
+  - ユニット・統合テストとPlaywrightのPage Objectブラウザテスト
+- **Dependency Audit**: `knip` (`6.35.1`) plus the npm-only lockfile policy check
+  - 未使用ファイル・依存・exportと、余分なパッケージマネージャーlockfileをCIで検出
+- **Package Manifest Policy**: `npm-package-json-lint` (`11.0.0`)
+  - npm-onlyのroot package manifestについて、依存元、実行環境、ESM、private設定、scriptsと依存関係の順序をCIで検証
 - **Structural Conventions**: `konsistent` (`1.0.0-beta.4`)
   - `konsistent.json` でfeature/widgetの責務境界、命名規約、Funstackの予約route名を検査
 - **Agent Context**: `lat.md` (`0.12.2`)
@@ -88,6 +176,7 @@
 - **CI / Pipeline**: GitHub Actions
   - `ci.yml`: lockfile再現性、`oxfmt`、TypeScript、Vitest、Knip、Konsistent、lat check、minitype CLI PDF検証
     - `konsistent` と `lat check`も独立ジョブとして実行し、各チェックは並列に動作
+    - Playwrightの主要正常系をChromium、Firefox、WebKitで実行
   - `react-doctor.yml`: PR変更スキャン、インラインレビューコメント、ヘルススコア計測
   - `concurrency`（最新コミット優先自動キャンセル）および最小権限の原則（Least Privilege）を適用
 
@@ -97,8 +186,8 @@
 
 ### 前提条件
 
-- Node.js `22.x` 以上
-- npm
+- Node.js `^22.22.2` / `^24.15.0` / `>=26.0.0`
+- npm `12.0.2`
 
 ### インストール
 
@@ -108,7 +197,7 @@ npm ci
 
 ### Dexie Cloud を有効にする場合
 
-Dexie Cloud の管理画面または `npx dexie-cloud create` で DB を用意し、公開 DB URL をビルド時環境変数に指定します。
+Dexie Cloud の管理画面または `npm exec -- dexie-cloud create` で DB を用意し、公開 DB URL をビルド時環境変数に指定します。
 
 ```bash
 VITE_DEXIE_CLOUD_SYNC_URL=https://<your-db>.dexie.cloud npm run build
@@ -136,14 +225,26 @@ npm run format
 # TypeScript 型チェック
 npm run lint
 
+# Reactコードと依存関係の全件診断
+npm run doctor -- . --verbose --no-cache --blocking warning --yes
+
 # 単体テスト (Vitest)
 npm test
 
 # プロダクションビルド
 npm run build
 
-# 不要なファイル・依存・exportの検出
+# 不要なファイル・依存・exportと余分なlockfileの検出
 npm run knip
+
+# package.jsonのnpm-onlyポリシーとメタデータ検証
+npm run lint:package-json
+
+# npm-only lockfile policy (knip does not inspect repository artifacts)
+npm run check:lockfiles
+
+# 依存パッケージの既知脆弱性監査
+npm audit
 
 # 構造規約のschema検証と監査
 npm run konsistent:validate
@@ -154,6 +255,10 @@ npm run lat:check
 
 # Node.js上でminitypeの実PDFを生成するスモークテスト
 npm run verify:pdf
+
+# Playwright ブラウザテスト（CIでは主要3エンジンを先にインストール）
+npm exec -- playwright install --with-deps chromium firefox webkit
+npm run test:e2e
 ```
 
 ---

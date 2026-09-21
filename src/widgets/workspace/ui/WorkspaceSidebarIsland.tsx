@@ -12,6 +12,7 @@ export function WorkspaceSidebarIsland({ footerSlot }: WorkspaceSidebarIslandPro
   const {
     drafts,
     currentDraftId,
+    isLoading,
     saveStatus,
     openPanel,
     selectDraft,
@@ -31,6 +32,7 @@ export function WorkspaceSidebarIsland({ footerSlot }: WorkspaceSidebarIslandPro
       onDuplicateDraft={duplicateDraft}
       onDeleteDraft={deleteDraft}
       onToggleStar={toggleStar}
+      isLoading={isLoading}
       saveStatus={saveStatus}
       isMobileOpen={openPanel === 'sidebar'}
       onCloseMobile={() => setPanel(null)}

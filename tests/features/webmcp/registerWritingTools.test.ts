@@ -43,6 +43,9 @@ describe('registerWritingTools', () => {
       'get_writing_context',
       'analyze_writing',
       'compare_writing_versions',
+      'get_jobtra_tutorial',
+      'get_jobtra_cloud_setup_guide',
+      'apply_tutorial_example',
     ]);
     expect(registrations.every(({ signal }) => signal === controller.signal)).toBe(true);
   });
@@ -77,7 +80,7 @@ describe('registerWritingTools', () => {
     });
 
     await expect(registerWritingTools(new AbortController().signal)).resolves.toBe(true);
-    expect(registrations).toHaveLength(3);
+    expect(registrations).toHaveLength(6);
   });
 
   it('skips registration when the lifecycle signal is already aborted', async () => {

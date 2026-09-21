@@ -33,10 +33,10 @@ Check if the `konsistent` package is already installed:
 - `node_modules/konsistent` directory exists
 - a `konsistent` script exists in `package.json`
 
-If not, the `konsistent` CLI must be installed first. Use the project's package manager. For example, with PNPM:
+If not, the `konsistent` CLI must be installed first. Use the project's package manager. For example, with npm:
 
 ```bash
-pnpm add konsistent --save-dev
+npm install konsistent --save-dev
 ```
 
 Then, ensure `package.json` has a `konsistent` script which invokes the `konsistent` CLI. At a minimum:
@@ -122,7 +122,7 @@ Do not weaken, narrow, condition, or exclude a convention solely because existin
 
 #### Verification
 
-Validate the generated config by running `konsistent validate` via the `package.json` script (e.g. `pnpm konsistent validate`).
+Validate the generated config by running `konsistent validate` via the `package.json` script (e.g. `npm run konsistent:validate`).
 
 After validation succeeds, freeze the evidence-based configuration and audit the actual codebase by running `konsistent` via the `package.json` script with no arguments. Treat reported violations as audit findings, not as configuration failures.
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, BookOpen } from 'lucide-react';
+import { Sparkles, BookOpen, Cloud } from 'lucide-react';
 
 /**
  * HeaderBrand - React Server Component (RSC)
@@ -53,6 +53,16 @@ export function HeaderStaticLinks() {
       >
         <BookOpen className="h-3.5 w-3.5 text-neutral-600" />
         <span>極意解説</span>
+      </a>
+
+      <a
+        href="/guide/dexie-cloud"
+        className="hidden shrink-0 cursor-pointer items-center gap-1.5 rounded-md bg-neutral-100 px-2.5 py-1.5 text-xs font-medium whitespace-nowrap text-neutral-700 transition-colors hover:bg-neutral-200 xl:flex"
+        title="個人Dexie Cloudの作成と別端末同期の設定手順"
+        aria-label="クラウド同期ガイドを見る"
+      >
+        <Cloud className="h-3.5 w-3.5 text-sky-600" />
+        <span>同期ガイド</span>
       </a>
     </div>
   );
