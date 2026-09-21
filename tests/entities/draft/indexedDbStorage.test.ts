@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildDefaultDraft } from '@entities/draft/model/draftFactories';
+import { buildDefaultDraft, createInitialSampleDrafts } from '@entities/draft/model/draftFactories';
 import { draftDatabase } from '@entities/draft/storage/dexieDraftDatabase';
 import { storage } from '@entities/draft/storage/indexedDbStorage';
 import { normalizeDexieCloudDatabaseUrl } from '@entities/draft/storage/dexieCloudConfig';
@@ -11,6 +11,12 @@ const legacyConfiguredDraft = {
   ...buildDefaultDraft('legacy-configured-draft', 1_100),
   category: 'gakuchika' as const,
   targetCount: 400,
+};
+const legacySampleDraft = createInitialSampleDrafts(1_000_000_000)[0];
+delete legacySampleDraft.progressStatus;
+const editedLegacySampleDraft = {
+  ...createInitialSampleDrafts(1_000_000_000)[1],
+  title: '編集済みサンプル',
 };
 
 function deleteDatabase(): Promise<void> {
@@ -31,6 +37,8 @@ function createLegacyDatabase(): Promise<void> {
       store.createIndex('category', 'category');
       store.createIndex('progressStatus', 'progressStatus');
       store.put(legacyConfiguredDraft);
+      store.put(legacySampleDraft);
+      store.put(editedLegacySampleDraft);
     };
     request.onsuccess = () => {
       const transaction = request.result.transaction('drafts', 'readwrite');
@@ -73,6 +81,17 @@ describe('IndexedDB draft storage', () => {
     });
   });
 
+  it('removes untouched seeded samples while preserving edited records', async () => {
+    expect(await storage.getDraft(legacySampleDraft.id)).toBeNull();
+    expect(await draftDatabase.drafts.get(legacySampleDraft.id)).toBeUndefined();
+    expect(await storage.getDraft(editedLegacySampleDraft.id)).toMatchObject({
+      title: '編集済みサンプル',
+    });
+    expect(await draftDatabase.drafts.get(editedLegacySampleDraft.id)).toMatchObject({
+      title: '編集済みサンプル',
+    });
+  });
+
   it('creates drafts with no category or character limit selected', async () => {
     const draft = await storage.createDefaultDraft();
 
@@ -87,8 +106,22 @@ describe('IndexedDB draft storage', () => {
       category: 'gakuchika' as const,
       targetCount: 400,
     };
+    const observed = new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error('configured draft observation timed out')),
+        1_000,
+      );
+      const unsubscribe = storage.subscribe((drafts) => {
+        const current = drafts.find((entry) => entry.id === draft.id);
+        if (current?.category !== 'gakuchika' || current.targetCount !== 400) return;
+        clearTimeout(timeout);
+        unsubscribe();
+        resolve();
+      });
+    });
 
     await storage.saveDraft(configuredDraft);
+    await observed;
 
     expect(await storage.getDraft(draft.id)).toMatchObject({
       category: 'gakuchika',

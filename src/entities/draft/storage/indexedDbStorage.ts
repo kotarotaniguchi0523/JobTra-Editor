@@ -4,14 +4,15 @@ import {
   buildDraftId,
   buildDuplicatedDraft,
   cloneDraft,
-  normalizeLegacyDefaultDraft,
+  migrateLegacyDrafts,
+  removeUntouchedLegacySampleDrafts,
 } from '@entities/draft/model/draftFactories';
 import { parseDraft, parseDraftCollection, parseDraftId } from '@shared/validation/draftSchemas';
 import { observeDraftDatabase, openDraftDatabase } from './dexieDraftDatabase';
 
 type DraftStorageObserver = (drafts: ESDraft[]) => void;
 const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
-const LOCAL_STORAGE_MIGRATION_VERSION = '3';
+const LOCAL_STORAGE_MIGRATION_VERSION = '4';
 const LOCAL_STORAGE_MIGRATION_KEY = `${DRAFT_DATABASE_NAME}:migration`;
 
 class IndexedDbStorage {
@@ -43,14 +44,17 @@ class IndexedDbStorage {
         return this.initialDrafts.map(cloneDraft);
       }
 
-      const drafts = parseDraftCollection(JSON.parse(data));
+      const rawDrafts: unknown = JSON.parse(data);
+      const drafts = parseDraftCollection(rawDrafts);
       if (!drafts) {
         localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
         return this.initialDrafts.map(cloneDraft);
       }
 
       if (localStorage.getItem(LOCAL_STORAGE_MIGRATION_KEY) !== LOCAL_STORAGE_MIGRATION_VERSION) {
-        const normalized = drafts.map(normalizeLegacyDefaultDraft);
+        const normalized = migrateLegacyDrafts(
+          Array.isArray(rawDrafts) ? (rawDrafts as ESDraft[]) : drafts,
+        );
         this.saveLocalStorageDrafts(normalized);
         localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
         return normalized;
@@ -81,7 +85,8 @@ class IndexedDbStorage {
     if (!this.isIndexedDbAvailable) return () => undefined;
 
     return observeDraftDatabase((drafts) => {
-      const validated = parseDraftCollection(drafts)?.map(normalizeLegacyDefaultDraft);
+      const visibleDrafts = removeUntouchedLegacySampleDrafts(drafts);
+      const validated = parseDraftCollection(visibleDrafts);
       if (!validated) return;
       validated.sort((a, b) => b.updatedAt - a.updatedAt);
       observer(validated);
@@ -91,7 +96,8 @@ class IndexedDbStorage {
   public async getAllDrafts(): Promise<ESDraft[]> {
     try {
       const db = await this.openDb();
-      const list = parseDraftCollection(await db.drafts.toArray()) || [];
+      const visibleDrafts = removeUntouchedLegacySampleDrafts(await db.drafts.toArray());
+      const list = parseDraftCollection(visibleDrafts) || [];
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       return list;
     } catch (error) {
@@ -108,7 +114,9 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      return parseDraft(await db.drafts.get(validId));
+      const rawDraft = await db.drafts.get(validId);
+      const draft = parseDraft(removeUntouchedLegacySampleDrafts(rawDraft ? [rawDraft] : [])[0]);
+      return draft;
     } catch {
       const drafts = this.getLocalStorageDrafts();
       return drafts.find((draft) => draft.id === validId) || null;
@@ -132,7 +140,8 @@ class IndexedDbStorage {
   }
 
   public async replaceAllDrafts(drafts: readonly ESDraft[]): Promise<void> {
-    const validatedDrafts = parseDraftCollection(drafts);
+    const parsedDrafts = parseDraftCollection(drafts);
+    const validatedDrafts = parsedDrafts ? removeUntouchedLegacySampleDrafts(parsedDrafts) : null;
     if (!validatedDrafts) throw new Error('Draft collection validation failed');
 
     try {

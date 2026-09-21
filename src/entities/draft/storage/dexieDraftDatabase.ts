@@ -1,11 +1,16 @@
 import Dexie, { liveQuery, type Table, type Subscription } from 'dexie';
 import dexieCloudAddon from 'dexie-cloud-addon';
 import type { ESDraft } from '@entities/draft/model/types';
-import { normalizeLegacyDefaultDraft } from '@entities/draft/model/draftFactories';
+import {
+  migrateLegacyDrafts,
+  normalizeLegacyDefaultDraft,
+} from '@entities/draft/model/draftFactories';
 import { getDexieCloudDatabaseUrl } from './dexieCloudConfig';
 
 const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
-const DRAFT_DATABASE_VERSION = 3;
+const BASE_DRAFT_DATABASE_VERSION = 2;
+const DEFAULT_METADATA_MIGRATION_VERSION = 3;
+const DRAFT_DATABASE_VERSION = 4;
 const DRAFT_STORE_NAME = 'drafts';
 
 const DRAFT_STORE_SCHEMA = 'id, updatedAt, category, progressStatus';
@@ -18,7 +23,7 @@ type DraftDatabaseObserver = (drafts: ESDraft[]) => void;
 
 function createDraftDatabase(): DraftDatabase {
   const db = new Dexie(DRAFT_DATABASE_NAME, { addons: [dexieCloudAddon] }) as DraftDatabase;
-  db.version(DRAFT_DATABASE_VERSION - 1).stores({
+  db.version(BASE_DRAFT_DATABASE_VERSION).stores({
     // The table is synced without '@' so existing application-generated IDs
     // remain valid. Dexie Cloud marks every declared application table for
     // sync; '@' is reserved for its generated ID prefix policy.
@@ -27,7 +32,7 @@ function createDraftDatabase(): DraftDatabase {
 
   // Version 2 could already contain the old blank-draft defaults. Normalize
   // only untouched drafts during the upgrade; user-authored content is kept.
-  db.version(DRAFT_DATABASE_VERSION)
+  db.version(DEFAULT_METADATA_MIGRATION_VERSION)
     .stores({
       [DRAFT_STORE_NAME]: DRAFT_STORE_SCHEMA,
     })
@@ -40,6 +45,26 @@ function createDraftDatabase(): DraftDatabase {
           if (normalized !== draft) Object.assign(draft, normalized);
         }),
     );
+
+  // Version 3 did not remove the untouched sample records seeded by older
+  // releases. Remove those records now while preserving any edited sample.
+  db.version(DRAFT_DATABASE_VERSION)
+    .stores({
+      [DRAFT_STORE_NAME]: DRAFT_STORE_SCHEMA,
+    })
+    .upgrade(async (transaction) => {
+      const table = transaction.table(DRAFT_STORE_NAME);
+      const drafts = await table.toArray();
+      const migratedDrafts = migrateLegacyDrafts(drafts);
+      const migratedIds = new Set(migratedDrafts.map((draft) => draft.id));
+      const idsToDelete: string[] = [];
+      for (const draft of drafts) {
+        if (!migratedIds.has(draft.id)) idsToDelete.push(draft.id);
+      }
+
+      if (idsToDelete.length > 0) await table.bulkDelete(idsToDelete);
+      if (migratedDrafts.length > 0) await table.bulkPut(migratedDrafts);
+    });
 
   const databaseUrl = getDexieCloudDatabaseUrl();
   if (databaseUrl && typeof window !== 'undefined') {
