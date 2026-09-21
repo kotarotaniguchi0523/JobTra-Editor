@@ -1,24 +1,31 @@
 {
   "name": "jobtra-editor",
   "version": "0.0.0",
+  "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kotarotaniguchi0523/JobTra-Editor.git"
+  },
   "type": "module",
   "scripts": {
-    "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
-    "preview": "vite preview",
-    "lint": "tsc --noEmit",
-    "format:check": "oxfmt --check",
-    "format": "oxfmt",
-    "postinstall": "patch-package",
+    "check:lockfiles": "node --import tsx/esm scripts/check-lockfiles.ts",
+    "dev": "vite --port=3000 --host=0.0.0.0",
     "doctor": "react-doctor",
-    "knip": "knip",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "knip": "knip && npm run check:lockfiles",
     "konsistent": "konsistent check",
     "konsistent:validate": "konsistent validate",
     "lat:check": "lat check",
-    "verify:pdf": "node --import tsx/esm scripts/verify-minitype-export.ts",
+    "lint": "tsc --noEmit",
+    "lint:package-json": "npmPkgJsonLint .",
+    "postinstall": "patch-package",
+    "preview": "vite preview",
     "test": "vitest run --exclude='tests/e2e/**'",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify:pdf": "node --import tsx/esm scripts/verify-minitype-export.ts"
   },
   "dependencies": {
     "@funstack/router": "^1.4.0",
@@ -41,28 +48,43 @@
     "vite": "^8.2.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
     "@playwright/test": "^1.63.0",
-    "@rolldown/plugin-babel": "^0.2.4",
     "@types/node": "^22.14.0",
     "@types/qrcode": "1.5.5",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "^6.1.1",
-    "babel-plugin-react-compiler": "^1.0.0",
     "esbuild": "^0.28.2",
     "fake-indexeddb": "6.2.4",
     "fast-check": "4.10.1",
     "knip": "6.35.1",
     "konsistent": "1.0.0-beta.4",
     "lat.md": "0.12.2",
+    "npm-package-json-lint": "11.0.0",
+    "oxc-transform-react": "0.145.0",
     "oxfmt": "^0.68.0",
     "patch-package": "^8.0.1",
-    "react-doctor": "^0.9.14",
+    "react-doctor": "0.9.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vitest": "^5.0.0",
     "webmcp-types": "0.1.8"
   },
-  "packageManager": "pnpm@11.19.0"
+  "overrides": {
+    "@folder/xdg": {
+      "toml": "4.2.0"
+    },
+    "speech-rule-engine": {
+      "@xmldom/xmldom": "0.9.12"
+    }
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0",
+    "npm": "12.0.2"
+  },
+  "packageManager": "npm@12.0.2",
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "better-sqlite3@12.11.1": true
+  }
 }

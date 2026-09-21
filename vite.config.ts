@@ -1,8 +1,10 @@
 import 'urlpattern-polyfill';
 import funstackStatic from '@funstack/static';
 import tailwindcss from '@tailwindcss/vite';
-import babel from '@rolldown/plugin-babel';
-import react, { reactCompilerPreset } from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react';
+// @vitejs/plugin-react loads this optional peer dynamically. Importing it here
+// makes the build dependency explicit and fails config loading early if absent.
+import 'oxc-transform-react';
 import path from 'path';
 import { defineConfig } from 'vite';
 
@@ -46,10 +48,9 @@ export default defineConfig(() => {
           adapter: '@funstack/static/fs-routes/next-adapter',
         },
       }),
-      react(),
-      // Compile client React components at build time. The compiler owns
-      // memoization, so components do not need manual memo/useMemo/useCallback.
-      babel({ presets: [reactCompilerPreset()] }),
+      // Vite's native compiler path keeps React compilation in Rust and only
+      // enables compiler transforms for modules consumed by the browser.
+      react({ compiler: { logDiagnostics: true } }),
       tailwindcss(),
     ],
     resolve: {
@@ -73,6 +74,9 @@ export default defineConfig(() => {
       // The browser minitype/PDF engine is intentionally loaded only by the
       // export island; its generated lazy chunk is large by design.
       chunkSizeWarningLimit: 10_000,
+      // Gzip reporting recompresses the multi-megabyte PDF engine and fonts on
+      // every build without changing the emitted static artifact.
+      reportCompressedSize: false,
     },
   };
 });

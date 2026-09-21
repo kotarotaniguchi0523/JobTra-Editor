@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { DeviceSyncPage } from './pages/device-sync-page';
 import { EditorPage } from './pages/editor-page';
+import { ExportPage } from './pages/export-page';
 import { StructurePage } from './pages/structure-page';
 
 test.describe('ES editor browser workflows', () => {
@@ -19,12 +20,13 @@ test.describe('ES editor browser workflows', () => {
     await editor.fillBody('Playwrightでユーザーの執筆フローを検証します。');
 
     await expect(editor.body).toHaveValue('Playwrightでユーザーの執筆フローを検証します。');
+    await editor.expectNoRuntimeIssues();
   });
 
   test('persists a newly created draft across a page reload', async ({ page }) => {
     const editor = new EditorPage(page);
     const title = 'CIで検証する新しいES';
-    const content = 'この文章はChromiumを使ったCIのブラウザテストで保存を確認します。';
+    const content = 'この文章はCIの主要ブラウザテストで保存を確認します。';
 
     await editor.goto();
     await editor.createDraft();
@@ -37,6 +39,38 @@ test.describe('ES editor browser workflows', () => {
     await expect(editor.draftTitle).toHaveValue(title);
     await expect(editor.body).toHaveValue(content);
     await expect.poll(() => editor.draftCount()).toBe(1);
+    await editor.expectNoRuntimeIssues();
+  });
+
+  test('edits metadata and narrows drafts with search and one category filter', async ({
+    page,
+  }) => {
+    const editor = new EditorPage(page);
+
+    await editor.goto();
+    await editor.createDraft();
+    await editor.fillTitle('改善活動のガクチカ');
+    await editor.fillBody('アルバイト先の教育手順を改善しました。');
+    await editor.selectCategory('gakuchika');
+    await editor.selectProgress('in_progress');
+    await editor.waitForSaved();
+
+    await editor.createDraft();
+    await editor.fillTitle('粘り強さの自己PR');
+    await editor.fillBody('粘り強く課題に取り組みました。');
+    await editor.selectCategory('pr');
+    await editor.waitForSaved();
+
+    await editor.filterByCategory('ガクチカ');
+    await editor.expectDraftVisibility('改善活動のガクチカ', true);
+    await editor.expectDraftVisibility('粘り強さの自己PR', false);
+
+    await editor.filterByCategory('すべて');
+    await editor.search('粘り強さ');
+    await editor.expectDraftVisibility('改善活動のガクチカ', false);
+    await editor.expectDraftVisibility('粘り強さの自己PR', true);
+    await editor.enableWritingFocus();
+    await editor.expectNoRuntimeIssues();
   });
 
   test('keeps the selected draft while moving through STAR and preview modes', async ({ page }) => {
@@ -62,6 +96,23 @@ test.describe('ES editor browser workflows', () => {
     await expect(
       editor.page.getByRole('main').getByText('課題を見つけて改善をやり抜く力です。'),
     ).toBeVisible();
+    await editor.expectNoRuntimeIssues();
+  });
+
+  test('exports the active draft as Markdown', async ({ page }) => {
+    const editor = new EditorPage(page);
+    const exportPage = new ExportPage(page);
+
+    await editor.goto();
+    await editor.createDraft();
+    await editor.fillTitle('エクスポート確認用ES');
+    await editor.fillBody('Markdownとして保存する本文です。');
+    await editor.waitForSaved();
+
+    await exportPage.open();
+    await exportPage.downloadMarkdown();
+    await exportPage.close();
+    await editor.expectNoRuntimeIssues();
   });
 
   test('opens the one-scan device sync flow and generates a short-lived QR token', async ({
@@ -75,6 +126,7 @@ test.describe('ES editor browser workflows', () => {
     await deviceSync.open();
     await deviceSync.createPairingQr();
     await deviceSync.close();
+    await editor.expectNoRuntimeIssues();
   });
 
   test('keeps header controls inside the header on narrow desktop widths', async ({ page }) => {
@@ -110,5 +162,6 @@ test.describe('ES editor browser workflows', () => {
         );
       }
     }
+    await editor.expectNoRuntimeIssues();
   });
 });

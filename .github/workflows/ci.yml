@@ -14,29 +14,31 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  NPM_VERSION: 12.0.2
+
 jobs:
-  # 独立して同時実行するチェックジョブ群。各ジョブはpnpmキャッシュを利用する。
+  # 独立して同時実行するチェックジョブ群。各ジョブはnpmキャッシュを利用する。
   format-check:
     name: Oxfmt Format Check
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run Oxfmt Check
-        run: pnpm run format:check
+        run: npm run format:check
 
   test:
     name: Unit Tests (Vitest)
@@ -44,21 +46,20 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run Tests
-        run: pnpm test
+        run: npm test
 
   lint:
     name: TypeScript Check
@@ -66,21 +67,20 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run TypeScript Check
-        run: pnpm run lint
+        run: npm run lint
 
   build:
     name: Static Site Build
@@ -88,43 +88,62 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Build static site
-        run: pnpm run build
+        run: npm run build
 
   knip:
-    name: Dependency Audit (Knip)
+    name: Dependency Audit (Knip + lockfile policy)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          version: 11.19.0
+          node-version: '22.23.2'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Knip
+        run: npm run knip
+
+  package-json-lint:
+    name: Package Manifest (npm-package-json-lint)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
-      - name: Run Knip
-        run: pnpm run knip
+      - name: Lint package manifests
+        run: npm run lint:package-json
 
   konsistent:
     name: Structural Conventions (Konsistent)
@@ -132,24 +151,23 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Validate Konsistent configuration
-        run: pnpm run konsistent:validate
+        run: npm run konsistent:validate
 
       - name: Check structural conventions
-        run: pnpm run konsistent
+        run: npm run konsistent
 
   lat-check:
     name: Agent Knowledge Graph (lat.md)
@@ -157,21 +175,20 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Validate lat.md knowledge graph
-        run: pnpm run lat:check
+        run: npm run lat:check
 
   export-smoke:
     name: Serverless Export Smoke Test
@@ -179,53 +196,55 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Verify minitype PDF CLI output
-        run: pnpm run verify:pdf
+        run: npm run verify:pdf
 
   browser-e2e:
-    name: Browser E2E (Playwright)
+    name: Browser E2E (${{ matrix.browser }})
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-        with:
-          version: 11.19.0
-
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22.23.2'
-          cache: 'pnpm'
+          cache: 'npm'
+
+      - name: Setup npm
+        run: npm install --global "npm@${NPM_VERSION}"
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
-      - name: Install Chromium and system dependencies
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install browser engines and system dependencies
+        run: npm exec -- playwright install --with-deps ${{ matrix.browser }}
 
       - name: Run Playwright browser tests
-        run: pnpm run test:e2e
+        run: npm run test:e2e -- --project=${{ matrix.browser }}
 
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@604373da6381bf24206979c74d06a550515601b9 # v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.browser }}
           path: |
             playwright-report/
             test-results/

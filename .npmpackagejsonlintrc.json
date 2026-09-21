@@ -1,0 +1,29 @@
+{
+  "rules": {
+    "no-duplicate-properties": "error",
+    "prefer-alphabetical-dependencies": "error",
+    "prefer-alphabetical-devDependencies": "error",
+    "prefer-alphabetical-scripts": "error",
+    "prefer-no-bin": "error",
+    "prefer-no-engineStrict": "error",
+    "prefer-no-main": "error",
+    "prefer-provenance": "error",
+    "no-file-dependencies": "error",
+    "no-file-devDependencies": "error",
+    "no-file-peerDependencies": "error",
+    "no-git-dependencies": "error",
+    "no-git-devDependencies": "error",
+    "no-git-peerDependencies": "error",
+    "require-engines": "error",
+    "engines-type": "error",
+    "require-license": "error",
+    "license-type": "error",
+    "require-private": "error",
+    "valid-values-private": ["error", [true]],
+    "require-repository": "error",
+    "repository-type": "error",
+    "require-type": "error",
+    "type-type": "error",
+    "valid-values-type": ["error", ["module"]]
+  }
+}

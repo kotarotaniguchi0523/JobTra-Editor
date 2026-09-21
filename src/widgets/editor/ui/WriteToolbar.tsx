@@ -21,6 +21,7 @@ export function WriteToolbar({ onCleanFormatting, children }: WriteToolbarProps)
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <button
             type="button"
+            aria-pressed={isFocusSentenceEnabled}
             onClick={() => setFocusSentenceEnabled((enabled) => !enabled)}
             className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 text-xs font-medium transition-colors sm:gap-1.5 sm:px-2.5 ${
               isFocusSentenceEnabled
@@ -36,6 +37,7 @@ export function WriteToolbar({ onCleanFormatting, children }: WriteToolbarProps)
 
           <button
             type="button"
+            aria-pressed={isTypewriterScrollEnabled}
             onClick={() => setTypewriterScrollEnabled((enabled) => !enabled)}
             className={`flex cursor-pointer items-center gap-1 rounded border px-2 py-1 text-xs font-medium transition-colors sm:gap-1.5 sm:px-2.5 ${
               isTypewriterScrollEnabled

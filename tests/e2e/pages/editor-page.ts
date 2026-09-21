@@ -9,8 +9,12 @@ export class EditorPage {
   readonly draftCategory: Locator;
   readonly draftProgress: Locator;
   readonly body: Locator;
+  readonly searchInput: Locator;
+  readonly focusSentenceButton: Locator;
+  readonly typewriterScrollButton: Locator;
   readonly structureTab: Locator;
   readonly previewTab: Locator;
+  private readonly runtimeIssues: string[] = [];
 
   constructor(page: Page) {
     this.page = page;
@@ -21,8 +25,18 @@ export class EditorPage {
     this.draftCategory = page.locator('#draft-category-select');
     this.draftProgress = page.locator('#draft-progress-status');
     this.body = page.locator('#es-body-textarea');
+    this.searchInput = page.locator('#sidebar-search-input');
+    this.focusSentenceButton = page.getByTitle('いまカーソルがある一文のみをハイライト');
+    this.typewriterScrollButton = page.getByTitle('入力行を常に視線の中央にキープ');
     this.structureTab = page.locator('#mode-tab-structure');
     this.previewTab = page.locator('#mode-tab-preview');
+
+    page.on('pageerror', (error) => this.runtimeIssues.push(`pageerror: ${error.message}`));
+    page.on('console', (message) => {
+      if (message.type() === 'error' || message.type() === 'warning') {
+        this.runtimeIssues.push(`console.${message.type()}: ${message.text()}`);
+      }
+    });
   }
 
   async goto(): Promise<void> {
@@ -32,6 +46,7 @@ export class EditorPage {
 
   async waitForReady(): Promise<void> {
     await expect(this.page.locator('#app-top-header')).toBeVisible();
+    await expect(this.sidebar).toHaveAttribute('aria-busy', 'false');
   }
 
   async draftCount(): Promise<number> {
@@ -70,6 +85,46 @@ export class EditorPage {
 
   async fillBody(content: string): Promise<void> {
     await this.body.fill(content);
+  }
+
+  async selectCategory(category: string): Promise<void> {
+    await this.draftCategory.selectOption(category);
+    await expect(this.draftCategory).toHaveValue(category);
+  }
+
+  async selectProgress(progress: string): Promise<void> {
+    await this.draftProgress.selectOption(progress);
+    await expect(this.draftProgress).toHaveValue(progress);
+  }
+
+  async filterByCategory(label: string): Promise<void> {
+    const filter = this.sidebar.getByRole('button', { name: label, exact: true });
+    await filter.click();
+    await expect(filter).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  async search(query: string): Promise<void> {
+    await this.searchInput.fill(query);
+    await expect(this.searchInput).toHaveValue(query);
+  }
+
+  async expectDraftVisibility(title: string, visible: boolean): Promise<void> {
+    const draft = this.sidebar.getByRole('button', {
+      name: new RegExp(`${escapeRegExp(title)} を選択$`),
+    });
+    if (visible) await expect(draft).toBeVisible();
+    else await expect(draft).toBeHidden();
+  }
+
+  async enableWritingFocus(): Promise<void> {
+    await this.focusSentenceButton.click();
+    await expect(this.focusSentenceButton).toHaveAttribute('aria-pressed', 'true');
+    await this.typewriterScrollButton.click();
+    await expect(this.typewriterScrollButton).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  async expectNoRuntimeIssues(): Promise<void> {
+    expect(this.runtimeIssues, 'React/RSC hydration and browser runtime warnings').toEqual([]);
   }
 
   async waitForSaved(): Promise<void> {
