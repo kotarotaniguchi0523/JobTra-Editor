@@ -80,6 +80,23 @@ describe('IndexedDB draft storage', () => {
     await storage.deleteDraft(draft.id);
   });
 
+  it('keeps metadata selected by a user immediately after creation', async () => {
+    const draft = await storage.createDefaultDraft();
+    const configuredDraft = {
+      ...draft,
+      category: 'gakuchika' as const,
+      targetCount: 400,
+    };
+
+    await storage.saveDraft(configuredDraft);
+
+    expect(await storage.getDraft(draft.id)).toMatchObject({
+      category: 'gakuchika',
+      targetCount: 400,
+    });
+    await storage.deleteDraft(draft.id);
+  });
+
   it('persists writes and publishes live database changes', async () => {
     const draft = buildDefaultDraft('observed-draft', 2_000);
     const observed = new Promise<void>((resolve, reject) => {

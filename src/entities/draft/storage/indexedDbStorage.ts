@@ -11,6 +11,8 @@ import { observeDraftDatabase, openDraftDatabase } from './dexieDraftDatabase';
 
 type DraftStorageObserver = (drafts: ESDraft[]) => void;
 const DRAFT_DATABASE_NAME = 'es_craft_indexed_db';
+const LOCAL_STORAGE_MIGRATION_VERSION = '3';
+const LOCAL_STORAGE_MIGRATION_KEY = `${DRAFT_DATABASE_NAME}:migration`;
 
 class IndexedDbStorage {
   private dbPromise: ReturnType<typeof openDraftDatabase> | null = null;
@@ -36,10 +38,25 @@ class IndexedDbStorage {
     try {
       if (typeof localStorage === 'undefined') return this.initialDrafts.map(cloneDraft);
       const data = localStorage.getItem(DRAFT_DATABASE_NAME);
-      if (data) {
-        const drafts = parseDraftCollection(JSON.parse(data));
-        return drafts?.map(normalizeLegacyDefaultDraft) || this.initialDrafts.map(cloneDraft);
+      if (!data) {
+        localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
+        return this.initialDrafts.map(cloneDraft);
       }
+
+      const drafts = parseDraftCollection(JSON.parse(data));
+      if (!drafts) {
+        localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
+        return this.initialDrafts.map(cloneDraft);
+      }
+
+      if (localStorage.getItem(LOCAL_STORAGE_MIGRATION_KEY) !== LOCAL_STORAGE_MIGRATION_VERSION) {
+        const normalized = drafts.map(normalizeLegacyDefaultDraft);
+        this.saveLocalStorageDrafts(normalized);
+        localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
+        return normalized;
+      }
+
+      return drafts;
     } catch (error) {
       console.warn('LocalStorage read error', error);
     }
@@ -74,9 +91,7 @@ class IndexedDbStorage {
   public async getAllDrafts(): Promise<ESDraft[]> {
     try {
       const db = await this.openDb();
-      const list = (parseDraftCollection(await db.drafts.toArray()) || []).map(
-        normalizeLegacyDefaultDraft,
-      );
+      const list = parseDraftCollection(await db.drafts.toArray()) || [];
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       return list;
     } catch (error) {
@@ -93,8 +108,7 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      const draft = parseDraft(await db.drafts.get(validId));
-      return draft ? normalizeLegacyDefaultDraft(draft) : null;
+      return parseDraft(await db.drafts.get(validId));
     } catch {
       const drafts = this.getLocalStorageDrafts();
       return drafts.find((draft) => draft.id === validId) || null;
