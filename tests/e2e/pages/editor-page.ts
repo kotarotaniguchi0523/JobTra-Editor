@@ -197,7 +197,17 @@ function escapeRegExp(value: string): string {
 }
 
 function isExpectedTransportWarning(issue: string): boolean {
-  return issue.startsWith(
-    "console.error: WebSocket connection to 'wss://nostr.vulpem.com/' failed:",
+  if (
+    issue.startsWith("console.error: WebSocket connection to 'wss://nostr.vulpem.com/' failed:")
+  ) {
+    return true;
+  }
+
+  // FUNSTACK emits this preload for the static RSC payload. WebKit reports it
+  // as unused when a test keeps the page open, even though hydration succeeds.
+  return (
+    issue.startsWith('console.warning: The resource http') &&
+    issue.includes('/funstack__/fun__rsc-payload/') &&
+    issue.includes('was preloaded using link preload but not used within a few seconds')
   );
 }
