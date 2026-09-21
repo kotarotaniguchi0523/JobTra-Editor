@@ -44,14 +44,17 @@ class IndexedDbStorage {
         return this.initialDrafts.map(cloneDraft);
       }
 
-      const drafts = parseDraftCollection(JSON.parse(data));
+      const rawDrafts: unknown = JSON.parse(data);
+      const drafts = parseDraftCollection(rawDrafts);
       if (!drafts) {
         localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
         return this.initialDrafts.map(cloneDraft);
       }
 
       if (localStorage.getItem(LOCAL_STORAGE_MIGRATION_KEY) !== LOCAL_STORAGE_MIGRATION_VERSION) {
-        const normalized = migrateLegacyDrafts(drafts);
+        const normalized = migrateLegacyDrafts(
+          Array.isArray(rawDrafts) ? (rawDrafts as ESDraft[]) : drafts,
+        );
         this.saveLocalStorageDrafts(normalized);
         localStorage.setItem(LOCAL_STORAGE_MIGRATION_KEY, LOCAL_STORAGE_MIGRATION_VERSION);
         return normalized;
@@ -82,8 +85,8 @@ class IndexedDbStorage {
     if (!this.isIndexedDbAvailable) return () => undefined;
 
     return observeDraftDatabase((drafts) => {
-      const parsedDrafts = parseDraftCollection(drafts);
-      const validated = parsedDrafts ? removeUntouchedLegacySampleDrafts(parsedDrafts) : null;
+      const visibleDrafts = removeUntouchedLegacySampleDrafts(drafts);
+      const validated = parseDraftCollection(visibleDrafts);
       if (!validated) return;
       validated.sort((a, b) => b.updatedAt - a.updatedAt);
       observer(validated);
@@ -93,8 +96,8 @@ class IndexedDbStorage {
   public async getAllDrafts(): Promise<ESDraft[]> {
     try {
       const db = await this.openDb();
-      const parsedDrafts = parseDraftCollection(await db.drafts.toArray()) || [];
-      const list = removeUntouchedLegacySampleDrafts(parsedDrafts);
+      const visibleDrafts = removeUntouchedLegacySampleDrafts(await db.drafts.toArray());
+      const list = parseDraftCollection(visibleDrafts) || [];
       list.sort((a, b) => b.updatedAt - a.updatedAt);
       return list;
     } catch (error) {
@@ -111,8 +114,9 @@ class IndexedDbStorage {
 
     try {
       const db = await this.openDb();
-      const draft = parseDraft(await db.drafts.get(validId));
-      return removeUntouchedLegacySampleDrafts(draft ? [draft] : [])[0] ?? null;
+      const rawDraft = await db.drafts.get(validId);
+      const draft = parseDraft(removeUntouchedLegacySampleDrafts(rawDraft ? [rawDraft] : [])[0]);
+      return draft;
     } catch {
       const drafts = this.getLocalStorageDrafts();
       return drafts.find((draft) => draft.id === validId) || null;

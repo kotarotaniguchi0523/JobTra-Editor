@@ -114,13 +114,18 @@ export function isUntouchedLegacySampleDraft(draft: ESDraft): boolean {
   const hasSameTags =
     draft.tags.length === template.tags.length &&
     draft.tags.every((tag, index) => tag === template.tags[index]);
+  const hasLegacyProgressStatus =
+    template.progressStatus === 'completed' &&
+    !Object.prototype.hasOwnProperty.call(draft, 'progressStatus');
+  const hasSameProgressStatus =
+    draft.progressStatus === template.progressStatus || hasLegacyProgressStatus;
 
   return (
     draft.title === template.title &&
     draft.companyName === template.companyName &&
     draft.category === template.category &&
     draft.targetCount === template.targetCount &&
-    draft.progressStatus === template.progressStatus &&
+    hasSameProgressStatus &&
     draft.isBlockMode === template.isBlockMode &&
     draft.content === template.content &&
     hasSameTags &&

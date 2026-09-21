@@ -13,6 +13,7 @@ const legacyConfiguredDraft = {
   targetCount: 400,
 };
 const legacySampleDraft = createInitialSampleDrafts(1_000_000_000)[0];
+delete legacySampleDraft.progressStatus;
 const editedLegacySampleDraft = {
   ...createInitialSampleDrafts(1_000_000_000)[1],
   title: '編集済みサンプル',
