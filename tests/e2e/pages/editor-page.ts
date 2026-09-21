@@ -34,7 +34,8 @@ export class EditorPage {
     page.on('pageerror', (error) => this.runtimeIssues.push(`pageerror: ${error.message}`));
     page.on('console', (message) => {
       if (message.type() === 'error' || message.type() === 'warning') {
-        this.runtimeIssues.push(`console.${message.type()}: ${message.text()}`);
+        const issue = `console.${message.type()}: ${message.text()}`;
+        if (!isExpectedTransportWarning(issue)) this.runtimeIssues.push(issue);
       }
     });
   }
@@ -193,4 +194,10 @@ export class EditorPage {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isExpectedTransportWarning(issue: string): boolean {
+  return issue.startsWith(
+    "console.error: WebSocket connection to 'wss://nostr.vulpem.com/' failed:",
+  );
 }
