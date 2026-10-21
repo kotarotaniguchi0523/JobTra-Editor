@@ -64,7 +64,7 @@
     "oxc-transform-react": "0.145.0",
     "oxfmt": "^0.68.0",
     "patch-package": "^8.0.1",
-    "react-doctor": "0.9.14",
+    "react-doctor": "0.9.18",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vitest": "^5.0.0",
