@@ -58,7 +58,7 @@
     "fake-indexeddb": "6.2.4",
     "fast-check": "4.10.1",
     "knip": "6.35.1",
-    "konsistent": "1.0.0-beta.4",
+    "konsistent": "1.0.0-beta.12",
     "lat.md": "0.12.2",
     "npm-package-json-lint": "11.0.0",
     "oxc-transform-react": "0.145.0",
