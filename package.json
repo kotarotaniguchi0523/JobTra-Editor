@@ -68,7 +68,7 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vitest": "^5.0.0",
-    "webmcp-types": "0.1.8"
+    "webmcp-types": "0.1.10"
   },
   "overrides": {
     "@folder/xdg": {
